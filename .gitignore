@@ -40,7 +40,8 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# ChromaDB 데이터 (로컬 저장 시)
-chroma_db/
+# ChromaDB 데이터
+# 주의: chroma_store/는 Git에 포함되어야 하므로 .gitignore에 추가하지 않음
+# chroma_db/  # 다른 ChromaDB 저장소는 제외
 *.db
 
