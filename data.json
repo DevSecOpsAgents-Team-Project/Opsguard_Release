@@ -1452,14 +1452,6 @@
     "source": "ISMS-P 2023",
     "category": "AccessControl",
     "title": "접근권한 부여 및 관리",
-    "clause_id": "2.4.1",
-    "mapping_iso27001": [
-      "A.9.2.3",
-      "A.9.2.6"
-    ],
-    "mapping_iso27017": [
-      "9.2.2"
-    ],
     "related_events": [
       "Excessive Privilege",
       "Privilege Escalation",
@@ -1493,14 +1485,6 @@
     "source": "ISMS-P 2023",
     "category": "AccessControl",
     "title": "사용자 식별 및 인증",
-    "clause_id": "2.4.2",
-    "mapping_iso27001": [
-      "A.9.2.1",
-      "A.9.4.2"
-    ],
-    "mapping_iso27017": [
-      "9.4.2"
-    ],
     "related_events": [
       "Weak Authentication",
       "Credential Leakage",
@@ -1534,14 +1518,6 @@
     "source": "ISMS-P 2023",
     "category": "IncidentResponse",
     "title": "침해사고 대응 절차 수립",
-    "clause_id": "3.1.1",
-    "mapping_iso27001": [
-      "A.16.1.1",
-      "A.16.1.2"
-    ],
-    "mapping_iso27017": [
-      "16.1.1"
-    ],
     "related_events": [
       "Unstructured Response",
       "Delayed Incident Response",
@@ -1575,14 +1551,7 @@
     "source": "ISMS-P 2023",
     "category": "IncidentResponse",
     "title": "침해사고 대응 및 조치",
-    "clause_id": "3.1.2",
-    "mapping_iso27001": [
-      "A.16.1.5",
-      "A.16.1.7"
-    ],
-    "mapping_iso27017": [
-      "16.1.5"
-    ],
+   
     "related_events": [
       "Network Intrusion",
       "Lateral Movement",
@@ -1616,14 +1585,7 @@
     "source": "ISMS-P 2023",
     "category": "Logging",
     "title": "로그 생성 및 보관",
-    "clause_id": "4.2.3",
-    "mapping_iso27001": [
-      "A.12.4.1",
-      "A.12.4.2"
-    ],
-    "mapping_iso27017": [
-      "12.4.1"
-    ],
+ 
     "related_events": [
       "Monitoring Failure",
       "Log Tampering",
@@ -1657,13 +1619,7 @@
     "source": "ISMS-P 2023",
     "category": "Logging",
     "title": "로그 검토 및 이상 징후 분석",
-    "clause_id": "4.2.4",
-    "mapping_iso27001": [
-      "A.12.4.3"
-    ],
-    "mapping_iso27017": [
-      "12.4.3"
-    ],
+ 
     "related_events": [
       "Unusual API Pattern",
       "System Anomaly",
@@ -1689,5 +1645,4 @@
     "guidelines": "ISMS-P 4.2.4 로그 검토 및 이상 징후 분석 세부 점검 기준"
   }
 }
-
 ]
