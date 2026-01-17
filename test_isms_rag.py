@@ -6,14 +6,16 @@ ISMS-P 규제 문서 RAG 시스템 테스트 스크립트
 
 사용 기술:
 - OpenAI API (text-embedding-3-large)
-- ChromaDB (로컬, in-memory)
+- ChromaDB (로컬, 파일 저장 - Git 공유 가능)
+
+ChromaDB는 ./chroma_store/ 디렉토리에 파일로 저장되며,
+이 디렉토리를 Git에 커밋하면 팀원과 공유할 수 있습니다.
 """
 
 import os
 from typing import List, Dict, Any
 from openai import OpenAI
 import chromadb
-from chromadb.config import Settings
 
 # .env 파일에서 환경변수 로드
 # .env 파일을 사용하여 API Key를 안전하게 관리합니다
@@ -146,6 +148,7 @@ TEST_QUERIES = [
 def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
     """
     ChromaDB를 초기화하고 문서를 저장합니다.
+    파일 형태로 저장하여 Git으로 공유할 수 있습니다.
     
     Args:
         documents: 저장할 문서 리스트 (text, doc_type, clause_id, category 포함)
@@ -153,17 +156,21 @@ def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
     Returns:
         ChromaDB Collection 객체
     """
-    # ChromaDB 클라이언트 초기화 (in-memory 모드)
-    # persist_directory를 None으로 설정하면 메모리에만 저장됩니다
-    chroma_client = chromadb.Client(Settings(
-        anonymized_telemetry=False,
-        allow_reset=True
-    ))
+    # ChromaDB 클라이언트 초기화 (파일 저장 모드)
+    # PersistentClient를 사용하면 자동으로 파일로 저장됩니다
+    # 이 디렉토리는 Git에 포함되어 팀원과 공유할 수 있습니다
+    chroma_client = chromadb.PersistentClient(
+        path="./chroma_store"
+    )
     
-    # 기존 collection이 있다면 삭제 (테스트를 위해)
+    # 기존 collection이 있는지 확인
     try:
-        chroma_client.delete_collection("isms_p_test")
+        collection = chroma_client.get_collection("isms_p_test")
+        print("📦 기존 ChromaDB 데이터를 불러왔습니다.")
+        print(f"   저장 위치: ./chroma_store\n")
+        return collection
     except:
+        # collection이 없으면 새로 생성
         pass
     
     # 새로운 collection 생성
@@ -199,7 +206,11 @@ def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
         ids=[f"doc_{i}" for i in range(len(documents))]
     )
     
-    print(f"✅ ChromaDB에 {len(documents)}개 문서 저장 완료\n")
+    # PersistentClient는 자동으로 파일로 저장되므로 별도의 persist() 호출 불필요
+    
+    print(f"✅ ChromaDB에 {len(documents)}개 문서 저장 완료")
+    print(f"   저장 위치: ./chroma_store")
+    print(f"   이 디렉토리를 Git에 커밋하면 팀원과 공유할 수 있습니다.\n")
     
     return collection
 
