@@ -1,0 +1,1693 @@
+[
+{
+  "id": "IAM-05",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IAM",
+    "title": "Least Privilege",
+    "mapping_iso27001": [
+      "A.5.15",
+      "A.8.2"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Excessive Privilege",
+      "Privilege Escalation",
+      "Unauthorized Admin Access",
+      "Shared Account Usage"
+    ],
+    "related_actions": [
+      "revoke_permissions",
+      "apply_iam_policy",
+      "restrict_access",
+      "verify_permissions",
+      "audit_privilege_access"
+    ],
+    "xai_tags": [
+      "least-privilege",
+      "access-control",
+      "mitigation",
+      "authorization"
+    ]
+  },
+  "document": "Control ID: IAM-05\nControl Title: Least Privilege\n[성격: Least Privilege(최소 권한), Access Control(접근 통제), Mitigation(완화)]\n\nRule: Employ the least privilege principle when implementing information system access.\n(한글 요약: 최소 권한 원칙 - 정보 시스템 접근 권한 부여 시 업무 수행에 필요한 최소한의 권한만 부여해야 한다.)\n\n[적용 시나리오]\n본 규정은 IaaS, PaaS, SaaS 등 모든 클라우드 서비스 모델에서 관리자, 개발자, 보안 담당자 등 사용자에게 시스템 접근 권한을 할당(Provisioning)하거나 변경할 때 적용됩니다. 특히 직무보다 과도한 권한이 부여된 계정(Excessive Privilege)이 식별될 때 필수적입니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 사용자 직무에 필수적인 리소스에만 접근하도록 IAM 정책을 제한(restrict_access)하고, 정기적인 권한 검토를 통해 미사용 권한이나 과도한 권한을 즉시 회수(revoke_permissions)해야 합니다.",
+  "original_data": {
+    "specification": "Employ the least privilege principle when implementing information system access.",
+    "guidelines": "Control Ownership Rationale.\nThe CSC owns the control with respect to the entities whose access to the cloud environment the CSC provisions and maintains, including personnel, external users (vendors and customers), applications, and services.\n\nImplementation Guidelines.\nIaas Customer:\nThe CSC is responsible for ensuring that the least privilege principle is applied when assigning system access to users, including: cloud service administrators  responsible for provisioning cloud service resources (VMs, virtual network, load balancers, databases, application, etc); security administrators responsible for designing and implementing security controls for the management plane, VMs, virtual networks, load balancers, databases, operating systems, and applications; system and operational  support personnel responsible for monitoring system availability and performance,  troubleshooting and resolving issues; and other users of the cloud service.\n\nPaas Customer:\nThe CSC is responsible for ensuring that the least privilege principle is applied when assigning system access to users, including: developers responsible for building and implementing applications and databases; security administrators responsible for designing and implementing security controls for applications and databases; system and operational support personnel responsible for monitoring system availability and performance,  troubleshooting, and resolving issues; and other users of cloud service.\n\nSaaS Customer:\nThe CSC is responsible for ensuring that least privilege principle is applied when assigning system access to users, including: developers responsible for configuring or customizing applications for use; security administrators responsible for implementing security settings for the application and user accounts; user account administrators responsible for provisioning, managing, and deprovisioning user accounts; support teams monitoring system availability and performance,  troubleshooting and resolving issues; and other users of the cloud service.\nThe same implementation guidelines as for the CSP apply to effectively employ the Principle of Least Privilege (PoLP)."
+  }
+},
+{
+  "id": "IAM-09",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IAM",
+    "title": "Segregation of Privileged Access Roles",
+    "mapping_iso27001": [
+      "A.8.2",
+      "A.8.18"
+    ],
+    "mapping_iso27017": [
+      "9.2.3"
+    ],
+    "related_events": [
+      "Excessive Privilege",
+      "Log Tampering",
+      "Key Misuse",
+      "Unauthorized Admin Access",
+      "Shared Account Usage"
+    ],
+    "related_actions": [
+      "separate_admin_roles",
+      "audit_privilege_access",
+      "verify_permissions",
+      "restrict_access"
+    ],
+    "xai_tags": [
+      "access-control",
+      "logging-integrity",
+      "key-management",
+      "mitigation"
+    ]
+  },
+  "document": "Control ID: IAM-09\nControl Title: Segregation of Privileged Access Roles\n[성격: Access Control(접근 통제), Logging Integrity(로그 무결성), Mitigation(완화)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures for the segregation of privileged access roles such that administrative access to data, encryption and key management capabilities and logging capabilities are distinct and separated.\n(한글 요약: 특권 권한 분리 - 데이터 접근, 암호화 키 관리, 로그 관리 권한을 서로 명확히 분리하여 운영해야 한다.)\n\n[적용 시나리오]\n본 규정은 데이터 관리자, 암호화 키 관리자, 로그 감사자의 권한이 분리되지 않아 내부 공모나 은폐의 위험이 있을 때 적용됩니다. 또한 개발(Non-Production) 환경의 계정으로 운영(Production) 환경에 접근하려는 시도가 감지될 때 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 운영 환경과 비운영 환경의 계정 체계를 기술적으로 격리하고, 데이터/키 관리 권한과 로그 관리 권한을 서로 다른 사용자(Role)에게 부여하여 직무 분리(SoD)를 강제해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures for the segregation of privileged access roles such that administrative access to data, encryption and key management capabilities and logging capabilities are distinct and separated.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThis control’s implementation responsibility is “Shared (Independent)” since CSP and CSC are both responsible, but also independently manage their respective processes and procedures to maintain SoD between the privileged roles that have administrative access to data or encryption keys, and the roles that have access to logging capabilities (such as logging configuration and log files in storage) that captures the access to the data or the keys. The CSC owns the control in relation to the entities whose access to the cloud environment the CSC provisions and maintains, including CSC internal users, external users (vendors and customers), applications, and services.\nImplementation Guidelines.\nApplicable to all service models:\nThe CSC is responsible for ensuring the SoD between the privileged roles that have administrative access to the data, the keys that are used to encrypt the data, and the logging capabilities that capture the access to the data or the keys. The CSC is also responsible to maintain separation of accounts and access permissions between the production and non-production environments to ensure the personnel with access only to the non-production accounts are not able to access the production environment using non-production accounts.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IAM-10",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IAM",
+    "title": "Management of Privileged Access Roles",
+    "mapping_iso27001": [
+      "A.8.2",
+      "A.8.18"
+    ],
+    "mapping_iso27017": [
+      "9.2.3",
+      "9.4.4"
+    ],
+    "related_events": [
+      "Privilege Escalation",
+      "Excessive Privilege",
+      "Unauthorized Admin Access",
+      "Stale Access Key"
+    ],
+    "related_actions": [
+      "revoke_permissions",
+      "audit_privilege_access",
+      "terminate_session",
+      "verify_permissions"
+    ],
+    "xai_tags": [
+      "access-control",
+      "least-privilege",
+      "authorization",
+      "mitigation"
+    ]
+  },
+  "document": "Control ID: IAM-10\nControl Title: Management of Privileged Access Roles\n[성격: Access Control(접근 통제), Least Privilege(최소 권한), Mitigation(완화)]\n\nRule: Define and implement an access process to ensure privileged access roles and rights are granted for a time limited period, and implement procedures to prevent the culmination of segregated privileged access.\n(한글 요약: 특권 접근 관리 - 특권 권한은 한시적으로만 부여해야 하며, 분리된 권한이 한 곳으로 집중(누적)되지 않도록 방지 절차를 수립해야 한다.)\n\n[적용 시나리오]\n본 규정은 긴급 작업이나 유지보수를 위해 임시로 최고 관리자 권한이 필요할 때, 또는 시간이 지남에 따라 여러 권한이 회수되지 않고 한 계정에 누적되는 '권한 크리프(Privilege Creep)' 현상이 우려될 때 적용됩니다.\n\n[대응 조치]\n특권 접근 권한은 필요한 시간 동안만 한시적으로 부여(Time-limited)하고 작업 종료 후 즉시 회수해야 합니다. 또한 정기적으로 권한 보유 현황을 감사(Audit)하여 분리되어야 할 권한들이 하나의 계정에 결합되어 있는지 확인하고 조치해야 합니다.",
+  "original_data": {
+    "specification": "Define and implement an access process to ensure privileged access roles and rights are granted for a time limited period, and implement procedures to prevent the culmination of segregated privileged access.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThis control is “Shared (Independent)” since CSP and CSC are both responsible for managing their respective processes and procedures for managing privileged access in their respective environments. The CSC owns the control in relation to the entities whose access to the cloud environment the CSP provisions and maintains, including CSC internal users, external users (vendors and customers), applications, and services.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IAM-12",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IAM",
+    "title": "Safeguard Logs Integrity",
+    "mapping_iso27001": [
+      "A.8.15",
+      "A.8.18"
+    ],
+    "mapping_iso27017": [
+      "12.4.1",
+      "12.4.2",
+      "12.4.3"
+    ],
+    "related_events": [
+      "Log Tampering",
+      "Log Deletion",
+      "Audit Trail Manipulation",
+      "Logging Agent Failure",
+      "Unauthorized Admin Access"
+    ],
+    "related_actions": [
+      "enable_log_file_validation",
+      "restrict_access",
+      "separate_admin_roles",
+      "report_monitoring_failure"
+    ],
+    "xai_tags": [
+      "logging-integrity",
+      "evidence-preservation",
+      "access-control",
+      "monitoring"
+    ]
+  },
+  "document": "Control ID: IAM-12\nControl Title: Safeguard Logs Integrity\n[성격: Logging Integrity(로그 무결성), Evidence Preservation(증거 보존), Access Control(접근 통제)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures to ensure the logging infrastructure is read-only for all with write access, including privileged access roles, and that the ability to disable it is controlled through a procedure that ensures the segregation of duties and break glass procedures.\n(한글 요약: 로그 무결성 보호 - 로그 인프라는 모든 사용자에게 읽기 전용으로 설정되어야 하며, 로깅 비활성화 기능은 직무 분리를 통해 엄격히 통제되어야 한다.)\n\n[적용 시나리오]\n본 규정은 침해 사고 발생 후 공격자가 자신의 흔적을 지우기 위해 로그를 삭제(Log Deletion)하거나 위변조(Log Tampering)하려는 시도가 우려될 때 적용됩니다. 내부 관리자가 임의로 로깅 에이전트를 끄는 행위를 방지해야 할 때 필수적입니다.\n\n[대응 조치]\n로그 저장소에 대한 접근 권한을 '읽기 전용'으로 제한(restrict_access)하여 무단 수정을 막고, 로그 파일 무결성 검증(Log Validation) 기능을 활성화해야 합니다. 또한 로깅 설정을 변경할 수 있는 권한은 별도로 분리(SoD)하여 관리해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures to ensure the logging infrastructure is read-only for all with write access, including privileged access roles, and that the ability to disable it is controlled through a procedure that ensures the segregation of duties and break glass procedures.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThis control’s implementation responsibility is “Shared (Independent)” since CSP and CSC are both independently responsible for managing the logging infrastructure in their respective environments, and the processes and procedures for providing user access to the logs (inclusive of privileged access). The CSC owns the control in relation to the entities whose access to the cloud environment that the CSC provisions and maintains, including its internal users, external users (vendors and customers), applications, and services.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IAM-13",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IAM",
+    "title": "Uniquely Identifiable Users",
+    "mapping_iso27001": [
+      "A.5.16"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Shared Account Usage",
+      "Anonymous Access",
+      "Audit Failure",
+      "Ownership Ambiguity",
+      "Credential Leakage"
+    ],
+    "related_actions": [
+      "enforce_unique_id",
+      "disable_iam_entity",
+      "verify_permissions",
+      "audit_privilege_access"
+    ],
+    "xai_tags": [
+      "accountability",
+      "authentication",
+      "auditability",
+      "access-control"
+    ]
+  },
+  "document": "Control ID: IAM-13\nControl Title: Uniquely Identifiable Users\n[성격: Accountability(책임추적성), Authentication(인증), Access Control(접근 통제)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures that ensure users are identifiable through unique IDs or which can associate individuals to the usage of user IDs.\n(한글 요약: 사용자 식별 - 모든 사용자는 고유한 ID로 식별되어야 하며, 시스템 사용 행위를 특정 개인과 명확히 연결할 수 있어야 한다.)\n\n[적용 시나리오]\n본 규정은 하나의 계정(예: admin, root)을 여러 관리자가 공유(Shared Account)하여 사용함으로써 사고 발생 시 누가 행위를 했는지 식별할 수 없는 상황이나, 익명(Anonymous) 사용자의 접근이 허용된 환경에서 책임 추적성이 불분명해질 때 적용됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 공용 계정 사용을 금지하고 모든 사용자에게 고유한 식별자(Unique ID)를 강제(enforce_unique_id)해야 합니다. 불가피하게 공용 계정을 사용할 경우, 누가 그 계정을 사용했는지 추적할 수 있는 보완책을 마련해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures that ensure users are identifiable through unique IDs or which can associate individuals to the usage of user IDs.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThis control’s implementation responsibility is “Shared (Independent)” since CSP and CSC are individually responsible for managing the processes and procedures that generate and allocate unique identifiers to users in their respective organizations. The CSC owns the control in relation to the entities whose access to the cloud environment the CSC provisions and maintains, including its internal users, external users (vendors and customers), applications, and services.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IAM-14",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IAM",
+    "title": "Strong Authentication",
+    "mapping_iso27001": [
+      "A.5.15",
+      "A.5.17",
+      "A.8.5",
+      "A.8.24"
+    ],
+    "mapping_iso27017": [
+      "9.1.2",
+      "9.2.4",
+      "9.4.2"
+    ],
+    "related_events": [
+      "Weak Authentication",
+      "Credential Stuffing",
+      "Brute Force Authentication",
+      "Credential Leakage",
+      "Unauthorized Admin Access",
+      "Session Hijacking"
+    ],
+    "related_actions": [
+      "enforce_mfa",
+      "rotate_access_key",
+      "terminate_session",
+      "restrict_access"
+    ],
+    "xai_tags": [
+      "authentication",
+      "access-control",
+      "mitigation",
+      "prevention"
+    ]
+  },
+  "document": "Control ID: IAM-14\nControl Title: Strong Authentication\n[성격: Authentication(인증), Access Control(접근 통제), Prevention(예방)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures for authenticating access to systems, application and data assets, including multifactor authentication for at least privileged user and sensitive data access. Adopt digital certificates or alternatives which achieve an equivalent level of security for system identities.\n(한글 요약: 강력한 인증 - 시스템 및 데이터 접근 시, 특히 특권 계정에는 다중 요소 인증(MFA)을 적용하고 시스템 식별에는 디지털 인증서를 사용해야 한다.)\n\n[적용 시나리오]\n본 규정은 관리자 콘솔 접근, 원격 접속(Remote Access) 또는 민감 데이터에 접근하는 상황에서 단일 패스워드만 사용하는 취약점이 발견되었을 때 적용됩니다. 또한 외부 공급업체나 API 서비스가 인증서 없이 접근하려 할 때도 해당됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 모든 특권 계정과 외부 접근에 대해 다중 요소 인증(MFA)을 강제(enforce_mfa)해야 합니다. 또한 애플리케이션이나 서비스 간 통신에는 디지털 인증서 기반의 상호 인증을 구현해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures for authenticating access to systems, application and data assets, including multifactor authentication for at least privileged user and sensitive data access. Adopt digital certificates or alternatives which achieve an equivalent level of security for system identities.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThis control’s implementation responsibility is “Shared (Independent)” since CSP and CSC are both responsible, but also independently managing their respective processes and procedures to authenticate the non-console administrative access and remote access. The CSC owns the control in relation to the entities whose access to the cloud environment the CSP provisions and maintains, including CSC internal users, external users (vendors and customers), applications, and services.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IAM-16",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IAM",
+    "title": "Authorization Mechanisms",
+    "mapping_iso27001": [
+      "A.5.18"
+    ],
+    "mapping_iso27017": [
+      "9.2.5"
+    ],
+    "related_events": [
+      "Unauthorized Admin Access",
+      "Excessive Privilege",
+      "Privilege Escalation",
+      "Unauthorized Network Access"
+    ],
+    "related_actions": [
+      "verify_permissions",
+      "audit_privilege_access",
+      "revoke_permissions",
+      "apply_iam_policy",
+      "restrict_access"
+    ],
+    "xai_tags": [
+      "authorization",
+      "access-control",
+      "compliance",
+      "auditability"
+    ]
+  },
+  "document": "Control ID: IAM-16\nControl Title: Authorization Mechanisms\n[성격: Authorization(권한부여), Access Control(접근 통제), Compliance(컴플라이언스)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures to verify access to data and system functions is authorized.\n(한글 요약: 권한 검증 메커니즘 - 데이터 및 시스템 기능에 대한 모든 접근이 사전에 정식으로 승인된 것인지 검증하는 절차와 기술적 조치를 구현해야 한다.)\n\n[적용 시나리오]\n본 규정은 사용자가 시스템이나 데이터에 접근을 요청할 때, 해당 요청이 정당한 승인 절차(Formal Approval)를 거쳤는지 기술적으로 확인해야 할 때 적용됩니다. 승인되지 않은 무단 접근 시도나 권한 상승 시도가 감지될 때 판단 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 모든 리소스 접근 시 권한 유무를 검증(verify_permissions)하는 로직을 강제하고, IAM 정책을 통해 명시적으로 허용되지 않은 접근은 차단(restrict_access)해야 합니다. 또한 정기적으로 권한 승인 이력을 감사(audit_privilege_access)해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures to verify access to data and system functions is authorized.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThis control’s implementation responsibility is “Shared (Independent)” since CSP and CSC are both responsible, but also independently manage the processes and procedures to ensure formal approvals are obtained for access granted to users in their respective organizations. The CCP owns the control in relation to the entities whose access to the cloud environment it provides and maintains, including its internal users, external users (vendors and customers), applications, and services.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IVS-03",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IVS",
+    "title": "Network Security",
+    "mapping_iso27001": [
+      "7.5",
+      "9.1",
+      "A.5.15",
+      "A.5.37",
+      "A.8.5",
+      "A.8.9",
+      "A.8.16",
+      "A.8.20",
+      "A.8.21",
+      "A.8.22",
+      "A.8.24"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Lateral Movement",
+      "Unauthorized Network Access",
+      "Cleartext Data Transfer",
+      "MITM Attack",
+      "Abnormal Network Outbound",
+      "Network Intrusion"
+    ],
+    "related_actions": [
+      "enforce_https",
+      "restrict_sg_ingress",
+      "enable_vpc_flow_logs",
+      "modify_security_group",
+      "isolate_instance"
+    ],
+    "xai_tags": [
+      "network-control",
+      "data-protection",
+      "monitoring",
+      "containment"
+    ]
+  },
+  "document": "Control ID: IVS-03\nControl Title: Network Security\n[성격: Network Control(네트워크 통제), Data Protection(데이터 보호), Monitoring(모니터링)]\n\nRule: Monitor, encrypt and restrict communications between environments to only authenticated and authorized connections, as justified by the business. Review these configurations at least annually, and support them by a documented justification of all allowed services, protocols, ports, and compensating controls.\n(한글 요약: 네트워크 보안 - 환경 간 통신은 인가된 연결로만 제한하고 암호화 및 모니터링을 적용해야 하며, 구성을 연 1회 이상 검토해야 한다.)\n\n[적용 시나리오]\n본 규정은 내부 시스템 간의 횡적 이동(Lateral Movement) 공격을 방지하거나, 외부 공격자로부터 워크로드를 보호하기 위해 네트워크 접근 통제가 필요할 때 적용됩니다. 또한 데이터 전송 구간에서 암호화(TLS/SSL)가 적용되지 않은 평문 통신(Cleartext Transfer)이 탐지되었을 때 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 전송 중인 데이터 보호를 위해 보안 프로토콜(TLS/SSL) 사용을 강제(enforce_https)하고, 보안 그룹 설정을 통해 불필요한 포트와 IP 접근을 제한(restrict_sg_ingress)해야 합니다. 또한 VPC 흐름 로그(Flow Logs)를 활성화하여 네트워크 트래픽 이상 징후를 모니터링해야 합니다.",
+  "original_data": {
+    "specification": "Monitor, encrypt and restrict communications between environments to only authenticated and authorized connections, as justified by the business. Review these configurations at least annually, and support them by a documented justification of all allowed services, protocols, ports, and compensating controls.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nIaaS Customer:\nThe CSC is responsible for monitoring, encrypting, and restricting communications between the components that are deployed on top of the infrastructure service. This should include designing a communications security architecture that includes the appropriate use of secure protocols to protect data in motion. The CSC should implement a security monitoring capability, either cloud-native or through integration into an existing SOC platform, to integrate logs from the IaaS workload environment and identify suspicious events. The CSC should ensure that there are appropriate network-level controls in place to prevent unwanted access or exposure to resources, and to protect workloads from both lateral movement inside the environment, and malicious attackers from outside the environment. The configuration and associated documentation around communications security should be regularly reviewed, at least annually, in order to identify areas for improvement, or to adapt security policies to address new attack vectors. Change management in the environment should be defined by a well-managed process.\n\nPaaS Customer:\nThe CSC is responsible to monitor, encrypt, and restrict communications across the components on top of the platform service. This includes the adoption of secure protocols (TLS/SSL) and secure APIs to ensure encrypted or protected access to the environment. The security model relating to any applications developed on top of the platform should be well documented and regularly reviewed by the CSC, taking into consideration any changes to CSP-provided APIs or infrastructure that may impact the CSC security model.\n\nSaaS Customer:\nThe CSC consumes the entire software stack as a service and as such is not responsible for any of the security controls relating to communications security or communications monitoring. The CSC should however review CSP-provided documentation in order to make an informed decision around the security of the software delivered as a service.\n\nContainer-Specific Implementation Guidelines\nThe container-specific implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IVS-04",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IVS",
+    "title": "OS Hardening and Base Controls",
+    "mapping_iso27001": [
+      "7.5",
+      "9.1",
+      "A.5.37",
+      "A.8.5",
+      "A.8.9",
+      "A.8.16",
+      "A.8.20",
+      "A.8.22",
+      "A.8.24"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "System Anomaly",
+      "Compliance Gap",
+      "Unmanaged Risk",
+      "Privilege Escalation",
+      "Network Intrusion"
+    ],
+    "related_actions": [
+      "execute_playbook",
+      "assess_compliance",
+      "isolate_instance",
+      "setup_alert_threshold",
+      "enable_log_file_validation"
+    ],
+    "xai_tags": [
+      "mitigation",
+      "compliance",
+      "risk-assessment",
+      "monitoring"
+    ]
+  },
+  "document": "Control ID: IVS-04\nControl Title: OS Hardening and Base Controls\n[성격: Mitigation(완화), Compliance(컴플라이언스), Risk Assessment(위험 평가)]\n\nRule: Harden host and guest OS, hypervisor or infrastructure control plane according to their respective best practices, and supported by technical controls, as part of a security baseline.\n(한글 요약: OS 강화 및 기본 통제 - 호스트/게스트 OS 및 인프라 요소를 보안 모범 사례에 따라 강화하고 보안 베이스라인을 수립해야 한다.)\n\n[적용 시나리오]\n본 규정은 클라우드 인프라(IaaS)에서 VM을 생성하거나 PaaS 환경에서 애플리케이션을 배포할 때, 기본 설정(Default Configuration)의 취약점을 제거하여 공격 표면(Attack Surface)을 줄여야 하는 상황에 적용됩니다. 패치 미적용이나 보안 설정 미흡으로 인한 시스템 이상(System Anomaly) 발생 시 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 최신 보안 패치 적용을 위한 자동화된 플레이북 실행(execute_playbook)과 안티바이러스, 방화벽, 로깅 구성이 포함된 보안 베이스라인(예: CIS Benchmark) 준수 여부를 정기적으로 평가(assess_compliance)해야 합니다.",
+  "original_data": {
+    "specification": "Harden host and guest OS, hypervisor or infrastructure control plane according to their respective best practices, and supported by technical controls, as part of a security baseline.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nIaaS Customer:\nThe CSC is responsible for hardening and maintaining updates to their deployed operating systems to reduce the attack surface. This can be accomplished through a patch management system. The CSC is not responsible for the updates and hardening of the host OS or the hypervisor. The CSC needs to provide hardened baselines to those guest operating systems by utilizing security tools such as antivirus, firewalls, monitoring, logging, confidential computing, etc. The hardening of OS for guests should align with a recognized industry standard.\n\nPaaS Customer:\nThe CSC is responsible for maintaining updates to their own applications and installed software. They also are responsible for additional security hardening controls such as monitoring, logging, and protection of the applications and the stored data those applications contain. The CSC is also responsible for maintaining and justifying authorization and access to people that need that access.\n\nSaaS Customer:\nThe CSC should confirm appropriate controls are implemented to conform to its requirements and utilize software according to risk criteria. The CSC is not responsible for updates or baselines to the service. It is advised as part of this control that CSC touch points, such as the integration provider and the endpoint devices used to access the service, are hardened and managed in line with corporate policy or an appropriate industry standard.\n\nContainer-Specific Implementation Guidelines.\nThe container-specific implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IVS-06",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IVS",
+    "title": "Segmentation and Segregation",
+    "mapping_iso27001": [
+      "9.1",
+      "A.5.15",
+      "A.5.20",
+      "A.8.3",
+      "A.8.9",
+      "A.8.16",
+      "A.8.22"
+    ],
+    "mapping_iso27017": [
+      "13.1.3"
+    ],
+    "related_events": [
+      "Lateral Movement",
+      "Unauthorized Network Access",
+      "Network Intrusion",
+      "Shared Account Usage",
+      "Data Mishandling"
+    ],
+    "related_actions": [
+      "isolate_subnet",
+      "isolate_instance",
+      "restrict_sg_ingress",
+      "modify_security_group",
+      "apply_iam_policy"
+    ],
+    "xai_tags": [
+      "isolation",
+      "network-control",
+      "access-control",
+      "containment"
+    ]
+  },
+  "document": "Control ID: IVS-06\nControl Title: Segmentation and Segregation\n[성격: Isolation(격리), Network Control(네트워크 통제), Access Control(접근 통제)]\n\nRule: Design, develop, deploy and configure applications and infrastructures such that CSP and CSC (tenant) user access and intra-tenant access is appropriately segmented and segregated, monitored and restricted from other tenants.\n(한글 요약: 망 분리 및 격리 - 애플리케이션과 인프라는 사용자 및 테넌트 간 접근이 논리적/물리적으로 적절히 분리되고 통제되도록 설계해야 한다.)\n\n[적용 시나리오]\n본 규정은 하나의 클라우드 인프라 내에서 개발/운영 환경을 분리하거나, 서로 다른 부서나 테넌트 간의 리소스 접근을 차단해야 할 때 적용됩니다. 특히 공격자가 침투 후 내부망을 돌아다니는 횡적 이동(Lateral Movement)을 방지하거나, 멀티 테넌트 환경에서 데이터 혼재를 막아야 할 때 필수적입니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 네트워크 서브넷을 용도별로 격리(isolate_subnet)하고, 보안 그룹(Security Group)을 통해 세그먼트 간 트래픽을 엄격히 제한(restrict_sg_ingress)해야 합니다. 또한 IAM 정책을 통해 사용자 간 논리적인 접근 권한도 분리해야 합니다.",
+  "original_data": {
+    "specification": "Design, develop, deploy and configure applications and infrastructures such that CSP and CSC (tenant) user access and intra-tenant access is appropriately segmented and segregated, monitored and restricted from other tenants.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSC applies.\n\nImplementation Guidelines.\nIaaS Customer:\nThe CSC is responsible for designing, developing, deploying and configuring its virtual machines, operating systems, platform software, applications, and data such that CSP and CSC user access and intra-CSC access is appropriately segmented and segregated, monitored and restricted from other CSCs.\n\nPaaS Customer:\nThe CSC is responsible for designing, developing, deploying and configuring its installed software, applications and data such that CSP and CSC user access and intra-CSC access is appropriately segmented and segregated, monitored, and restricted from other CSCs.\n\nSaaS Customer:\nThe SaaS customer should confirm that the CSP has appropriate cross-CSC protections and isolation in place, and that customer environments are logically segregated to prevent other CSP’s users and customers from accessing resources not assigned to them.\n\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "IVS-09",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "IVS",
+    "title": "Network Defense",
+    "mapping_iso27001": [
+      "6.1",
+      "6.2",
+      "A.5.24",
+      "A.5.26",
+      "A.8.8",
+      "A.8.16",
+      "A.8.20",
+      "A.8.21",
+      "A.8.22",
+      "A.8.26"
+    ],
+    "mapping_iso27017": [
+      "14.1.2",
+      "11.1.4"
+    ],
+    "related_events": [
+      "DDoS Attack",
+      "SQL Injection",
+      "Network Intrusion",
+      "MITM Attack",
+      "Brute Force",
+      "Port Scan"
+    ],
+    "related_actions": [
+      "block_ip",
+      "update_waf_rules",
+      "restrict_sg_ingress",
+      "enable_vpc_flow_logs",
+      "isolate_instance",
+      "apply_quarantine_sg"
+    ],
+    "xai_tags": [
+      "detection",
+      "mitigation",
+      "network-control",
+      "containment",
+      "incident-management"
+    ]
+  },
+  "document": "Control ID: IVS-09\nControl Title: Network Defense\n[성격: Detection(탐지), Mitigation(완화), Network Control(네트워크 통제)]\n\nRule: Define, implement and evaluate processes, procedures and defense-in-depth techniques for protection, detection, and timely response to network-based attacks.\n(한글 요약: 네트워크 방어 - 네트워크 공격에 대한 보호, 탐지 및 신속한 대응을 위해 심층 방어(Defense-in-Depth) 기술과 절차를 구현해야 한다.)\n\n[적용 시나리오]\n본 규정은 DDoS, SQL 인젝션, MITM(중간자 공격) 등 네트워크 기반 공격이 탐지되거나, 침해 지표(IoC)가 발견되어 신속한 대응이 필요할 때 적용됩니다. 단일 방어막이 아닌 방화벽, IDS/IPS, WAF 등 다계층 방어 전략이 요구되는 상황입니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 공격 IP를 차단(block_ip)하거나 WAF 규칙을 업데이트(update_waf_rules)하여 공격 유입을 막아야 합니다. 또한 이상 트래픽 발생 시 해당 인스턴스를 네트워크에서 격리(isolate_instance)하고 트래픽 로그 분석을 통해 침해 범위를 파악해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and defense-in-depth techniques for protection, detection, and timely response to network-based attacks.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nNetwork-based attacks (such as but not limited to Layer 3 DDoS, man-in-the- middle, SQL Injection, IP spoofing, phishing, malware, etc.) attempt to gain unauthorized access to network infrastructure in order to compromise the confidentiality, integrity and availability of assets and information.\n\nNetwork security controls (defense-in-depth techniques) detect and prevent attacks using advanced threat intelligence and protocol analysis, anomaly detection, indicators of compromise blocking, and signature-based methods.\n\nThe CSP should also expose security controls to the CSC so it can properly configure and manage its network security.\n\nVulnerabilities that exist in a physical environment also apply in a virtual environment. Configuration flaws/vulnerabilities in the applications, firewalls, or networks are vulnerable to exploits. Defense-in-depth techniques should be leveraged for both physical, logical, and administrative controls.\n\nIaaS Customer:\nThe CSC should define, implement and evaluate processes, procedures, and defense-in-depth techniques (e.g., a DDoS mitigation solution, network filtering, firewalls, IDS/IPS) for protection, detection, and timely response to network-based attacks against the guest operating and virtual machines deployed and consumed on the CSP provisioned infrastructure.\n\nPaaS Customer:\nThe CSC should define, implement and evaluate processes, procedures, and defense-in-depth techniques (e.g., DDoS mitigation solution, network filtering, firewalls, IDS/IPS) for protection, detection, and timely response to network-based attacks against the applications that it developed and hosted on the platform provisioned by the CSP.\n\nSaaS Customer:\nNot applicable. The SaaS customer should confirm that the CSP has defined, implemented and evaluated processes, procedures. and defense-in-depth techniques for protection, detection, and timely response to network-based attacks.\n\nWhere SSO is used to authenticate to the SaaS application, the CSC is responsible for securing its network while exchanging identity information with the SaaS Provider.\n\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "CEK-06",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "CEK",
+    "title": "Encryption Change Cost Benefit Analysis",
+    "mapping_iso27001": [
+      "8",
+      "A.8.24",
+      "A.8.32"
+    ],
+    "mapping_iso27017": [
+      "10.1.1",
+      "10.1.2"
+    ],
+    "related_events": [
+      "Excessive KMS Cost",
+      "Unmanaged Risk",
+      "Compliance Gap",
+      "Untracked Encryption Keys",
+      "Key Misuse"
+    ],
+    "related_actions": [
+      "analyze_kms_cost",
+      "calculate_risk_score",
+      "assess_compliance",
+      "audit_kms_usage",
+      "list_keys"
+    ],
+    "xai_tags": [
+      "key-management",
+      "risk-assessment",
+      "cost-awareness",
+      "governance"
+    ]
+  },
+  "document": "Control ID: CEK-06\nControl Title: Encryption Change Cost Benefit Analysis\n[성격: Key Management(키 관리), Risk Assessment(위험 평가), Cost Awareness(비용 관리)]\n\nRule: Manage and adopt changes to cryptography-, encryption-, and key management-related systems (including policies and procedures) that fully account for downstream effects of proposed changes, including residual risk, cost, and benefits analysis.\n(한글 요약: 암호화 변경 손익 분석 - 암호화 및 키 관리 시스템 변경 시, 그로 인한 잔여 위험, 비용, 이점 등 파급 효과를 충분히 분석하여 관리해야 한다.)\n\n[적용 시나리오]\n본 규정은 암호화 알고리즘을 변경하거나 새로운 키 관리 시스템(KMS)을 도입하려 할 때 적용됩니다. 특히 고객 관리 키(CMK) 사용으로 인한 과도한 비용(Excessive KMS Cost) 발생이 우려되거나, 암호화 정책 변경으로 인해 발생할 수 있는 관리되지 않은 위험(Unmanaged Risk)을 평가해야 할 때 필수적입니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 KMS 사용량과 예상 비용을 분석(analyze_kms_cost)하고, 변경 사항이 보안 규정에 부합하는지 평가(assess_compliance)해야 합니다. 또한 변경으로 인한 잠재적 위험 점수를 계산(calculate_risk_score)하여 의사결정에 반영해야 합니다.",
+  "original_data": {
+    "specification": "Manage and adopt changes to cryptography-, encryption-, and key management-related systems (including policies and procedures) that fully account for downstream effects of proposed changes, including residual risk, cost, and benefits analysis.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nBoth CSP and CSC have an independent shared responsibility  for this control, because both are responsible for managing and adopting changes to cryptography and key management-related systems. The CSC owns this control for Client Managed Keys (CMKs).\n\nImplementation Guidelines.\nControl implementation is not service delivery model specific (IaaS, PaaS, SaaS) because the CSC should ensure that all changes to cryptography and key management-related systems are guided by applicable security requirements. \nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "CEK-09",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "CEK",
+    "title": "Encryption and Key Management Audit",
+    "mapping_iso27001": [
+      "9.2",
+      "A.5.35",
+      "A.5.36",
+      "A.8.24",
+      "A.8.34"
+    ],
+    "mapping_iso27017": [
+      "12.7"
+    ],
+    "related_events": [
+      "Audit Failure",
+      "Key Compromise",
+      "Key Misuse",
+      "Compliance Gap",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "audit_kms_usage",
+      "assess_compliance",
+      "list_keys",
+      "calculate_risk_score"
+    ],
+    "xai_tags": [
+      "auditability",
+      "key-management",
+      "compliance",
+      "risk-assessment"
+    ]
+  },
+  "document": "Control ID: CEK-09\nControl Title: Encryption and Key Management Audit\n[성격: Auditability(감사), Key Management(키 관리), Compliance(컴플라이언스)]\n\nRule: Audit encryption and key management systems, policies, and processes with a frequency that is proportional to the risk exposure of the system with audit occurring preferably continuously but at least annually and after any security event(s).\n(한글 요약: 암호화 및 키 관리 감사 - 시스템 위험도에 비례하여 빈번하게 감사를 수행해야 하며, 최소 연 1회 또는 보안 사고 발생 직후에는 반드시 감사를 진행해야 한다.)\n\n[적용 시나리오]\n본 규정은 암호화 키 관리 시스템(KMS)의 정책이나 프로세스가 규정을 준수하고 있는지 검증해야 할 때 적용됩니다. 특히 키 유출(Key Compromise) 사고가 발생한 직후 원인 분석을 위해 강제 감사가 필요하거나, 장기간 방치된 미사용 키(Unmanaged Risk)를 식별해야 할 때 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 KMS 키 사용 로그를 정밀 분석하여 비정상적인 접근을 감사(audit_kms_usage)하고, 현재 활성화된 키 목록(list_keys)을 주기적으로 점검해야 합니다. 사고 발생 시에는 즉시 컴플라이언스 위반 여부를 평가(assess_compliance)해야 합니다.",
+  "original_data": {
+    "specification": "Audit encryption and key management systems, policies, and processes with a frequency that is proportional to the risk exposure of the system with audit occurring preferably continuously but at least annually and after any security event(s).",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP apply.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "CEK-13",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "CEK",
+    "title": "Key Revocation",
+    "mapping_iso27001": [
+      "A.5.31",
+      "A.8.24"
+    ],
+    "mapping_iso27017": [
+      "10.1.1",
+      "10.1.2"
+    ],
+    "related_events": [
+      "Key Compromise",
+      "Access Key Exposure",
+      "Credential Leakage",
+      "Key Misuse",
+      "Expired Key Usage"
+    ],
+    "related_actions": [
+      "disable_kms_key",
+      "revoke_grant",
+      "deactivate_expired_key",
+      "rotate_access_key",
+      "audit_kms_usage"
+    ],
+    "xai_tags": [
+      "key-management",
+      "mitigation",
+      "incident-management",
+      "access-control"
+    ]
+  },
+  "document": "Control ID: CEK-13\nControl Title: Key Revocation\n[성격: Key Management(키 관리), Mitigation(완화), Incident Management(사고 관리)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures to revoke and remove cryptographic keys prior to the end of its established cryptoperiod, when a key is compromised, or an entity is no longer part of the organization, which include provisions for legal and regulatory requirements.\n(한글 요약: 키 폐기 - 암호화 키가 침해되거나 담당자가 퇴사한 경우, 또는 사용 기간이 만료되기 전이라도 즉시 키를 폐기하고 제거하는 절차를 수립해야 한다.)\n\n[적용 시나리오]\n본 규정은 암호화 키 유출(Key Compromise) 사고가 발생했거나, 키 접근 권한을 가진 직원이 퇴사하여 즉각적인 접근 차단이 필요할 때 적용됩니다. 또한 법적/규제적 요구사항에 따라 수명 주기가 남은 키를 조기 파기해야 할 때 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 침해된 것으로 의심되는 KMS 키를 즉시 비활성화(disable_kms_key) 및 삭제하고, 해당 키에 부여된 사용 권한(Grant)을 철회(revoke_grant)해야 합니다. 퇴사자의 경우 관련된 모든 접근 키를 만료 처리(deactivate_expired_key)해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures to revoke and remove cryptographic keys prior to the end of its established cryptoperiod, when a key is compromised, or an entity is no longer part of the organization, which include provisions for legal and regulatory requirements.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nBoth CSP and CSC have an independent  shared responsibility for this control, depending on the scope of the resource and key ownership model available or selected by the client. The CSC owns this control for Client Managed Keys (CMKs).\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "CEK-17",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "CEK",
+    "title": "Key Deactivation",
+    "mapping_iso27001": [
+      "A.5.31",
+      "A.8.24"
+    ],
+    "mapping_iso27017": [
+      "10.1.1",
+      "10.1.2"
+    ],
+    "related_events": [
+      "Expired Key Usage",
+      "Stale Access Key",
+      "Compliance Gap",
+      "Regulatory Non-compliance",
+      "Key Misuse"
+    ],
+    "related_actions": [
+      "deactivate_expired_key",
+      "disable_kms_key",
+      "list_keys",
+      "audit_kms_usage",
+      "assess_compliance"
+    ],
+    "xai_tags": [
+      "key-management",
+      "compliance",
+      "access-control",
+      "mitigation"
+    ]
+  },
+  "document": "Control ID: CEK-17\nControl Title: Key Deactivation\n[성격: Key Management(키 관리), Compliance(컴플라이언스), Access Control(접근 통제)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures to deactivate keys at the time of their expiration date, which include provisions for legal and regulatory requirements.\n(한글 요약: 키 비활성화 - 암호화 키의 만료일이 도래하면, 법적 및 규제 요구사항을 고려하여 해당 키를 즉시 비활성화하는 절차를 수립해야 한다.)\n\n[적용 시나리오]\n본 규정은 고객 관리 키(CMK)의 수명 주기가 만료되었음에도 불구하고 키가 여전히 활성화(Active) 상태로 남아 있어, 의도치 않은 사용이나 보안 위협(Expired Key Usage)이 우려될 때 적용됩니다. 특히 법적 규제에 따라 특정 기간이 지난 키의 사용을 기술적으로 차단해야 할 때 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 만료일이 도래한 키를 식별(list_keys)하여 즉시 비활성화(deactivate_expired_key) 처리하고, 해당 키가 더 이상 암호화 연산에 사용되지 않도록 상태를 변경(disable_kms_key)해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures to deactivate keys at the time of their expiration date, which include provisions for legal and regulatory requirements.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nBoth CSP and CSC have an independent shared responsibility for this control, depending on the scope of the resource and key ownership model available or selected by the client. The CSC owns this control for Client Managed Keys (CMKs).\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply.\nApplicable to all service models: For Client Managed Keys"
+  }
+},
+{
+  "id": "CEK-21",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "CEK",
+    "title": "Key Inventory Management",
+    "mapping_iso27001": [
+      "A.5.31",
+      "A.8.24"
+    ],
+    "mapping_iso27017": [
+      "10.1.2"
+    ],
+    "related_events": [
+      "Untracked Encryption Keys",
+      "Rogue KMS Key",
+      "Compliance Gap",
+      "Ownership Ambiguity",
+      "Expired Key Usage"
+    ],
+    "related_actions": [
+      "list_keys",
+      "tag_kms_resource",
+      "audit_kms_usage",
+      "assess_compliance",
+      "disable_kms_key"
+    ],
+    "xai_tags": [
+      "key-management",
+      "governance",
+      "auditability",
+      "compliance"
+    ]
+  },
+  "document": "Control ID: CEK-21\nControl Title: Key Inventory Management\n[성격: Key Management(키 관리), Governance(거버넌스), Compliance(컴플라이언스)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures in order for the key management system to track and report all cryptographic materials and changes in status, which include provisions for legal and regulatory requirements.\n(한글 요약: 키 자산 관리 - 모든 암호화 키 및 관련 자재의 현황과 변경 사항을 실시간으로 추적하고 보고할 수 있는 인벤토리 체계를 수립해야 한다.)\n\n[적용 시나리오]\n본 규정은 조직 내에서 생성된 모든 암호화 키(Key)가 중앙에서 관리되지 않고 여기저기 흩어져 있는 '섀도우 키(Untracked Encryption Keys)'가 발생하거나, 감사 시점에 특정 키의 소유자(Ownership)나 용도를 파악할 수 없을 때 적용됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 CSP가 제공하는 키 관리 도구(KMS)를 활용하여 전체 키 목록을 조회(list_keys)하고, 각 키에 용도와 소유자를 식별할 수 있는 태그를 부착(tag_kms_resource)해야 합니다. 또한 미확인된 키(Rogue Key)가 발견되면 즉시 비활성화(disable_kms_key)해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures in order for the key management system to track and report all cryptographic materials and changes in status, which include provisions for legal and regulatory requirements.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThis is a shared and dependent responsibility, because while the CSP has a responsibility to offer secure encryption and key management services, the CSC has a role in configuring and managing these services according to their specific needs and in accordance with their own policies and procedures.\n\nImplementation Guidelines.\nIaaS Customer:\nThe CSC is responsible for implementing and managing the encryption of their data within the infrastructure provided by the CSP. The CSC should use the tools and resources provided by the CSP for key management, following best practices.\n\nPaaS Customer:\nThe CSC should ensure they use the secure platform provided by the CSP effectively, including using the encryption provided at the platform level.\nThe CSC may also need to implement additional encryption within the platform, depending on their needs and the services provided by the CSP.\n\nSaaS Customer:\nThe CSC should ensure they use the secure software service provided by the CSP effectively, including using the encryption provided at the software level.\nThe CSC should work with the CSP to understand how keys are managed within the software service and ensure it meets their needs and compliance requirements.\n\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "SEF-03",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "SEF",
+    "title": "Incident Response Plans",
+    "mapping_iso27001": [
+      "5.2",
+      "7.3",
+      "7.4",
+      "7.5",
+      "A.5.26"
+    ],
+    "mapping_iso27017": [
+      "16.1.5",
+      "CLD.12.1.5"
+    ],
+    "related_events": [
+      "Unstructured Response",
+      "Delayed Incident Response",
+      "Compliance Gap",
+      "Regulatory Non-compliance",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "execute_playbook",
+      "notify_stakeholders",
+      "send_breach_notice",
+      "assign_responsibility",
+      "preserve_evidence"
+    ],
+    "xai_tags": [
+      "incident-management",
+      "governance",
+      "compliance",
+      "recovery"
+    ]
+  },
+  "document": "Control ID: SEF-03\nControl Title: Incident Response Plans\n[성격: Incident Management(사고 관리), Governance(거버넌스), Recovery(복구)]\n\nRule: Establish, document, approve, communicate, apply, evaluate and maintain a security incident response plan, which includes but is not limited to: relevant internal departments, impacted CSCs, and other business critical relationships (such as supply-chain) that may be impacted.\n(한글 요약: 사고 대응 계획 - 보안 사고 대응 계획을 수립, 문서화하고 관련 내부 부서 및 외부 협력사(공급망)와 소통하며 정기적으로 유지 관리해야 한다.)\n\n[적용 시나리오]\n본 규정은 보안 사고가 발생했을 때 명확한 대응 절차가 없어 우왕좌왕하거나(Unstructured Response), 대응이 지연되어 피해가 확산될 위험이 있을 때 적용됩니다. 또한 규제 준수를 위해 내부 부서 및 외부 파트너와의 비상 연락망과 대응 프로세스가 부재한 상황(Compliance Gap)에서 근거가 됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 사고 유형별 표준 대응 절차(Playbook)를 실행(execute_playbook)할 수 있도록 계획을 수립하고, 사고 발생 시 정해진 절차에 따라 관련 이해관계자에게 신속하게 상황을 전파(notify_stakeholders)하며 역할을 할당(assign_responsibility)해야 합니다.",
+  "original_data": {
+    "specification": "Establish, document, approve, communicate, apply, evaluate and maintain a security incident response plan, which includes but is not limited to: relevant internal departments, impacted CSCs, and other business critical relationships (such as supply-chain) that may be impacted.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "SEF-04",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "SEF",
+    "title": "Incident Response Testing",
+    "mapping_iso27001": [
+      "A.5.36"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Unstructured Response",
+      "Delayed Incident Response",
+      "Compliance Gap",
+      "Regulatory Non-compliance",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "execute_playbook",
+      "calculate_mttr",
+      "assess_compliance",
+      "notify_stakeholders",
+      "assign_responsibility"
+    ],
+    "xai_tags": [
+      "incident-management",
+      "governance",
+      "risk-assessment",
+      "compliance"
+    ]
+  },
+  "document": "Control ID: SEF-04\nControl Title: Incident Response Testing\n[성격: Incident Management(사고 관리), Governance(거버넌스), Risk Assessment(위험 평가)]\n\nRule: Test and update as necessary incident response plans at planned intervals or upon significant organizational or environmental changes for effectiveness.\n(한글 요약: 사고 대응 테스트 - 사고 대응 계획의 실효성을 보장하기 위해 정기적으로, 또는 조직 및 환경의 중대한 변화 시점에 테스트를 수행하고 계획을 업데이트해야 한다.)\n\n[적용 시나리오]\n본 규정은 수립된 사고 대응 계획이 실제 상황에서도 유효한지 검증되지 않았거나(Unmanaged Risk), 조직 구조 변경이나 새로운 위협 등장으로 인해 기존 매뉴얼이 무용지물이 될 가능성이 있을 때 적용됩니다. 모의 훈련(Tabletop Exercise)이나 시뮬레이션이 필요한 상황입니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 정기적으로 사고 대응 시나리오(Playbook)를 실제와 유사하게 실행(execute_playbook)하여 대응 속도(MTTR)를 측정하고, 테스트 결과를 바탕으로 계획의 미비점을 보완하여 규정 준수 여부를 평가(assess_compliance)해야 합니다.",
+  "original_data": {
+    "specification": "Test and update as necessary incident response plans at planned intervals or upon significant organizational or environmental changes for effectiveness.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "SEF-05",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "SEF",
+    "title": "Incident Response Metrics",
+    "mapping_iso27001": [
+      "A.5.24"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Delayed Incident Response",
+      "Unmanaged Risk",
+      "Monitoring Failure",
+      "Compliance Gap"
+    ],
+    "related_actions": [
+      "calculate_mttr",
+      "assess_compliance",
+      "report_monitoring_failure",
+      "calculate_risk_score"
+    ],
+    "xai_tags": [
+      "incident-management",
+      "monitoring",
+      "governance",
+      "compliance"
+    ]
+  },
+  "document": "Control ID: SEF-05\nControl Title: Incident Response Metrics\n[성격: Incident Management(사고 관리), Monitoring(모니터링), Governance(거버넌스)]\n\nRule: Establish and monitor information security incident metrics.\n(한글 요약: 사고 대응 지표 - 정보 보안 사고 대응의 효과성을 측정하기 위해 정량적 지표를 수립하고 지속적으로 모니터링해야 한다.)\n\n[적용 시나리오]\n본 규정은 사고 대응 프로세스가 얼마나 효율적으로 작동하는지(예: 대응 시간 지연) 판단할 객관적 데이터가 부족하거나, CSP와의 계약에 따라 직원의 애플리케이션 접근과 관련된 보안 사고 현황을 추적해야 할 때 적용됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 평균 대응 시간(MTTR)과 같은 핵심 성과 지표를 계산(calculate_mttr)하여 사고 대응 체계를 평가하고, 모니터링 실패나 지연이 발생하는지 점검하여 리포팅(report_monitoring_failure)해야 합니다.",
+  "original_data": {
+    "specification": "Establish and monitor information security incident metrics.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply.\n\nIn addition, the CSC should define, implement, and monitor security incident metrics related to staff access to applications as contractually agreed with the CSP."
+  }
+},
+{
+  "id": "SEF-06",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "SEF",
+    "title": "Event Triage Processes",
+    "mapping_iso27001": [
+      "A.5.25"
+    ],
+    "mapping_iso27017": [
+      "16.1.4",
+      "16.1.5"
+    ],
+    "related_events": [
+      "Unstructured Response",
+      "Delayed Incident Response",
+      "System Anomaly",
+      "Ownership Ambiguity",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "triage_event",
+      "notify_stakeholders",
+      "assign_responsibility",
+      "execute_playbook",
+      "assess_compliance"
+    ],
+    "xai_tags": [
+      "triage",
+      "incident-management",
+      "governance",
+      "monitoring"
+    ]
+  },
+  "document": "Control ID: SEF-06\nControl Title: Event Triage Processes\n[성격: Triage(트리아지/분류), Incident Management(사고 관리), Governance(거버넌스)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures supporting business processes to triage security-related events.\n(한글 요약: 이벤트 분류 프로세스 - 보안 관련 이벤트 발생 시 그 중요도와 긴급성을 분류(Triage)하고 우선순위를 정하는 프로세스와 기술적 조치를 구현해야 한다.)\n\n[적용 시나리오]\n본 규정은 보안 시스템에서 알림(Alert)이 발생했을 때, 이것이 실제 공격인지 단순 오류인지 판단하고 대응 우선순위를 결정해야 할 때 적용됩니다. 특히 클라우드 제공자(CSP)와 고객(CSC) 간의 역할 분담이 모호하여 대응이 지연(Delayed Incident Response)되거나 책임 소재가 불분명할 때 중요합니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 수집된 이벤트를 사전에 정의된 기준에 따라 분류(triage_event)하고, CSP와의 계약된 통신 프로토콜에 따라 관련 정보를 신속하게 공유(notify_stakeholders)해야 합니다. 또한 CSP와 협력하여 사고 처리의 책임 소재를 명확히 할당(assign_responsibility)해야 합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical measures supporting business processes to triage security-related events.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe CSC responsibilities include promptly reporting any suspicious activity to the CSP and collaborating with the CSP to evaluate, prioritize and respond to security events (and potential incidents), as per contractual agreement.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply.\n\nIn addition, the CSC should adhere to the following best practice:\na. Incident Collaboration as per CSP Contractual Agreements: \ni. Contractual agreements with the CSP should clearly define the responsibilities and response timelines in case of a security incident\nii. The communication protocols outlined in the contractual agreement with the CSP for reporting security incidents to the CSP should be well understood\niii. A communication channel should be established with the CSP to share relevant information regarding security incidents promptly\niv. The CSC should have visibility into the CSP triage process to ensure the security incident management process is followed as contractually agreed\nv. Guidance and assistance from the CSP's security team is encouraged in defining and implementing CSC’s triage process"
+  }
+},
+{
+  "id": "SEF-07",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "SEF",
+    "title": "Security Breach Notification",
+    "mapping_iso27001": [
+      "A.5.19",
+      "A.5.22",
+      "A.5.23",
+      "A.5.24",
+      "A.5.26",
+      "A.6.8"
+    ],
+    "mapping_iso27017": [
+      "16.1.1",
+      "16.1.2",
+      "16.1.5"
+    ],
+    "related_events": [
+      "Exposed PII",
+      "Regulatory Non-compliance",
+      "Compliance Gap",
+      "Delayed Incident Response",
+      "Unstructured Response"
+    ],
+    "related_actions": [
+      "send_breach_notice",
+      "notify_stakeholders",
+      "assess_compliance",
+      "execute_playbook",
+      "map_control_to_reg"
+    ],
+    "xai_tags": [
+      "incident-management",
+      "compliance",
+      "accountability",
+      "alerting"
+    ]
+  },
+  "document": "Control ID: SEF-07\nControl Title: Security Breach Notification\n[성격: Incident Management(사고 관리), Compliance(컴플라이언스), Alerting(알림)]\n\nRule: Define and implement, processes, procedures and technical measures for security breach notifications. Report security breaches and assumed security breaches including any relevant supply chain breaches, as per applicable SLAs, laws and regulations.\n(한글 요약: 보안 침해 통지 - 보안 침해 또는 침해 추정 사고 발생 시, SLA 및 관련 법규에 따라 신속하게 신고하고 알리는 절차를 수립해야 한다.)\n\n[적용 시나리오]\n본 규정은 개인정보 유출(Exposed PII) 등 보안 침해 사고가 확인되었거나 의심될 때, 법적 규제(예: GDPR, 개인정보보호법)나 서비스 수준 계약(SLA)에 따라 규제 기관 및 피해 고객에게 의무적으로 신고해야 하는 상황에 적용됩니다. 공급망(Supply Chain) 파트너의 침해로 인한 2차 피해 상황도 포함됩니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 법적/계약적 요구사항을 분석(assess_compliance)하여 통지 기한 내에 이해관계자에게 침해 사실을 전파(notify_stakeholders)하고, 공식적인 위반 통지문(send_breach_notice)을 발송해야 합니다.",
+  "original_data": {
+    "specification": "Define and implement, processes, procedures and technical measures for security breach notifications. Report security breaches and assumed security breaches including any relevant supply chain breaches, as per applicable SLAs, laws and regulations.",
+    "guidelines": "Implementation Guidelines: Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "LOG-03",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "LOG",
+    "title": "Security Monitoring and Alerting",
+    "mapping_iso27001": [
+      "A.5.28",
+      "A.8.15"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "System Anomaly",
+      "Unusual API Pattern",
+      "Threshold Violation",
+      "Monitoring Failure"
+    ],
+    "related_actions": [
+      "setup_alert_threshold",
+      "notify_stakeholders",
+      "triage_event",
+      "tag_finding"
+    ],
+    "xai_tags": [
+      "monitoring",
+      "alerting",
+      "detection",
+      "incident-management"
+    ]
+  },
+  "document": "Control ID: LOG-03\nControl Title: Security Monitoring and Alerting\n[성격: Monitoring(모니터링), Alerting(알림), Incident Management(사고 관리)]\n\nRule: Identify and monitor security-related events within applications and the underlying infrastructure. Define and implement a system to generate alerts to responsible stakeholders based on such events and corresponding metrics.\n(한글 요약: 애플리케이션 및 인프라의 보안 관련 이벤트를 식별·모니터링하고, 책임자에게 알림을 생성하는 체계를 구축해야 한다.)\n\n[적용 시나리오]\n본 규정은 클라우드 서비스 상에서 보안 이벤트가 발생했을 때(예: 비정상 API 패턴, 임계치 초과, 시스템 이상) 이를 놓치지 않고 관제/대응하기 위해 적용됩니다. 애플리케이션(IaaS 상 배포 포함)과 기반 인프라 모두에 대한 모니터링이 요구될 때 근거가 됩니다.\n\n[대응 조치]\n보안 이벤트를 모니터링하여 경보 조건을 정의하고(setup_alert_threshold), 이벤트 발생 시 책임자/이해관계자에게 즉시 통지(notify_stakeholders)합니다. 또한 이벤트 중요도에 따라 분류(triage_event)하고, 탐지 결과를 태깅(tag_finding)하여 후속 대응과 추적이 가능하도록 합니다.",
+  "original_data": {
+    "specification": "Identify and monitor security-related events within applications\nand the underlying infrastructure. Define and implement a system to generate\nalerts to responsible stakeholders based on such events and corresponding metrics.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply.\n\nIn addition, the CSC should adhere to the following best practices:\na. Application Logging and Monitoring (IaaS).\nThe CSC is responsible for monitoring the application and the underlying infrastructure in an IaaS environment for security-related events.\n\nb. Application Logging and Monitoring (PaaS).\nThe CSC is responsible for monitoring the application in a PaaS environment for security-related events.\n\nc. Application Logging and Monitoring (SaaS).\nThe CSC is responsible for monitoring the application in a SaaS environment for security-related events.\n\nd. Alerting.\nThe CSC should define and implement a system to generate alerts to responsible stakeholders based on security events and corresponding metrics."
+  }
+},
+{
+  "id": "LOG-05",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "LOG",
+    "title": "Audit Logs Monitoring and Response",
+    "mapping_iso27001": [
+      "A.8.15",
+      "A.8.16"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Unusual API Pattern",
+      "System Anomaly",
+      "Threshold Violation",
+      "Audit Trail Manipulation"
+    ],
+    "related_actions": [
+      "analyze_log_pattern",
+      "triage_event",
+      "setup_alert_threshold",
+      "log_action"
+    ],
+    "xai_tags": [
+      "monitoring",
+      "detection",
+      "triage",
+      "logging-integrity"
+    ]
+  },
+  "document": "Control ID: LOG-05\nControl Title: Audit Logs Monitoring and Response\n[성격: Monitoring(모니터링), Triage(분류), Logging Integrity(로그 무결성)]\n\nRule: Monitor security audit logs to detect activity outside of typical or expected patterns. Establish and follow a defined process to review and take appropriate and timely actions on detected anomalies.\n(한글 요약: 보안 감사 로그를 모니터링해 비정상 활동을 탐지하고, 정해진 절차에 따라 신속히 검토·조치해야 한다.)\n\n[적용 시나리오]\n본 규정은 감사 로그에서 평소와 다른 패턴(비정상 접근, 설정 변경, 반복 실패 등)이 탐지될 수 있는 상황에서 적용됩니다. 단순히 로그를 수집하는 수준이 아니라, 이상 징후를 식별하고 대응 프로세스를 운영해야 할 때 근거가 됩니다.\n\n[대응 조치]\n로그 패턴을 분석(analyze_log_pattern)하여 이상 행위를 식별하고, 탐지된 이벤트를 분류(triage_event)한 뒤 필요한 경우 경보 기준을 보완(setup_alert_threshold)합니다. 또한 감사 로그 기반 조치 이력을 남기기 위해 대응 내용을 기록(log_action)합니다.",
+  "original_data": {
+    "specification": "Monitor security audit logs to detect activity outside of typical\nor expected patterns. Establish and follow a defined process to review and take\nappropriate and timely actions on detected anomalies.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "LOG-09",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "LOG",
+    "title": "Log Protection",
+    "mapping_iso27001": [
+      "A.8.15"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Log Tampering",
+      "Log Deletion",
+      "Audit Trail Manipulation",
+      "Compliance Gap"
+    ],
+    "related_actions": [
+      "enable_log_file_validation",
+      "restrict_access",
+      "preserve_evidence",
+      "assess_compliance"
+    ],
+    "xai_tags": [
+      "logging-integrity",
+      "access-control",
+      "auditability",
+      "compliance"
+    ]
+  },
+  "document": "Control ID: LOG-09\nControl Title: Log Protection\n[성격: Logging Integrity(로그 무결성), Access Control(접근 통제), Compliance(컴플라이언스)]\n\nRule: The information system protects audit records from unauthorized access, modification, and deletion.\n(한글 요약: 감사 기록을 무단 접근·변경·삭제로부터 보호해야 한다.)\n\n[적용 시나리오]\n본 규정은 로그 위·변조 또는 삭제 가능성이 존재하거나, 감사 추적이 훼손될 위험이 있는 환경에서 적용됩니다. 특히 로그 저장소 접근 권한이 과도하거나, 로그가 일반 데이터와 동일하게 취급되는 상황에서 근거가 됩니다.\n\n[대응 조치]\n감사 로그에 대한 접근을 제한(restrict_access)하고, 로그 무결성 검증을 활성화(enable_log_file_validation)하여 위·변조를 탐지합니다. 사고 발생 시에는 로그를 증거로 보존(preserve_evidence)하며, 보존·보호가 규정 요구사항을 충족하는지 평가(assess_compliance)합니다.",
+  "original_data": {
+    "specification": "The information system protects audit records from unauthorized access,\nmodification, and deletion.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply.\n\nIn addition, the CSC should adhere to the following best practices:\na. Access Controls:\ni. Access control capabilities provided by the CSC should be used to restrict access to audit records.\nii. Access to audit logs should be restricted to authorized personnel.\n\nb. Audit Log Protection:\ni. Audit logs should be protected from unauthorized modification and deletion.\nii. Audit log retention requirements should be enforced.\n\nc. Security Event Investigation:\nThe CSC should ensure that audit records are available to support investigations and compliance audits."
+  }
+},
+{
+  "id": "LOG-11",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "LOG",
+    "title": "Transaction/Activity Logging",
+    "mapping_iso27001": [
+      "A.8.24"
+    ],
+    "mapping_iso27017": [
+      "10.1.2"
+    ],
+    "related_events": [
+      "Key Misuse",
+      "Rogue KMS Key",
+      "Untracked Encryption Keys",
+      "Expired Key Usage"
+    ],
+    "related_actions": [
+      "audit_kms_usage",
+      "analyze_log_pattern",
+      "tag_kms_resource",
+      "preserve_evidence"
+    ],
+    "xai_tags": [
+      "monitoring",
+      "logging-integrity",
+      "key-management",
+      "auditability"
+    ]
+  },
+  "document": "Control ID: LOG-11\nControl Title: Transaction/Activity Logging\n[성격: Key Management(키 관리), Monitoring(모니터링), Auditability(감사가능성)]\n\nRule: Log and monitor key lifecycle management events to enable auditing and reporting on usage of cryptographic keys.\n(한글 요약: 암호키 라이프사이클 관리 이벤트를 로깅·모니터링하여 키 사용에 대한 감사 및 보고가 가능해야 한다.)\n\n[적용 시나리오]\n본 규정은 KMS/암호키의 생성·회전·비활성화·폐기 등 라이프사이클 이벤트가 추적되지 않아 키 오남용(Key Misuse)이나 만료 키 사용(Expired Key Usage)과 같은 위험을 발견하기 어려운 상황에서 적용됩니다.\n\n[대응 조치]\n키 관련 이벤트를 감사(audit_kms_usage)하고, 로그 패턴 분석(analyze_log_pattern)을 통해 비정상 키 사용을 식별합니다. 또한 키 리소스에 태그를 부여(tag_kms_resource)해 추적성을 높이고, 사고 조사 시 로그를 증거로 보존(preserve_evidence)합니다.",
+  "original_data": {
+    "specification": "Log and monitor key lifecycle management events to enable auditing\nand reporting on usage of cryptographic keys.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "LOG-13",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "LOG",
+    "title": "Failures and Anomalies Reporting",
+    "mapping_iso27001": [
+      "A.5.24",
+      "A.6.8"
+    ],
+    "mapping_iso27017": [
+      "16.1.2"
+    ],
+    "related_events": [
+      "Monitoring Failure",
+      "Logging Agent Failure",
+      "System Anomaly",
+      "Threshold Violation"
+    ],
+    "related_actions": [
+      "report_monitoring_failure",
+      "notify_stakeholders",
+      "setup_alert_threshold",
+      "log_action"
+    ],
+    "xai_tags": [
+      "alerting",
+      "monitoring",
+      "incident-management",
+      "accountability"
+    ]
+  },
+  "document": "Control ID: LOG-13\nControl Title: Failures and Anomalies Reporting\n[성격: Alerting(알림), Accountability(책임성), Incident Management(사고 관리)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures for the reporting of anomalies and failures of the monitoring system and provide immediate notification to the accountable party.\n(한글 요약: 모니터링 시스템의 이상·장애를 보고하고 책임자에게 즉시 통지하는 절차·기술적 조치를 마련해야 한다.)\n\n[적용 시나리오]\n본 규정은 모니터링/로깅 시스템 자체가 장애를 일으켜 보안 가시성이 떨어지는 상황(에이전트 장애, 서비스 비활성화, 임계치 초과 미탐지 등)에서 적용됩니다.\n\n[대응 조치]\n모니터링 실패를 즉시 보고(report_monitoring_failure)하고, 책임자 및 이해관계자에게 통지(notify_stakeholders)합니다. 재발 방지를 위해 경보 기준을 보완(setup_alert_threshold)하고, 조치 이력을 기록(log_action)합니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical\nmeasures for the reporting of anomalies and failures of the monitoring system\nand provide immediate notification to the accountable party.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply."
+  }
+},
+{
+  "id": "DSP-02",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "DSP",
+    "title": "Secure Disposal",
+    "mapping_iso27001": ["A.7.10", "A.7.14", "A.8.10"],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Improper Disposal",
+      "Data Mishandling",
+      "Compliance Gap",
+      "Over-retention Risk"
+    ],
+    "related_actions": [
+      "secure_delete_s3",
+      "delete_stale_data",
+      "classify_data",
+      "assess_compliance"
+    ],
+    "xai_tags": ["mitigation", "data-protection", "compliance", "governance"]
+  },
+  "document": "Control ID: DSP-02\nControl Title: Secure Disposal\n[성격: Mitigation(완화), Data Protection(데이터 보호), Compliance(컴플라이언스), Governance(거버넌스)]\n\nRule: Apply industry accepted methods for the secure disposal of data from storage media such that data is not recoverable by any forensic means.\n(한글 요약: 저장 매체에서 데이터를 복구할 수 없도록 업계 표준 방식으로 안전하게 폐기해야 한다.)\n\n[적용 시나리오]\n본 규정은 스토리지/백업 매체를 교체·반납·폐기하거나, 서비스 종료·계약 종료 등으로 고객 데이터 삭제가 필요한 상황에서 적용됩니다. 특히 운영 스토리지와 백업 스토리지 모두에서 데이터가 남아 복구될 위험이 있을 때 근거가 됩니다.\n\n[대응 조치]\n데이터 분류(classify_data)를 기반으로 운영·백업 매체에서 불필요 데이터를 삭제(delete_stale_data)하고, 복구 불가능한 방식의 안전 삭제(secure_delete_s3 등)에 준하는 절차를 적용합니다. 또한 계약·법규 요구에 맞는 폐기/삭제 준수 여부를 점검(assess_compliance)합니다.",
+  "original_data": {
+    "specification": "Apply industry accepted methods for the secure disposal of data from\nstorage media such that data is not recoverable by any forensic means.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nThe implementation guidelines provided for the CSP apply.\n\nAdditional guidelines for the CSC include:\na. Disposal of Active and Back Up Data: the CSC should ensure that data be deleted from both, active and backup storage media\nb. Cryptographic Erasure: the CSC should implement managed keys to enable crypto shredding, where available and possible\nc. Contractual Agreement with the CSP: \ni. Ensure data disposal requirements are clearly articulated in ...ing they adhere to the organization's data destruction policies.\nii. the logical and physical destruction of data, commensurates ...ification of data and in line with required laws and regulations\n\nNote: Active storage systems are production servers, while backu...re full or incremental backups/copies of active storage systems."
+  }
+},
+{
+  "id": "DSP-10",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "DSP",
+    "title": "Sensitive Data Transfer",
+    "mapping_iso27001": ["A.5.14", "A.7.10"],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Cleartext Data Transfer",
+      "MITM Attack",
+      "Exposed PII",
+      "Data Mishandling"
+    ],
+    "related_actions": [
+      "enforce_https",
+      "restrict_access",
+      "classify_data",
+      "assess_compliance"
+    ],
+    "xai_tags": ["mitigation", "data-protection", "compliance", "risk-assessment"]
+  },
+  "document": "Control ID: DSP-10\nControl Title: Sensitive Data Transfer\n[성격: Mitigation(완화), Data Protection(데이터 보호), Compliance(컴플라이언스), Risk Assessment(위험 평가)]\n\nRule: Define, implement and evaluate processes, procedures and technical measures that ensure any transfer of personal or sensitive data is protected from unauthorized access and only processed within scope as permitted by the respective laws and regulations.\n(한글 요약: 개인/민감정보 전송 시 무단 접근을 방지하고 법규 범위 내에서만 처리되도록 보호 조치를 구현해야 한다.)\n\n[적용 시나리오]\n본 규정은 개인/민감정보를 시스템 간 전송(업로드, API 연동, 파일 교환, 외부 위탁/서브프로세서 전달 등)하는 과정에서 도청·중간자 공격(MITM) 또는 평문 전송 위험이 존재할 때 적용됩니다. 또한 법·규정이 허용한 처리 범위를 벗어난 전송/처리가 발생할 수 있는 상황에서 근거가 됩니다.\n\n[대응 조치]\n전송 구간 암호화를 강제(enforce_https)하고, 전송 대상 데이터의 민감도 분류(classify_data)와 접근 통제(restrict_access)를 적용합니다. 전송·처리 범위가 법규/계약 조건을 충족하는지 평가(assess_compliance)하여 위반 위험을 줄입니다.",
+  "original_data": {
+    "specification": "Define, implement and evaluate processes, procedures and technical\nmeasures that ensure any transfer of personal or sensitive data is protected\nfrom unauthorized access and only processed within scope as permitted by the\nrespective laws and regulations.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership ratio...na. responsible for the management of the data its places in ..."
+  }
+},
+{
+  "id": "DSP-16",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "DSP",
+    "title": "Data Retention and Deletion",
+    "mapping_iso27001": ["A.5.33", "A.8.10"],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Over-retention Risk",
+      "Expired Data Retention",
+      "Compliance Gap",
+      "Regulatory Non-compliance"
+    ],
+    "related_actions": [
+      "delete_stale_data",
+      "secure_delete_s3",
+      "assess_compliance",
+      "map_control_to_reg"
+    ],
+    "xai_tags": ["governance", "compliance", "risk-assessment", "recovery"]
+  },
+  "document": "Control ID: DSP-16\nControl Title: Data Retention and Deletion\n[성격: Governance(거버넌스), Compliance(컴플라이언스), Risk Assessment(위험 평가), Recovery(복구)]\n\nRule: Data retention, archiving and deletion is managed in accordance with business requirements, applicable laws and regulations.\n(한글 요약: 데이터 보관·아카이빙·삭제는 비즈니스 요구와 관련 법규에 따라 관리되어야 한다.)\n\n[적용 시나리오]\n본 규정은 데이터 보관 기간이 정의되지 않았거나, 목적 달성 후에도 데이터가 과도하게 남아(Over-retention) 유출·규제 위반 위험이 커지는 상황에서 적용됩니다. 또한 법정 보존/파기 요건이 상이한 데이터가 혼재해 삭제 기준이 불명확할 때 근거가 됩니다.\n\n[대응 조치]\n데이터 보관·삭제 정책을 법규에 매핑(map_control_to_reg)하고, 만료/불필요 데이터를 정리(delete_stale_data)하며 안전 삭제(secure_delete_s3 등)에 준하는 절차를 적용합니다. 정책 준수 및 삭제 이행 상태를 점검(assess_compliance)해 규제 위반을 예방합니다.",
+  "original_data": {
+    "specification": "Data retention, archiving and deletion is managed in accordance with\nbusiness requirements, applicable laws and regulations.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership ratio...eletion practices encompassing both physical and electronic  ..."
+  }
+},
+{
+  "id": "DSP-17",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "DSP",
+    "title": "Sensitive Data Protection",
+    "mapping_iso27001": ["A.8.11", "A.8.12"],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Exposed PII",
+      "Data Mishandling",
+      "Cleartext Data Transfer",
+      "Unauthorized Network Access"
+    ],
+    "related_actions": [
+      "classify_data",
+      "restrict_access",
+      "mask_pii",
+      "enforce_https"
+    ],
+    "xai_tags": ["mitigation", "data-protection", "access-control", "compliance"]
+  },
+  "document": "Control ID: DSP-17\nControl Title: Sensitive Data Protection\n[성격: Mitigation(완화), Data Protection(데이터 보호), Access Control(접근 통제), Compliance(컴플라이언스)]\n\nRule: Define and implement, processes, procedures and technical measures to protect sensitive data throughout it's lifecycle.\n(한글 요약: 민감 데이터는 생성부터 폐기까지 전 생애주기에서 보호 조치를 갖춰야 한다.)\n\n[적용 시나리오]\n본 규정은 민감정보가 저장·처리·전송·아카이빙·삭제 등 생애주기 전 단계에서 노출(Exposed PII)되거나 오처리(Data Mishandling)될 위험이 있을 때 적용됩니다. 내부/외부 처리자(위탁·서브프로세서) 접근이 포함되는 경우에도 근거가 됩니다.\n\n[대응 조치]\n데이터를 분류(classify_data)하고 최소 접근 통제(restrict_access)를 적용하며, 필요 시 마스킹(mask_pii)을 통해 노출 범위를 줄입니다. 전송 구간 보호(enforce_https)를 포함해 생애주기 전 단계에서 보호 조치를 일관되게 적용합니다.",
+  "original_data": {
+    "specification": "Define and implement, processes, procedures and technical measures\nto protect sensitive data throughout it's lifecycle.",
+    "guidelines": "Control Ownership Rationale.\nNot applicable for the CSC.\n\nImplementation Guidelines.\nApplicable to all service models: \nThe CSC retains control and ownership for its customer content a...ensitive data access by sub-processors before processing begins."
+  }
+},
+{
+  "id": "DSP-18",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "DSP",
+    "title": "Disclosure Notification",
+    "mapping_iso27001": ["A.5.34", "A.6.8"],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Regulatory Non-compliance",
+      "Compliance Gap",
+      "Delayed Incident Response",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "notify_stakeholders",
+      "assess_compliance",
+      "map_control_to_reg",
+      "assign_responsibility"
+    ],
+    "xai_tags": ["alerting", "incident-management", "compliance", "accountability"]
+  },
+  "document": "Control ID: DSP-18\nControl Title: Disclosure Notification\n[성격: Alerting(알림), Incident Management(사고 관리), Compliance(컴플라이언스), Accountability(책임성)]\n\nRule: The CSP must have in place, and describe to CSCs the procedure to manage and respond to requests for disclosure of Personal Data by Law Enforcement Authorities according to applicable laws and regulations. The CSP must give special attention to the notification procedure to interested CSCs, unless otherwise prohibited, such as a prohibition under criminal law to preserve confidentiality of a law enforcement investigation.\n(한글 요약: 수사기관 등의 개인정보 공개 요청 대응 절차를 마련하고, 금지되지 않는 범위에서 고객에게 통지해야 한다.)\n\n[적용 시나리오]\n본 규정은 법 집행기관 등으로부터 개인정보 공개 요청을 받았을 때, 법적 근거·범위·절차가 불명확하여 규제 위반 또는 과도한 공개 위험이 발생할 수 있는 상황에서 적용됩니다. 또한 통지 의무가 있음에도 절차 부재로 통지가 지연되는 경우에도 근거가 됩니다.\n\n[대응 조치]\n요청 처리 절차를 규정에 매핑(map_control_to_reg)하고, 적법성·범위를 검토(assess_compliance)한 뒤 책임 주체를 지정(assign_responsibility)합니다. 금지되지 않는 범위에서 이해관계자에게 통지(notify_stakeholders)할 수 있도록 알림 프로세스를 운영합니다.",
+  "original_data": {
+    "specification": "The CSP must have in place, and describe to CSCs the procedure to\nmanage and respond to requests for disclosure of Personal Data by Law Enforcement\nAuthorities according to applicable laws and regulations. The CSP must give\nspecial attention to the notification procedure to interested CSCs, unless otherwise\nprohibited, such as a prohibition under criminal law to preserve confidentiality\nof a law enforcement investigation.",
+    "guidelines": "Control Ownership Rationale.\nNot applicable for the CSC....nd disposition of data to, within, or from its applications. ..."
+  }
+},
+{
+  "id": "DSP-19",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "DSP",
+    "title": "Data Location",
+    "mapping_iso27001": ["A.5.9", "A.8.12", "A.8.13"],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Data Residency Violation",
+      "Compliance Gap",
+      "Regulatory Non-compliance",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "restrict_region_access",
+      "assess_compliance",
+      "map_control_to_reg",
+      "enable_bucket_logging"
+    ],
+    "xai_tags": ["governance", "compliance", "risk-assessment", "data-protection"]
+  },
+  "document": "Control ID: DSP-19\nControl Title: Data Location\n[성격: Governance(거버넌스), Compliance(컴플라이언스), Risk Assessment(위험 평가), Data Protection(데이터 보호)]\n\nRule: Define and implement, processes, procedures and technical measures to specify and document the physical locations of data, including any locations in which data is processed or backed up.\n(한글 요약: 데이터가 저장·처리·백업되는 물리적 위치를 지정하고 문서화해야 한다.)\n\n[적용 시나리오]\n본 규정은 데이터가 어떤 리전/국가/시설에서 저장·처리·백업되는지 파악되지 않아 데이터 레지던시(Data Residency) 위반 위험이 있는 상황에서 적용됩니다. 규제나 계약상 특정 지역 내 처리 요구가 있는 경우에도 근거가 됩니다.\n\n[대응 조치]\n데이터 위치 요구사항을 규정에 매핑(map_control_to_reg)하고, 허용 지역 외 접근/처리를 제한(restrict_region_access)합니다. 위치 및 접근 관련 로깅을 활성화(enable_bucket_logging)하여 추적성을 확보하고, 준수 여부를 점검(assess_compliance)합니다.",
+  "original_data": {
+    "specification": "Define and implement, processes, procedures and technical measures\nto specify and document the physical locations of data, including any locations\nin which data is processed or backed up.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership ratio...ic location (sometimes also referred to as a “home region”)  ..."
+  }
+},
+{
+  "id": "GRC-02",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "GRC",
+    "title": "Risk Management Program",
+    "mapping_iso27001": [
+      "6.1",
+      "6.2",
+      "A.5.23"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Unmanaged Risk",
+      "Governance Gap",
+      "Compliance Gap",
+      "Regulatory Non-compliance"
+    ],
+    "related_actions": [
+      "calculate_risk_score",
+      "assess_compliance",
+      "assign_responsibility",
+      "map_control_to_reg"
+    ],
+    "xai_tags": [
+      "risk-assessment",
+      "governance",
+      "compliance",
+      "accountability"
+    ]
+  },
+  "document": "Control ID: GRC-02\nControl Title: Risk Management Program\n[성격: Risk Assessment(위험 평가), Governance(거버넌스), Compliance(컴플라이언스), Accountability(책임성)]\n\nRule: Establish a formal, documented, and leadership-sponsored Enterprise Risk Management (ERM) Program that establishes how risk management activities are performed, to include, but not limited to: process, procedures, and ownership for identification, evaluation, ownership, treatment, and acceptance.\n(한글 요약: 전사 리스크 관리(ERM) 프로그램을 공식 문서로 수립하고, 리스크 식별·평가·책임·처리·수용 절차와 담당을 정의해야 한다.)\n\n[적용 시나리오]\n본 규정은 조직 내 리스크 식별·평가·처리 기준이 없거나, 책임자가 불명확해(Unmanaged Risk, Governance Gap) 위험이 방치되는 상황에서 적용됩니다. 또한 규제 요건을 체계적으로 반영하지 못해 준수 격차(Compliance Gap)나 규제 위반(Regulatory Non-compliance) 가능성이 커질 때 근거가 됩니다.\n\n[대응 조치]\n리스크 평가 체계를 운영하여 위험 점수를 산정(calculate_risk_score)하고, 규제/표준 요구사항과의 정합성을 점검(assess_compliance)합니다. 리스크 처리 책임을 명확히 할당(assign_responsibility)하고, 내부 통제와 외부 규정 간 연결을 문서화(map_control_to_reg)합니다.",
+  "original_data": {
+    "specification": "Establish a formal, documented, and leadership-sponsored Enterprise Risk Management (ERM) Program that establishes how risk management activities are performed, to include, but not limited to: process, procedures, and ownership for identification, evaluation, ownership, treatment, and acceptance.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply.\n\nAlso, the CSC should adhere to the following best practices:\nThe CSC should identify their role(s) in the CSP's overall ERM program and determine the best method to integrate it with their own ERM program.\n\nThe CSC should establish, document, implement and maintain an ERM program, including governance and management responsibilities for identification, evaluation, treatment and acceptance of risks, in accordance with applicable laws and regulations."
+  }
+},
+{
+  "id": "GRC-05",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "GRC",
+    "title": "Information Security Program",
+    "mapping_iso27001": [
+      "4.3"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Governance Gap",
+      "Compliance Gap",
+      "Regulatory Non-compliance",
+      "Ownership Ambiguity"
+    ],
+    "related_actions": [
+      "assign_responsibility",
+      "assess_compliance",
+      "map_control_to_reg",
+      "notify_stakeholders"
+    ],
+    "xai_tags": [
+      "governance",
+      "compliance",
+      "accountability",
+      "risk-assessment"
+    ]
+  },
+  "document": "Control ID: GRC-05\nControl Title: Information Security Program\n[성격: Governance(거버넌스), Compliance(컴플라이언스), Accountability(책임성), Risk Assessment(위험 평가)]\n\nRule: Develop and implement an Information Security Program, which includes programs for all the relevant domains of the CCM.\n(한글 요약: CCM의 관련 도메인을 포괄하는 정보보호 프로그램을 수립·구현해야 한다.)\n\n[적용 시나리오]\n본 규정은 정보보호 활동이 산발적으로 운영되어 책임과 범위가 불명확(Ownership Ambiguity)하거나, 클라우드/온프레미스 전반의 보안 요구사항을 체계적으로 관리하지 못해 거버넌스 공백(Governance Gap)과 준수 격차(Compliance Gap)가 발생하는 상황에서 적용됩니다.\n\n[대응 조치]\n정보보호 프로그램의 역할과 책임을 명확히 할당(assign_responsibility)하고, 적용 대상 규정·표준 요구사항을 체계적으로 매핑(map_control_to_reg)합니다. 운영 현황을 점검해 준수 여부를 평가(assess_compliance)하고, 필요 시 이해관계자에게 정책·변경사항을 공유(notify_stakeholders)합니다.",
+  "original_data": {
+    "specification": "Develop and implement an Information Security Program, which includes programs for all the relevant domains of the CCM.",
+    "guidelines": "Control Ownership Rationale.\nThe CSC’s ownership of this control relates to the development and implementation of a security program that integrates cloud-specific components.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe CSC should develop and implement an internal information security program including cloud-specific risk considerations.\n\nIn addition, the CSC should adhere to the following best practices:\na. Information Security Program Scope:\nThe CSC should include cloud and non-cloud systems in the scope of the security program.\n\nb. Integration of Cloud Security:\nThe CSC should integrate CSP services and shared-responsibility considerations into the program.\n\nc. Governance and Accountability:\nThe CSC should define roles, responsibilities, and reporting structures for the program and ensure leadership support."
+  }
+},
+{
+  "id": "GRC-06",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "GRC",
+    "title": "Governance Responsibility Model",
+    "mapping_iso27001": [
+      "5.1",
+      "5.3",
+      "A.5.1",
+      "A.5.2",
+      "A.5.4"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Ownership Ambiguity",
+      "Governance Gap",
+      "Unstructured Response",
+      "Delayed Incident Response",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "assign_responsibility",
+      "notify_stakeholders",
+      "assess_compliance",
+      "map_control_to_reg"
+    ],
+    "xai_tags": [
+      "governance",
+      "accountability",
+      "compliance",
+      "incident-management"
+    ]
+  },
+  "document": "Control ID: GRC-06\nControl Title: Governance Responsibility Model\n[성격: Governance(거버넌스), Accountability(책임성), Compliance(컴플라이언스), Incident Management(사고 관리)]\n\nRule: Define and document roles and responsibilities for planning, implementing, operating, assessing, and improving governance programs.\n(한글 요약: 거버넌스 프로그램의 계획·구현·운영·평가·개선을 위한 역할과 책임을 정의하고 문서화해야 한다.)\n\n[적용 시나리오]\n본 규정은 CSP/CSC 간 책임 경계가 불명확하거나(Ownership Ambiguity), 내부 조직 내 보안·컴플라이언스 업무 분장 기준이 없어 대응이 지연(Delayed Incident Response)되거나 우왕좌왕(Unstructured Response)하는 상황에서 적용됩니다.\n\n[대응 조치]\n거버넌스 수행 주체와 책임을 명확히 할당(assign_responsibility)하고, 관련 정책·절차를 이해관계자에게 공유(notify_stakeholders)합니다. 운영 상태를 점검해 준수 여부를 평가(assess_compliance)하고, 외부 규정과 내부 통제의 연결을 정리(map_control_to_reg)합니다.",
+  "original_data": {
+    "specification": "Define and document roles and responsibilities for planning, implementing, operating, assessing, and improving governance programs.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply.\n\nIn addition, the CSC, as part of its governance duties, should formalize a clear internal responsibility model for governance-related activities, including cloud-specific responsibilities."
+  }
+},
+{
+  "id": "GRC-07",
+  "metadata": {
+    "doc_type": "CSA_CCM",
+    "doc_version": "v4.0",
+    "source": "CSA CCM v4.0",
+    "category": "GRC",
+    "title": "Information System Regulatory Mapping",
+    "mapping_iso27001": [
+      "4.2",
+      "A.5.31",
+      "A.5.32",
+      "A.5.33",
+      "A.5.34"
+    ],
+    "mapping_iso27017": [],
+    "related_events": [
+      "Compliance Gap",
+      "Regulatory Non-compliance",
+      "Audit Failure",
+      "Governance Gap"
+    ],
+    "related_actions": [
+      "map_control_to_reg",
+      "assess_compliance",
+      "assign_responsibility",
+      "notify_stakeholders"
+    ],
+    "xai_tags": [
+      "compliance",
+      "auditability",
+      "governance",
+      "accountability"
+    ]
+  },
+  "document": "Control ID: GRC-07\nControl Title: Information System Regulatory Mapping\n[성격: Compliance(컴플라이언스), Auditability(감사가능성), Governance(거버넌스), Accountability(책임성)]\n\nRule: Identify and document all relevant standards, regulations, contractual obligations, and statutory requirements, which are applicable to your organization.\n(한글 요약: 조직에 적용되는 모든 표준·규정·계약 의무·법적 요구사항을 식별하고 문서화해야 한다.)\n\n[적용 시나리오]\n본 규정은 적용 규정이 체계적으로 정리되지 않아 준수 공백(Compliance Gap)이 발생하거나, 감사(Audit)에서 규정 근거를 제시하지 못해 감사 실패(Audit Failure) 위험이 있는 상황에서 적용됩니다. 또한 신규 서비스/리전 확장 등으로 적용 법규가 증가하면서 규제 위반(Regulatory Non-compliance) 가능성이 커질 때 근거가 됩니다.\n\n[대응 조치]\n적용 규정과 내부 통제를 체계적으로 매핑(map_control_to_reg)하고, 운영 현황을 점검해 준수 여부를 평가(assess_compliance)합니다. 규제 매핑 유지관리 책임을 지정(assign_responsibility)하고, 변경 사항을 이해관계자에게 공유(notify_stakeholders)합니다.",
+  "original_data": {
+    "specification": "Identify and document all relevant standards, regulations, contractual obligations, and statutory requirements, which are applicable to your organization.",
+    "guidelines": "Control Ownership Rationale.\nThe control ownership rationale provided for the CSP applies.\n\nImplementation Guidelines.\nApplicable to all service models:\nThe implementation guidelines provided for the CSP apply.\n\nIn addition, the CSC should make significant effort to identify, review and document all relevant standards, regulations, contractual obligations and statutory requirements that apply to its use of cloud services, including changes over time and service/region expansions."
+  }
+},
+{
+  "id": "ISMSP-2.4.1",
+  "metadata": {
+    "doc_type": "ISMS_P",
+    "doc_version": "2023",
+    "source": "ISMS-P 2023",
+    "category": "AccessControl",
+    "title": "접근권한 부여 및 관리",
+    "clause_id": "2.4.1",
+    "mapping_iso27001": [
+      "A.9.2.3",
+      "A.9.2.6"
+    ],
+    "mapping_iso27017": [
+      "9.2.2"
+    ],
+    "related_events": [
+      "Excessive Privilege",
+      "Privilege Escalation",
+      "Unauthorized Admin Access",
+      "Shared Account Usage"
+    ],
+    "related_actions": [
+      "revoke_permissions",
+      "apply_iam_policy",
+      "audit_privilege_access",
+      "separate_admin_roles"
+    ],
+    "xai_tags": [
+      "least-privilege",
+      "access-control",
+      "compliance",
+      "auditability"
+    ]
+  },
+  "document": "Control ID: ISMS-P 2.4.1\nControl Title: 접근권한 부여 및 관리\n[성격: Least Privilege(최소권한), Access Control(접근 통제), Compliance(컴플라이언스)]\n\nRule: 사용자 및 관리자 접근권한은 업무상 필요한 최소 범위로 부여·변경·회수되어야 하며, 그 이력은 관리되어야 한다.\n(한글 요약: 정보시스템 접근권한은 최소 권한 원칙에 따라 부여·변경·회수되고, 변경 이력이 추적 가능해야 한다.)\n\n[적용 시나리오]\n본 규정은 신규 사용자 또는 관리자 계정을 생성하거나, 직무 변경·퇴사 등으로 접근권한을 변경 또는 회수해야 하는 상황에서 적용됩니다. 또한 관리자 권한이 과도하게 부여되었거나(Excessive Privilege), 공용 계정 사용 등으로 책임 추적이 어려운 경우에도 근거가 됩니다.\n\n[대응 조치]\n직무에 불필요한 권한을 즉시 회수(revoke_permissions)하고, 역할 기반 접근 통제 정책을 적용(apply_iam_policy)합니다. 관리자 권한은 분리(separate_admin_roles)하여 부여하고, 정기적으로 권한 사용 이력을 점검(audit_privilege_access)해야 합니다.",
+  "original_data": {
+    "specification": "사용자 및 관리자 접근권한은 업무상 필요한 최소 범위로 부여·변경·회수되어야 하며, 그 이력은 관리되어야 한다.",
+    "guidelines": "ISMS-P 2.4.1 접근권한 부여 및 관리 세부 점검 기준"
+  }
+},
+{
+  "id": "ISMSP-2.4.2",
+  "metadata": {
+    "doc_type": "ISMS_P",
+    "doc_version": "2023",
+    "source": "ISMS-P 2023",
+    "category": "AccessControl",
+    "title": "사용자 식별 및 인증",
+    "clause_id": "2.4.2",
+    "mapping_iso27001": [
+      "A.9.2.1",
+      "A.9.4.2"
+    ],
+    "mapping_iso27017": [
+      "9.4.2"
+    ],
+    "related_events": [
+      "Weak Authentication",
+      "Credential Leakage",
+      "Shared Account Usage",
+      "Session Hijacking"
+    ],
+    "related_actions": [
+      "enforce_mfa",
+      "terminate_session",
+      "enforce_unique_id",
+      "restrict_access"
+    ],
+    "xai_tags": [
+      "authentication",
+      "access-control",
+      "compliance",
+      "risk-assessment"
+    ]
+  },
+  "document": "Control ID: ISMS-P 2.4.2\nControl Title: 사용자 식별 및 인증\n[성격: Authentication(인증), Access Control(접근 통제), Compliance(컴플라이언스)]\n\nRule: 정보시스템 사용자는 고유하게 식별되어야 하며, 인증 수단은 안전하게 관리되어야 한다.\n(한글 요약: 모든 사용자는 고유 식별자를 가져야 하며, 인증 정보는 안전하게 보호·관리되어야 한다.)\n\n[적용 시나리오]\n본 규정은 정보시스템에 접근하는 사용자를 명확히 식별할 수 없거나, 계정 공유(Shared Account Usage)로 인해 행위 추적이 어려운 상황에서 적용됩니다. 또한 인증 정보 유출(Credential Leakage)이나 세션 탈취(Session Hijacking) 위험이 존재하는 경우에도 근거가 됩니다.\n\n[대응 조치]\n모든 사용자에게 고유 식별자를 부여(enforce_unique_id)하고, 다중요소 인증을 적용(enforce_mfa)합니다. 의심스러운 로그인이나 세션 탈취가 감지될 경우 세션을 종료(terminate_session)하고 접근을 제한(restrict_access)해야 합니다.",
+  "original_data": {
+    "specification": "정보시스템 사용자는 고유하게 식별되어야 하며, 인증 수단은 안전하게 관리되어야 한다.",
+    "guidelines": "ISMS-P 2.4.2 사용자 식별 및 인증 세부 점검 기준"
+  }
+},
+{
+  "id": "ISMSP-3.1.1",
+  "metadata": {
+    "doc_type": "ISMS_P",
+    "doc_version": "2023",
+    "source": "ISMS-P 2023",
+    "category": "IncidentResponse",
+    "title": "침해사고 대응 절차 수립",
+    "clause_id": "3.1.1",
+    "mapping_iso27001": [
+      "A.16.1.1",
+      "A.16.1.2"
+    ],
+    "mapping_iso27017": [
+      "16.1.1"
+    ],
+    "related_events": [
+      "Unstructured Response",
+      "Delayed Incident Response",
+      "Ownership Ambiguity",
+      "Unmanaged Risk"
+    ],
+    "related_actions": [
+      "execute_playbook",
+      "assign_responsibility",
+      "notify_stakeholders",
+      "assess_compliance"
+    ],
+    "xai_tags": [
+      "incident-management",
+      "governance",
+      "accountability",
+      "compliance"
+    ]
+  },
+  "document": "Control ID: ISMS-P 3.1.1\nControl Title: 침해사고 대응 절차 수립\n[성격: Incident Management(사고 관리), Governance(거버넌스), Accountability(책임성)]\n\nRule: 침해사고 발생 시 신속하고 일관된 대응을 위해 대응 절차 및 책임 체계를 수립해야 한다.\n(한글 요약: 침해사고에 대비해 표준화된 대응 절차와 명확한 책임 체계를 사전에 마련해야 한다.)\n\n[적용 시나리오]\n본 규정은 보안 사고가 발생했을 때 대응 절차가 정립되어 있지 않아 우왕좌왕(Unstructured Response)하거나, 담당자 불명확으로 대응이 지연(Delayed Incident Response)되는 상황에서 적용됩니다. 또한 침해사고 대응 책임이 조직 내에서 명확히 정의되지 않은 경우에도 근거가 됩니다.\n\n[대응 조치]\n사고 유형별 표준 대응 절차(Playbook)를 수립·운영(execute_playbook)하고, 침해사고 대응 책임을 명확히 할당(assign_responsibility)합니다. 사고 발생 시 관련 이해관계자에게 신속히 상황을 공유(notify_stakeholders)하고, 대응 체계가 규정 요구사항을 충족하는지 점검(assess_compliance)해야 합니다.",
+  "original_data": {
+    "specification": "침해사고 발생 시 신속하고 일관된 대응을 위해 대응 절차 및 책임 체계를 수립해야 한다.",
+    "guidelines": "ISMS-P 3.1.1 침해사고 대응 절차 수립 세부 점검 기준"
+  }
+},
+{
+  "id": "ISMSP-3.1.2",
+  "metadata": {
+    "doc_type": "ISMS_P",
+    "doc_version": "2023",
+    "source": "ISMS-P 2023",
+    "category": "IncidentResponse",
+    "title": "침해사고 대응 및 조치",
+    "clause_id": "3.1.2",
+    "mapping_iso27001": [
+      "A.16.1.5",
+      "A.16.1.7"
+    ],
+    "mapping_iso27017": [
+      "16.1.5"
+    ],
+    "related_events": [
+      "Network Intrusion",
+      "Lateral Movement",
+      "Data Mishandling",
+      "Delayed Incident Response"
+    ],
+    "related_actions": [
+      "isolate_instance",
+      "block_ip",
+      "execute_playbook",
+      "preserve_evidence"
+    ],
+    "xai_tags": [
+      "containment",
+      "isolation",
+      "incident-management",
+      "evidence-preservation"
+    ]
+  },
+  "document": "Control ID: ISMS-P 3.1.2\nControl Title: 침해사고 대응 및 조치\n[성격: Containment(격리), Isolation(차단), Incident Management(사고 관리)]\n\nRule: 침해사고 발생 시 즉각적인 차단, 격리 및 확산 방지를 통해 피해를 최소화해야 한다.\n(한글 요약: 침해사고 발생 시 신속한 차단·격리를 통해 피해 확산을 방지해야 한다.)\n\n[적용 시나리오]\n본 규정은 외부 침입(Network Intrusion)이나 내부 확산(Lateral Movement)이 탐지되어 즉각적인 차단·격리가 필요한 상황에서 적용됩니다. 대응 지연으로 인해 피해 범위가 확대될 우려가 있는 경우에도 근거가 됩니다.\n\n[대응 조치]\n침해가 의심되는 시스템을 즉시 격리(isolate_instance)하고, 공격 원점 IP를 차단(block_ip)합니다. 사전에 정의된 대응 절차를 실행(execute_playbook)하며, 사후 분석과 법적 대응을 위해 로그·증거를 보존(preserve_evidence)해야 합니다.",
+  "original_data": {
+    "specification": "침해사고 발생 시 즉각적인 차단, 격리 및 확산 방지를 통해 피해를 최소화해야 한다.",
+    "guidelines": "ISMS-P 3.1.2 침해사고 대응 및 조치 세부 점검 기준"
+  }
+},
+{
+  "id": "ISMSP-4.2.3",
+  "metadata": {
+    "doc_type": "ISMS_P",
+    "doc_version": "2023",
+    "source": "ISMS-P 2023",
+    "category": "Logging",
+    "title": "로그 생성 및 보관",
+    "clause_id": "4.2.3",
+    "mapping_iso27001": [
+      "A.12.4.1",
+      "A.12.4.2"
+    ],
+    "mapping_iso27017": [
+      "12.4.1"
+    ],
+    "related_events": [
+      "Monitoring Failure",
+      "Log Tampering",
+      "Log Deletion",
+      "Audit Failure"
+    ],
+    "related_actions": [
+      "log_action",
+      "enable_log_file_validation",
+      "preserve_evidence",
+      "assess_compliance"
+    ],
+    "xai_tags": [
+      "monitoring",
+      "logging-integrity",
+      "auditability",
+      "compliance"
+    ]
+  },
+  "document": "Control ID: ISMS-P 4.2.3\nControl Title: 로그 생성 및 보관\n[성격: Monitoring(모니터링), Logging Integrity(로그 무결성), Compliance(컴플라이언스)]\n\nRule: 시스템 접근 및 보안 이벤트에 대한 로그를 생성하고, 일정 기간 동안 안전하게 보관해야 한다.\n(한글 요약: 시스템 접근과 보안 이벤트 로그를 생성하고, 위·변조 없이 정해진 기간 동안 보관해야 한다.)\n\n[적용 시나리오]\n본 규정은 시스템 접근 이력이나 보안 이벤트가 기록되지 않거나, 로그 보관 기간이 명확하지 않아 사고 분석 및 감사 수행이 어려운 상황에서 적용됩니다. 로그 위·변조(Log Tampering) 또는 임의 삭제(Log Deletion) 위험이 존재하는 경우에도 근거가 됩니다.\n\n[대응 조치]\n주요 시스템 접근 및 보안 이벤트에 대해 로그를 생성(log_action)하고, 로그 무결성 검증을 적용(enable_log_file_validation)합니다. 사고 발생 시 로그를 증거로 보존(preserve_evidence)하며, 로그 생성·보관 정책이 규정 요구사항을 충족하는지 점검(assess_compliance)해야 합니다.",
+  "original_data": {
+    "specification": "시스템 접근 및 보안 이벤트에 대한 로그를 생성하고, 일정 기간 동안 안전하게 보관해야 한다.",
+    "guidelines": "ISMS-P 4.2.3 로그 생성 및 보관 세부 점검 기준"
+  }
+},
+{
+  "id": "ISMSP-4.2.4",
+  "metadata": {
+    "doc_type": "ISMS_P",
+    "doc_version": "2023",
+    "source": "ISMS-P 2023",
+    "category": "Logging",
+    "title": "로그 검토 및 이상 징후 분석",
+    "clause_id": "4.2.4",
+    "mapping_iso27001": [
+      "A.12.4.3"
+    ],
+    "mapping_iso27017": [
+      "12.4.3"
+    ],
+    "related_events": [
+      "Unusual API Pattern",
+      "System Anomaly",
+      "Threshold Violation",
+      "Monitoring Failure"
+    ],
+    "related_actions": [
+      "analyze_log_pattern",
+      "triage_event",
+      "setup_alert_threshold",
+      "notify_stakeholders"
+    ],
+    "xai_tags": [
+      "detection",
+      "monitoring",
+      "triage",
+      "incident-management"
+    ]
+  },
+  "document": "Control ID: ISMS-P 4.2.4\nControl Title: 로그 검토 및 이상 징후 분석\n[성격: Detection(탐지), Monitoring(모니터링), Triage(분류), Incident Management(사고 관리)]\n\nRule: 로그는 주기적으로 검토되어야 하며, 이상 징후 발생 시 적절한 조치를 수행해야 한다.\n(한글 요약: 로그를 정기적으로 검토하여 이상 징후를 탐지하고, 필요 시 즉각적인 대응을 수행해야 한다.)\n\n[적용 시나리오]\n본 규정은 시스템 로그가 수집되지만 주기적인 검토가 이뤄지지 않아 이상 행위나 공격 징후를 놓칠 수 있는 상황에서 적용됩니다. 비정상 API 호출, 임계값 초과, 시스템 이상(System Anomaly) 등이 로그를 통해 식별되는 경우 근거가 됩니다.\n\n[대응 조치]\n로그 패턴을 분석(analyze_log_pattern)하여 이상 징후를 탐지하고, 이벤트 중요도에 따라 분류(triage_event)합니다. 임계값 기반 경보를 설정(setup_alert_threshold)하고, 필요 시 담당자에게 상황을 공유(notify_stakeholders)하여 후속 대응을 진행해야 합니다.",
+  "original_data": {
+    "specification": "로그는 주기적으로 검토되어야 하며, 이상 징후 발생 시 적절한 조치를 수행해야 한다.",
+    "guidelines": "ISMS-P 4.2.4 로그 검토 및 이상 징후 분석 세부 점검 기준"
+  }
+}
+
+]
