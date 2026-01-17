@@ -16,7 +16,6 @@ import os
 from typing import List, Dict, Any
 from openai import OpenAI
 import chromadb
-from chromadb.config import Settings
 
 # .env 파일에서 환경변수 로드
 # .env 파일을 사용하여 API Key를 안전하게 관리합니다
@@ -158,12 +157,11 @@ def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
         ChromaDB Collection 객체
     """
     # ChromaDB 클라이언트 초기화 (파일 저장 모드)
-    # persist_directory를 설정하면 해당 디렉토리에 파일로 저장됩니다
+    # PersistentClient를 사용하면 자동으로 파일로 저장됩니다
     # 이 디렉토리는 Git에 포함되어 팀원과 공유할 수 있습니다
-    chroma_client = chromadb.Client(Settings(
-        persist_directory="./chroma_store",
-        anonymized_telemetry=False
-    ))
+    chroma_client = chromadb.PersistentClient(
+        path="./chroma_store"
+    )
     
     # 기존 collection이 있는지 확인
     try:
@@ -208,8 +206,7 @@ def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
         ids=[f"doc_{i}" for i in range(len(documents))]
     )
     
-    # 파일로 저장 (Git 공유를 위해 필수)
-    chroma_client.persist()
+    # PersistentClient는 자동으로 파일로 저장되므로 별도의 persist() 호출 불필요
     
     print(f"✅ ChromaDB에 {len(documents)}개 문서 저장 완료")
     print(f"   저장 위치: ./chroma_store")
