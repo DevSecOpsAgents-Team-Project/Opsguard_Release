@@ -614,13 +614,77 @@ def main():
         meta = r.get("metadata", {})
         print(f"- #{i} id={r.get('id')} title={meta.get('title','')} category={meta.get('category','')}")
 
-    # 4) context_chunks 생성 (document만)
+    # 4) Severity Decision Engine + XAI (규제 문서 기반 정밀 결정)
+    from severity_decision import decide_severity_level_with_xai
+    
+    # GuardDuty finding을 SecurityEvent로 변환
+    def _safe_get(data, keys, default=None):
+        """중첩된 딕셔너리에서 안전하게 값 가져오기"""
+        for key in keys:
+            if isinstance(data, dict):
+                data = data.get(key)
+            else:
+                return default
+            if data is None:
+                return default
+        return data if data is not None else default
+    
+    # SecurityEvent 생성
+    finding_type = finding.get("type", "").lower()
+    resource_type = _safe_get(finding, ["resource", "resourceType"], "")
+    access_key_details = _safe_get(finding, ["resource", "accessKeyDetails"], {})
+    
+    # exposure 판단
+    exposure = "public"
+    if access_key_details:
+        exposure = "public"
+    elif "internal" in finding_type or "private" in finding_type:
+        exposure = "internal"
+    else:
+        exposure = "internal"
+    
+    # privilege_impact 판단
+    privilege_impact = any(keyword in finding_type for keyword in ["privilege", "escalation", "admin", "root"])
+    
+    # data_sensitivity 판단
+    severity_score = finding.get("severity", 0.0)
+    if severity_score >= 7.0:
+        data_sensitivity = "high"
+    elif severity_score >= 4.0:
+        data_sensitivity = "medium"
+    else:
+        data_sensitivity = "low"
+    
+    security_event = {
+        "event_type": finding.get("type", "Unknown"),
+        "resource_type": resource_type or "Unknown",
+        "exposure": exposure,
+        "privilege_impact": privilege_impact,
+        "data_sensitivity": data_sensitivity
+    }
+    
+    # Severity Decision + XAI 실행
+    print("\n=== [Severity Decision] 규제 문서 기반 정밀 결정 ===")
+    severity_result = decide_severity_level_with_xai(security_event, retrieved)
+    
+    print(f"Assigned Level: {severity_result['assigned_level']}")
+    print(f"Justification: {severity_result['justification']}")
+    print(f"Event Factors: {', '.join(severity_result['triggers']['event_factors'])}")
+    if severity_result['triggers']['regulatory_signals']:
+        signals = severity_result['triggers']['regulatory_signals']
+        print(f"Regulatory Signals: {len(signals)}개")
+        for sig in signals[:3]:
+            print(f"  - {sig.get('clause_id', 'N/A')}: {sig.get('intent', 'N/A')}")
+    if severity_result['triggers']['fallback']:
+        print("⚠️ Fallback 조건: 규제 문서 부족으로 기본값 사용")
+
+    # 5) context_chunks 생성 (document만)
     context_chunks = build_context_chunks(retrieved)
 
     print("\n=== [Day7] context_chunks (preview) ===")
     print(json.dumps(context_chunks[:2], ensure_ascii=False, indent=2))
 
-    # 5) Regulation Agent 호출 + Pydantic 검증
+    # 6) Regulation Agent 호출 + Pydantic 검증
     # (테스트 편의: _guardduty_finding_raw 제거)
     incident_input.pop("_guardduty_finding_raw", None)
 
@@ -632,7 +696,7 @@ def main():
     )
 
     print("\n=== [Day7] ✅ Pydantic Validated Output ===")
-    print(output.model_dump_json(indent=2, ensure_ascii=False))
+    print(json.dumps(output.model_dump(), ensure_ascii=False, indent=2))
 
 
 # =========================
