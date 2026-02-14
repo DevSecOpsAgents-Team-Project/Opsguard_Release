@@ -62,6 +62,10 @@ class RegulationRef(BaseModel):
 class ActionTarget(BaseModel):
     type: str
     id: str
+    # Action별 필수 파라미터 (Optional)
+    user_name: Optional[str] = None  # IAM 관련: disable_access_key, disable_iam_entity, detach_admin_policies
+    ip: Optional[str] = None  # block_ip용
+    target_bucket: Optional[str] = None  # enable_s3_bucket_logging용
 
 
 class RecommendedAction(BaseModel):
@@ -74,9 +78,10 @@ class RecommendedAction(BaseModel):
 
 
 class RegulationAgentOutput(BaseModel):
-    schema_version: Literal["1.1"]
+    schema_version: Literal["1.2"]
     generated_at: str
     incident_id: str
+    scenario: Optional[str] = None  # 시나리오 태그 (예: "CredentialCompromise", "Ransomware", "Mining")
 
     incident_summary: IncidentSummary
     executed_level1_actions: List[str]
@@ -116,9 +121,19 @@ You will receive:
 - An incident summary (after Level 1 actions have already been executed)
 - A list of Level 1 actions already performed
 - Candidate response actions under consideration (Level 2 / Level 3), which may be empty
-- Retrieved regulatory context chunks (“context_chunks”) via RAG
+- Retrieved regulatory context chunks ("context_chunks") via RAG
+- Severity Decision Result (optional): A structured result from the Severity Decision Engine containing:
+  - assigned_level: The severity level (1, 2, or 3) determined based on regulatory documents
+  - justification: XAI-based explanation of the decision
+  - triggers: Event factors and regulatory signals that influenced the decision
 
 Assume Level 1 actions are completed and immutable.
+
+If severity_decision_result is provided:
+- Use it to understand the regulatory context and decision rationale
+- Reference the regulatory signals (clause_id, doc_type, intent) in your regulations field
+- Consider the event factors when recommending actions
+- The assigned_level can inform your escalation assessment, but make your own independent evaluation
 
 ---
 
@@ -181,6 +196,19 @@ Select Level 3 only when irreversible impact, evidence preservation, or organiza
     - Include a regulatory justification
     - Require human approval (requires_approval = true)
 
+### Action별 필수 파라미터 (targets[]에 포함):
+- **disable_access_key**: targets[].type = "AccessKey", targets[].id (AccessKeyId), targets[].user_name (IAM 사용자 이름) - id와 user_name 둘 다 필수
+- **disable_iam_entity**: targets[].type = "IAMUser", targets[].id (IAM 사용자 이름, user_name과 동일 값), targets[].user_name (IAM 사용자 이름) - user_name 필수, id는 user_name과 동일 값
+- **detach_admin_policies**: targets[].type = "IAMUser", targets[].id (IAM 사용자 이름, user_name과 동일 값), targets[].user_name (IAM 사용자 이름) - user_name 필수, id는 user_name과 동일 값
+- **isolate_instance**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **stop_instance**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **create_snapshot**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **backup_instance**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **block_ip**: targets[].type = "IPAddress", targets[].ip (Source IP 주소, /32는 자동 처리됨) - ip 필수
+- **block_s3_public_access**: targets[].type = "S3Bucket", targets[].id (S3 BucketName)
+- **enable_s3_bucket_logging**: targets[].type = "S3Bucket", targets[].id (S3 BucketName), targets[].target_bucket (로그 저장 타겟 버킷명) - id와 target_bucket 둘 다 필수
+- **enable_vpc_flow_logs**: targets[].type = "VPC", targets[].id (VPC Id)
+
 Do NOT recommend execution order or automation logic.
 
 ---
@@ -198,12 +226,26 @@ For each recommendation:
 
 ---
 
-## 7) Output Contract (STRICT)
+## 7) Scenario Classification
+- Classify the incident type and set the "scenario" field with one of these values:
+  - "CredentialCompromise": 계정 탈취, Access Key 유출/오용
+  - "Ransomware": 랜섬웨어 공격
+  - "Mining": 암호화폐 마이닝
+  - "DataExfiltration": 데이터 유출
+  - "UnauthorizedAccess": 무단 접근
+  - "NetworkIntrusion": 네트워크 침입
+  - "Other": 기타
+- The scenario field is used for incident classification and statistics in DynamoDB.
+
+---
+
+## 8) Output Contract (STRICT)
 Return ONLY a single JSON object with exactly these top-level keys:
 
 schema_version,
 generated_at,
 incident_id,
+scenario,
 incident_summary,
 executed_level1_actions,
 escalation_assessment,
@@ -215,6 +257,8 @@ missing_context_requests
 
 Rules:
 - Use the exact key names.
+- schema_version MUST be "1.2"
+- scenario is optional but recommended for incident classification
 - Do NOT add extra keys.
 - Do NOT include markdown.
 - Do NOT include commentary or trailing text.
@@ -222,9 +266,10 @@ Rules:
 """.strip()
 
 OUTPUT_JSON_SKELETON = {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "generated_at": "ISO8601",
   "incident_id": "string",
+  "scenario": "CredentialCompromise",
 
   "incident_summary": {
     "source": "guardduty",
@@ -267,7 +312,13 @@ OUTPUT_JSON_SKELETON = {
     "action_id": "disable_access_key",
     "level": 2,
     "description": "string",
-    "targets": [{"type": "IAMUser", "id": "string"}],
+    "targets": [
+      {
+        "type": "AccessKey",
+        "id": "AKIA-TESTKEY",
+        "user_name": "suspect-user-alice"
+      }
+    ],
     "requires_approval": True,
     "expected_impact": "LOW"
   }
@@ -485,8 +536,22 @@ def call_regulation_agent_with_validation(
         payload_retry = dict(payload)
         payload_retry["_retry_note"] = (
         "STRICT JSON CONTRACT:\n"
+        "- schema_version MUST be \"1.2\"\n"
+        "- scenario is optional but recommended (e.g., \"CredentialCompromise\", \"Ransomware\", \"Mining\")\n"
         "- regulations MUST be a list of OBJECTS with keys: framework, clause_id, clause_title, relevance, excerpt, why_relevant\n"
         "- recommended_actions MUST be a list of OBJECTS with keys: action_id, level, description, targets, requires_approval, expected_impact\n"
+        "- targets MUST include action-specific required parameters:\n"
+        "  * disable_access_key: targets[].type=\"AccessKey\", targets[].id (AccessKeyId) + targets[].user_name (IAM user name) - BOTH REQUIRED\n"
+        "  * disable_iam_entity: targets[].type=\"IAMUser\", targets[].id (IAM user name, same as user_name) + targets[].user_name - BOTH REQUIRED (id = user_name)\n"
+        "  * detach_admin_policies: targets[].type=\"IAMUser\", targets[].id (IAM user name, same as user_name) + targets[].user_name - BOTH REQUIRED (id = user_name)\n"
+        "  * isolate_instance: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * stop_instance: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * create_snapshot: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * backup_instance: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * block_ip: targets[].type=\"IPAddress\", targets[].ip (Source IP) - REQUIRED\n"
+        "  * block_s3_public_access: targets[].type=\"S3Bucket\", targets[].id (BucketName)\n"
+        "  * enable_s3_bucket_logging: targets[].type=\"S3Bucket\", targets[].id (BucketName) + targets[].target_bucket - BOTH REQUIRED\n"
+        "  * enable_vpc_flow_logs: targets[].type=\"VPC\", targets[].id (VPC Id)\n"
         "- decision_questions MUST contain at least 1 question (non-empty)\n"
         "- Do NOT output string lists for regulations/recommended_actions\n"
         "- Return ONLY JSON, no extra text."
@@ -687,8 +752,23 @@ def main():
     # 6) Regulation Agent 호출 + Pydantic 검증
     # (테스트 편의: _guardduty_finding_raw 제거)
     incident_input.pop("_guardduty_finding_raw", None)
+    
+    # Severity Decision 결과를 Regulation Agent에 전달
+    # 형식: severity_decision_result 필드에 전체 결과 포함
+    incident_input["severity_decision_result"] = {
+        "assigned_level": severity_result["assigned_level"],
+        "justification": severity_result["justification"],
+        "triggers": {
+            "event_factors": severity_result["triggers"]["event_factors"],
+            "regulatory_signals": severity_result["triggers"]["regulatory_signals"],
+            "fallback": severity_result["triggers"]["fallback"]
+        }
+    }
 
     print("\n=== [Day7] Calling Regulation Agent (LLM) ===")
+    print(f"[전달 정보] Severity Decision Level: {severity_result['assigned_level']}")
+    print(f"[전달 정보] Regulatory Signals: {len(severity_result['triggers']['regulatory_signals'])}개")
+    
     output = call_regulation_agent_with_validation(
         incident_input=incident_input,
         context_chunks=context_chunks,
