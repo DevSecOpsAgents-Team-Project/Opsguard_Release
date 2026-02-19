@@ -1,0 +1,232 @@
+"""
+XAI (Explainable AI) Explainer 모듈
+
+심각도 결정의 근거를 설명 가능한 형태로 제공합니다.
+"""
+
+from typing import List, Dict, Any
+from severity_decision import SecurityEvent, SeverityLevel
+import re
+
+
+class XAIExplainer:
+    """XAI 설명 생성기"""
+    
+    def extract_event_factors(self, event: SecurityEvent) -> List[str]:
+        """
+        보안 이벤트에서 결정에 영향을 미치는 요인을 추출합니다.
+        
+        Args:
+            event: SecurityEvent 객체
+            
+        Returns:
+            결정 요인 리스트
+        """
+        factors = []
+        
+        if event.exposure == "public":
+            factors.append("공개 노출 (Public Exposure)")
+        
+        if event.privilege_impact:
+            factors.append("권한 영향 (Privilege Impact)")
+        
+        if event.data_sensitivity == "high":
+            factors.append("고민감도 데이터 (High Sensitivity Data)")
+        elif event.data_sensitivity == "medium":
+            factors.append("중간 민감도 데이터 (Medium Sensitivity Data)")
+        
+        if "breach" in event.event_type.lower() or "exfiltration" in event.event_type.lower():
+            factors.append("침해/유출 이벤트 (Breach/Exfiltration Event)")
+        
+        if "unauthorized" in event.event_type.lower():
+            factors.append("무단 접근 (Unauthorized Access)")
+        
+        return factors if factors else ["일반 보안 이벤트 (General Security Event)"]
+    
+    def extract_regulatory_intent(self, doc: Dict[str, Any]) -> str:
+        """
+        규제 문서에서 의도를 추출합니다.
+        
+        Args:
+            doc: 규제 문서 딕셔너리
+            
+        Returns:
+            규제 의도 문자열
+        """
+        document_text = doc.get("document", "") or doc.get("text", "")
+        
+        # 긴급 대응 키워드
+        urgent_keywords = ["즉시", "긴급", "신속", "지체 없이", "즉각", "당장"]
+        if any(keyword in document_text for keyword in urgent_keywords):
+            return "긴급 대응 필요 (Urgent Response Required)"
+        
+        # 보고 의무 키워드
+        report_keywords = ["보고", "신고", "통지", "알림", "공지"]
+        if any(keyword in document_text for keyword in report_keywords):
+            return "보고 의무 (Reporting Obligation)"
+        
+        # 모니터링 키워드
+        monitor_keywords = ["모니터링", "감시", "관찰", "점검"]
+        if any(keyword in document_text for keyword in monitor_keywords):
+            return "모니터링 강화 (Enhanced Monitoring)"
+        
+        return "일반 규제 요구사항 (General Regulatory Requirement)"
+    
+    def extract_regulatory_signals(self, retrieved_docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        검색된 규제 문서에서 규제 신호를 추출합니다.
+        
+        Args:
+            retrieved_docs: 검색된 규제 문서 리스트
+            
+        Returns:
+            규제 신호 리스트
+        """
+        signals = []
+        
+        for doc in retrieved_docs[:5]:  # 상위 5개만 처리
+            clause_id = doc.get("id") or doc.get("clause_id", "N/A")
+            doc_type = doc.get("metadata", {}).get("doc_type") or doc.get("doc_type", "Unknown")
+            intent = self.extract_regulatory_intent(doc)
+            
+            signals.append({
+                "clause_id": clause_id,
+                "doc_type": doc_type,
+                "intent": intent,
+                "title": doc.get("title", "N/A")
+            })
+        
+        return signals
+    
+    def check_fallback_condition(
+        self,
+        retrieved_docs: List[Dict[str, Any]],
+        level: SeverityLevel
+    ) -> bool:
+        """
+        Fallback 조건을 확인합니다.
+        규제 문서가 없거나 부족한 경우 True를 반환합니다.
+        
+        Args:
+            retrieved_docs: 검색된 규제 문서 리스트
+            level: 결정된 심각도 레벨
+            
+        Returns:
+            Fallback 여부
+        """
+        # 규제 문서가 없는 경우
+        if not retrieved_docs:
+            return True
+        
+        # Level 1인데 규제 문서가 1개 이하인 경우
+        if level == SeverityLevel.LEVEL_1 and len(retrieved_docs) <= 1:
+            return True
+        
+        return False
+    
+    def build_justification(
+        self,
+        event: SecurityEvent,
+        level: SeverityLevel,
+        event_factors: List[str],
+        regulatory_signals: List[Dict[str, Any]],
+        fallback: bool
+    ) -> str:
+        """
+        심각도 결정 근거 설명을 생성합니다.
+        
+        Args:
+            event: 보안 이벤트
+            level: 결정된 심각도 레벨
+            event_factors: 이벤트 요인 리스트
+            regulatory_signals: 규제 신호 리스트
+            fallback: Fallback 여부
+            
+        Returns:
+            설명 문자열
+        """
+        level_names = {
+            SeverityLevel.LEVEL_1: "Level 1 (Critical)",
+            SeverityLevel.LEVEL_2: "Level 2 (High)",
+            SeverityLevel.LEVEL_3: "Level 3 (Medium/Low)"
+        }
+        
+        level_name = level_names.get(level, f"Level {level.value}")
+        
+        justification_parts = [
+            f"심각도 레벨 {level_name}이 할당되었습니다.",
+            "",
+            "[이벤트 요인]",
+        ]
+        
+        for factor in event_factors:
+            justification_parts.append(f"- {factor}")
+        
+        if regulatory_signals:
+            justification_parts.extend([
+                "",
+                "[규제 신호]",
+            ])
+            for signal in regulatory_signals[:3]:  # 상위 3개만
+                justification_parts.append(
+                    f"- {signal['clause_id']} ({signal['doc_type']}): {signal['intent']}"
+                )
+        
+        if fallback:
+            justification_parts.extend([
+                "",
+                "⚠️ 주의: 규제 문서 증거가 부족하여 기본값을 사용했습니다."
+            ])
+        
+        return "\n".join(justification_parts)
+
+
+def build_xai(
+    event: SecurityEvent,
+    retrieved_docs: List[Dict[str, Any]],
+    level: SeverityLevel
+) -> Dict[str, Any]:
+    """
+    XAI 설명을 포함한 심각도 결정 결과를 생성합니다.
+    
+    Args:
+        event: SecurityEvent 객체
+        retrieved_docs: 검색된 규제 문서 리스트
+        level: 결정된 심각도 레벨
+        
+    Returns:
+        {
+            "assigned_level": int,
+            "justification": str,
+            "triggers": {
+                "event_factors": List[str],
+                "regulatory_signals": List[Dict],
+                "fallback": bool
+            }
+        }
+    """
+    explainer = XAIExplainer()
+    
+    # 이벤트 요인 추출
+    event_factors = explainer.extract_event_factors(event)
+    
+    # 규제 신호 추출
+    regulatory_signals = explainer.extract_regulatory_signals(retrieved_docs)
+    
+    # Fallback 조건 확인
+    fallback = explainer.check_fallback_condition(retrieved_docs, level)
+    
+    # 설명 생성
+    justification = explainer.build_justification(
+        event, level, event_factors, regulatory_signals, fallback
+    )
+    
+    return {
+        "assigned_level": level.value,
+        "justification": justification,
+        "triggers": {
+            "event_factors": event_factors,
+            "regulatory_signals": regulatory_signals,
+            "fallback": fallback
+        }
+    }

@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.1",
+  "generated_at": "2026-02-09T12:20:09.652498+00:00",
+  "incident_id": "gd-finding-123",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Access Key suspicious usage (post-L1)",
+    "severity": "5.3",
+    "resource": {
+      "type": "AccessKey",
+      "id": "AKIA-TESTKEY",
+      "region": "ap-northeast-2",
+      "account_id": "123456789012"
+    }
+  },
+  "executed_level1_actions": [],
+  "escalation_assessment": {
+    "escalation_needed": true,
+    "recommended_level": 2,
+    "confidence": 0.42,
+    "decision_questions": [
+      "Do you approve the proposed Level 2/3 actions given the incident context?"
+    ],
+    "approval_notes": "Explain assumptions and approval considerations."
+  },
+  "reasoning_bullets": [],
+  "regulations": [
+    {
+      "framework": "ISMS-P",
+      "clause_id": "2.4.1",
+      "clause_title": "접근권한 최소 부여 및 이력관리",
+      "relevance": 0.7,
+      "excerpt": "접근권한은 업무상 필요한 최소한으로 부여하고, 변경 및 회수 이력을 관리해야 한다.",
+      "why_relevant": "Disabling the access key aligns with the principle of least privilege."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action_id": "disable_access_key",
+      "level": 2,
+      "description": "Disable compromised access key after approval.",
+      "targets": [
+        {
+          "type": "AccessKey",
+          "id": "AKIA-TESTKEY"
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "LOW"
+    }
+  ],
+  "insufficient_context": false,
+  "missing_context_requests": []
+}

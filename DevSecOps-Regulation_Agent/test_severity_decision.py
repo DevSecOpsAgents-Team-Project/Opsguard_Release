@@ -1,0 +1,286 @@
+"""
+Severity Decision Engine 테스트 스크립트
+
+가이드 문서 기준으로 severity_decision 모듈을 테스트합니다.
+"""
+
+from severity_decision import (
+    decide_severity_level,
+    decide_severity_level_with_xai,
+    SeverityDecisionEngine,
+    SecurityEvent,
+    SeverityLevel
+)
+from test_isms_rag import search_similar_documents
+import json
+
+
+def test_severity_decision_standalone():
+    """
+    Severity Decision Engine을 단독으로 테스트합니다.
+    """
+    print("=" * 70)
+    print("Severity Decision Engine 테스트 (단독 실행)")
+    print("=" * 70)
+    print()
+    
+    # 모의 규제 문서
+    mock_regulations = [
+        {
+            "id": "SEF-07",
+            "title": "Security Breach Notification",
+            "document": "보안 침해 발생 시 즉시 보고 및 조치 절차를 수립하고, 침해사고 발생 시 즉시 보고하고 조치하여야 한다. 개인정보 유출 등 보안 침해사고가 발생하였거나 발생할 가능성이 있는 경우 즉시 보고하고 조치하여야 한다.",
+            "category": "SEF",
+            "metadata": {
+                "doc_type": "CSA_CCM",
+                "doc_version": "v4.0"
+            }
+        },
+        {
+            "id": "LOG-03",
+            "title": "Security Monitoring and Alerting",
+            "document": "보안 모니터링 및 알림 시스템을 구축하고, 보안 이벤트 발생 시 즉시 알림을 받아야 한다.",
+            "category": "LOG",
+            "metadata": {
+                "doc_type": "CSA_CCM",
+                "doc_version": "v4.0"
+            }
+        }
+    ]
+    
+    # 테스트 케이스
+    test_cases = [
+        {
+            "name": "Level 1: 데이터 유출 + 공개 노출 + 규제 긴급",
+            "event": {
+                "event_type": "DataExfiltration",
+                "resource_type": "RDSDatabase",
+                "exposure": "public",
+                "privilege_impact": True,
+                "data_sensitivity": "high"
+            },
+            "docs": mock_regulations,
+            "expected_level": 1
+        },
+        {
+            "name": "Level 2: 일반 위협",
+            "event": {
+                "event_type": "SuspiciousActivity",
+                "resource_type": "EC2Instance",
+                "exposure": "internal",
+                "privilege_impact": False,
+                "data_sensitivity": "medium"
+            },
+            "docs": mock_regulations,
+            "expected_level": 2
+        }
+    ]
+    
+    for i, test_case in enumerate(test_cases, 1):
+        print(f"\n{'=' * 70}")
+        print(f"테스트 케이스 {i}: {test_case['name']}")
+        print(f"{'=' * 70}")
+        
+        # 심각도 결정
+        result = decide_severity_level(test_case["event"], test_case["docs"])
+        
+        print(f"\n[결정] 할당된 레벨: Level {result.get('assigned_level', 'N/A')}")
+        print(f"       예상 레벨: Level {test_case['expected_level']}")
+        print(f"       근거: {result.get('justification', 'N/A')}")
+        
+        # JSON 출력
+        print(f"\n[JSON 형식]")
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        print()
+    
+    print("=" * 70)
+    print("[완료] 단독 테스트 완료")
+    print("=" * 70)
+
+
+def test_severity_decision_with_rag():
+    """
+    RAG 검색과 연동하여 Severity Decision을 테스트합니다.
+    """
+    print("=" * 70)
+    print("Severity Decision Engine 테스트 (RAG 연동)")
+    print("=" * 70)
+    print()
+    
+    # ChromaDB 로드
+    try:
+        import chromadb
+        from dotenv import load_dotenv
+        import os
+        
+        load_dotenv()
+        chroma_persist_dir = os.getenv("CHROMA_PERSIST_DIR", "./chroma_db")
+        collection_name = os.getenv("CHROMA_COLLECTION", "csa_ccm_v4")
+        
+        client = chromadb.PersistentClient(path=chroma_persist_dir)
+        collection = client.get_or_create_collection(name=collection_name)
+    except Exception as e:
+        print(f"[오류] ChromaDB 로드 실패: {e}")
+        print("ChromaDB가 설정되지 않았습니다. 단독 테스트를 실행하세요.")
+        return
+    
+    # 테스트 케이스
+    test_cases = [
+        {
+            "name": "데이터 유출 + 공개 노출 + 고민감도 데이터",
+            "event": {
+                "event_type": "DataExfiltration",
+                "resource_type": "RDSDatabase",
+                "exposure": "public",
+                "privilege_impact": True,
+                "data_sensitivity": "high"
+            },
+            "query": "데이터 유출 침해사고 대응"
+        },
+        {
+            "name": "일반 위협 + 내부 노출",
+            "event": {
+                "event_type": "SuspiciousActivity",
+                "resource_type": "EC2Instance",
+                "exposure": "internal",
+                "privilege_impact": False,
+                "data_sensitivity": "low"
+            },
+            "query": "로그 모니터링 및 대응"
+        }
+    ]
+    
+    for i, test_case in enumerate(test_cases, 1):
+        print(f"\n{'=' * 70}")
+        print(f"테스트 케이스 {i}: {test_case['name']}")
+        print(f"{'=' * 70}")
+        
+        # RAG로 규제 문서 검색
+        print(f"\n[검색] 규제 문서 검색: {test_case['query']}")
+        retrieved_docs = search_similar_documents(collection, test_case["query"], top_k=5)
+        
+        if not retrieved_docs:
+            print("[경고] 검색된 규제 문서가 없습니다.")
+            continue
+        
+        print(f"[검색됨] {len(retrieved_docs)}개의 관련 규제 문서 검색됨")
+        for doc in retrieved_docs[:3]:
+            print(f"   - {doc.get('id', 'N/A')}: {doc.get('title', 'N/A')}")
+        
+        # 심각도 결정
+        print(f"\n[심각도 결정] 규제 문서 기반 결정 수행 중...")
+        result = decide_severity_level(test_case["event"], retrieved_docs)
+        
+        # 결과 출력
+        print(f"\n[결과]")
+        print(f"  Assigned Level: {result.get('assigned_level', 'N/A')}")
+        print(f"  Justification: {result.get('justification', 'N/A')}")
+        
+        # JSON 출력
+        print(f"\n[JSON 출력]")
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        print()
+    
+    print("=" * 70)
+    print("[완료] RAG 연동 테스트 완료")
+    print("=" * 70)
+
+
+def test_severity_decision_with_xai():
+    """
+    XAI와 연동하여 Severity Decision을 테스트합니다.
+    """
+    print("=" * 70)
+    print("Severity Decision Engine + XAI 테스트")
+    print("=" * 70)
+    print()
+    
+    # ChromaDB 로드
+    try:
+        import chromadb
+        from dotenv import load_dotenv
+        import os
+        
+        load_dotenv()
+        chroma_persist_dir = os.getenv("CHROMA_PERSIST_DIR", "./chroma_db")
+        collection_name = os.getenv("CHROMA_COLLECTION", "csa_ccm_v4")
+        
+        client = chromadb.PersistentClient(path=chroma_persist_dir)
+        collection = client.get_or_create_collection(name=collection_name)
+    except Exception as e:
+        print(f"[오류] ChromaDB 로드 실패: {e}")
+        print("ChromaDB가 설정되지 않았습니다.")
+        return
+    
+    # 테스트 케이스
+    test_case = {
+        "name": "데이터 유출 + 공개 노출 + 고민감도 데이터",
+        "event": {
+            "event_type": "DataExfiltration",
+            "resource_type": "RDSDatabase",
+            "exposure": "public",
+            "privilege_impact": True,
+            "data_sensitivity": "high"
+        },
+        "query": "데이터 유출 침해사고 대응"
+    }
+    
+    print(f"테스트 케이스: {test_case['name']}")
+    print("=" * 70)
+    
+    # RAG로 규제 문서 검색
+    print(f"\n[검색] 규제 문서 검색: {test_case['query']}")
+    retrieved_docs = search_similar_documents(collection, test_case["query"], top_k=5)
+    
+    if not retrieved_docs:
+        print("[경고] 검색된 규제 문서가 없습니다.")
+        return
+    
+    print(f"[검색됨] {len(retrieved_docs)}개의 관련 규제 문서 검색됨")
+    
+    # XAI 포함 심각도 결정
+    print(f"\n[XAI 결정] 규제 문서 기반 결정 및 설명 생성 중...")
+    xai_result = decide_severity_level_with_xai(test_case["event"], retrieved_docs)
+    
+    # 결과 출력
+    print(f"\n[결과]")
+    print(f"  Assigned Level: {xai_result.get('assigned_level', 'N/A')}")
+    print(f"  Justification: {xai_result.get('justification', 'N/A')}")
+    print(f"\n  Event Factors:")
+    for factor in xai_result.get('triggers', {}).get('event_factors', []):
+        print(f"    - {factor}")
+    print(f"\n  Regulatory Signals:")
+    for signal in xai_result.get('triggers', {}).get('regulatory_signals', []):
+        print(f"    - {signal.get('clause_id', 'N/A')} ({signal.get('doc_type', 'N/A')}): {signal.get('intent', 'N/A')}")
+    print(f"\n  Fallback: {xai_result.get('triggers', {}).get('fallback', False)}")
+    
+    # JSON 출력
+    print(f"\n[JSON 출력]")
+    print(json.dumps(xai_result, ensure_ascii=False, indent=2))
+    print()
+    
+    print("=" * 70)
+    print("[완료] XAI 연동 테스트 완료")
+    print("=" * 70)
+
+
+def main():
+    """메인 실행 함수"""
+    import sys
+    
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--standalone":
+            test_severity_decision_standalone()
+        elif sys.argv[1] == "--xai":
+            test_severity_decision_with_xai()
+        else:
+            print("사용법:")
+            print("  python test_severity_decision.py              # RAG 연동 테스트")
+            print("  python test_severity_decision.py --standalone  # 단독 테스트")
+            print("  python test_severity_decision.py --xai          # XAI 연동 테스트")
+    else:
+        test_severity_decision_with_rag()
+
+
+if __name__ == "__main__":
+    main()
