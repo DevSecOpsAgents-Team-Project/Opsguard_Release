@@ -1,6 +1,11 @@
 # 환경변수 파일 (민감한 정보 포함)
 .env
 
+
+chroma_db/
+*.sqlite3
+*.bin
+
 # Python
 __pycache__/
 *.py[cod]
