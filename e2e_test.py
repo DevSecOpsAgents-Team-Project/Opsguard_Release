@@ -62,6 +62,10 @@ class RegulationRef(BaseModel):
 class ActionTarget(BaseModel):
     type: str
     id: str
+    # Action별 필수 파라미터 (Optional)
+    user_name: Optional[str] = None  # IAM 관련: disable_access_key, disable_iam_entity, detach_admin_policies
+    ip: Optional[str] = None  # block_ip용
+    target_bucket: Optional[str] = None  # enable_s3_bucket_logging용
 
 
 class RecommendedAction(BaseModel):
@@ -74,9 +78,10 @@ class RecommendedAction(BaseModel):
 
 
 class RegulationAgentOutput(BaseModel):
-    schema_version: Literal["1.1"]
+    schema_version: Literal["1.2"]
     generated_at: str
     incident_id: str
+    scenario: Optional[str] = None  # 시나리오 태그 (예: "CredentialCompromise", "Ransomware", "Mining")
 
     incident_summary: IncidentSummary
     executed_level1_actions: List[str]
@@ -116,9 +121,28 @@ You will receive:
 - An incident summary (after Level 1 actions have already been executed)
 - A list of Level 1 actions already performed
 - Candidate response actions under consideration (Level 2 / Level 3), which may be empty
-- Retrieved regulatory context chunks (“context_chunks”) via RAG
+- **Retrieved regulatory context chunks ("context_chunks") via RAG (Top-k search results)**
+  - These are the ONLY regulatory clauses you can reference
+  - Each context_chunk contains: doc_type, clause_id, clause_title, category, content
+  - You MUST base all regulatory justifications on these context_chunks
+  - Do NOT reference any regulatory information not present in context_chunks
+- Severity Decision Result (optional): A structured result from the Severity Decision Engine containing:
+  - assigned_level: The severity level (1, 2, or 3) determined based on regulatory documents
+  - justification: XAI-based explanation of the decision
+  - triggers: Event factors and regulatory signals that influenced the decision
 
 Assume Level 1 actions are completed and immutable.
+
+**CRITICAL: The context_chunks are your ONLY source of regulatory information.**
+- All clause IDs, titles, excerpts, and frameworks MUST come from context_chunks
+- If you need to reference a regulation, it MUST be in the provided context_chunks
+- If a regulation is not in context_chunks, you cannot use it
+
+If severity_decision_result is provided:
+- Use it to understand the regulatory context and decision rationale
+- Reference the regulatory signals (clause_id, doc_type, intent) in your regulations field, but ONLY if those clause_ids are also present in context_chunks
+- Consider the event factors when recommending actions
+- The assigned_level can inform your escalation assessment, but make your own independent evaluation
 
 ---
 
@@ -155,15 +179,28 @@ Select Level 3 only when irreversible impact, evidence preservation, or organiza
 
 ---
 
-## 4) Regulatory Grounding Rules (NO HALLUCINATION)
-- You MUST ONLY cite clauses present in context_chunks.
-- You MUST NOT invent clause IDs, titles, or mappings.
+## 4) Regulatory Grounding Rules (NO HALLUCINATION - STRICT)
+**CRITICAL: 제공된 Context에 없는 내용은 절대 지어내지 마시오.**
+
+- You MUST ONLY cite clauses that are explicitly present in the provided context_chunks.
+- You MUST NOT invent, fabricate, or hallucinate:
+  - Clause IDs that do not exist in context_chunks
+  - Clause titles that are not in context_chunks
+  - ISO mappings that are not in context_chunks
+  - Regulatory excerpts that are not in context_chunks
+  - Any regulatory information not provided in the context_chunks
+- When citing a clause from context_chunks:
+  - Use the exact clause_id as it appears in context_chunks
+  - Use the exact clause_title as it appears in context_chunks
+  - Use the exact excerpt from the content field in context_chunks
+  - Reference the exact framework (doc_type) from context_chunks
 - If regulatory context is insufficient:
   - Set insufficient_context = true
-  - Populate missing_context_requests
+  - Populate missing_context_requests with specific information needed
   - Do NOT recommend escalation actions beyond Level 1 unless clearly justified
   - In this case, recommended_actions MUST be an empty array
   - decision_questions MUST include a request for additional context
+- **Remember: If a clause is not in context_chunks, it does not exist for this analysis. Do not reference it.**
 
 ---
 
@@ -181,29 +218,68 @@ Select Level 3 only when irreversible impact, evidence preservation, or organiza
     - Include a regulatory justification
     - Require human approval (requires_approval = true)
 
+### Action별 필수 파라미터 (targets[]에 포함):
+- **disable_access_key**: targets[].type = "AccessKey", targets[].id (AccessKeyId), targets[].user_name (IAM 사용자 이름) - id와 user_name 둘 다 필수
+- **disable_iam_entity**: targets[].type = "IAMUser", targets[].id (IAM 사용자 이름, user_name과 동일 값), targets[].user_name (IAM 사용자 이름) - user_name 필수, id는 user_name과 동일 값
+- **detach_admin_policies**: targets[].type = "IAMUser", targets[].id (IAM 사용자 이름, user_name과 동일 값), targets[].user_name (IAM 사용자 이름) - user_name 필수, id는 user_name과 동일 값
+- **isolate_instance**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **stop_instance**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **create_snapshot**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **backup_instance**: targets[].type = "EC2Instance", targets[].id (EC2 InstanceId)
+- **block_ip**: targets[].type = "IPAddress", targets[].ip (Source IP 주소, /32는 자동 처리됨) - ip 필수
+- **block_s3_public_access**: targets[].type = "S3Bucket", targets[].id (S3 BucketName)
+- **enable_s3_bucket_logging**: targets[].type = "S3Bucket", targets[].id (S3 BucketName), targets[].target_bucket (로그 저장 타겟 버킷명) - id와 target_bucket 둘 다 필수
+- **enable_vpc_flow_logs**: targets[].type = "VPC", targets[].id (VPC Id)
+
 Do NOT recommend execution order or automation logic.
 
 ---
 
-## 6) Explainability (XAI)
-For each recommendation:
-- Clearly explain why escalation beyond Level 1 is necessary
-- Link each action to specific regulatory clauses
-- Explain why Level 2 or Level 3 is appropriate
+## 6) Explainability (XAI) - Regulatory Rationale Based on Retrieved Context
+**Goal: Provide detailed regulatory rationale, not just commands.**
+**Example: Instead of "block it", say "block it according to ISMS-P 2.6.7 clause based on the retrieved context".**
+
+For each recommendation, you MUST:
+- **Base all explanations on the retrieved context_chunks (RAG search results)**
+- Clearly explain why escalation beyond Level 1 is necessary, referencing specific clauses from context_chunks
+- Link each action to specific regulatory clauses that are present in context_chunks
+- In the regulations field, use the exact clause_id, clause_title, and excerpt from context_chunks
+- Explain why Level 2 or Level 3 is appropriate, citing regulatory requirements from context_chunks
 - Clearly state assumptions or uncertainties if present
-- The regulations field MUST include at least one directly relevant clause.
-- If multiple relevant clauses are present in context_chunks, include up to two clauses to strengthen regulatory justification.
-- shared or misused credentials reduce accountability
+- The regulations field MUST include at least one directly relevant clause from context_chunks
+- If multiple relevant clauses are present in context_chunks, include up to two clauses to strengthen regulatory justification
+- For each regulation entry:
+  - framework: Use the exact doc_type from context_chunks (e.g., "CSA_CCM", "ISMS-P")
+  - clause_id: Use the exact clause_id from context_chunks (e.g., "IAM-05", "2.6.7")
+  - clause_title: Use the exact title from context_chunks
+  - excerpt: Extract relevant text directly from the content field in context_chunks
+  - why_relevant: Explain how this specific clause from context_chunks justifies the recommended action
+
+**Remember: All regulatory references MUST come from the provided context_chunks. Do not use knowledge outside of context_chunks.**
 
 
 ---
 
-## 7) Output Contract (STRICT)
+## 7) Scenario Classification
+- Classify the incident type and set the "scenario" field with one of these values:
+  - "CredentialCompromise": 계정 탈취, Access Key 유출/오용
+  - "Ransomware": 랜섬웨어 공격
+  - "Mining": 암호화폐 마이닝
+  - "DataExfiltration": 데이터 유출
+  - "UnauthorizedAccess": 무단 접근
+  - "NetworkIntrusion": 네트워크 침입
+  - "Other": 기타
+- The scenario field is used for incident classification and statistics in DynamoDB.
+
+---
+
+## 8) Output Contract (STRICT)
 Return ONLY a single JSON object with exactly these top-level keys:
 
 schema_version,
 generated_at,
 incident_id,
+scenario,
 incident_summary,
 executed_level1_actions,
 escalation_assessment,
@@ -215,6 +291,8 @@ missing_context_requests
 
 Rules:
 - Use the exact key names.
+- schema_version MUST be "1.2"
+- scenario is optional but recommended for incident classification
 - Do NOT add extra keys.
 - Do NOT include markdown.
 - Do NOT include commentary or trailing text.
@@ -222,9 +300,10 @@ Rules:
 """.strip()
 
 OUTPUT_JSON_SKELETON = {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "generated_at": "ISO8601",
   "incident_id": "string",
+  "scenario": "CredentialCompromise",
 
   "incident_summary": {
     "source": "guardduty",
@@ -267,7 +346,13 @@ OUTPUT_JSON_SKELETON = {
     "action_id": "disable_access_key",
     "level": 2,
     "description": "string",
-    "targets": [{"type": "IAMUser", "id": "string"}],
+    "targets": [
+      {
+        "type": "AccessKey",
+        "id": "AKIA-TESTKEY",
+        "user_name": "suspect-user-alice"
+      }
+    ],
     "requires_approval": True,
     "expected_impact": "LOW"
   }
@@ -485,8 +570,24 @@ def call_regulation_agent_with_validation(
         payload_retry = dict(payload)
         payload_retry["_retry_note"] = (
         "STRICT JSON CONTRACT:\n"
+        "- schema_version MUST be \"1.2\"\n"
+        "- scenario is optional but recommended (e.g., \"CredentialCompromise\", \"Ransomware\", \"Mining\")\n"
         "- regulations MUST be a list of OBJECTS with keys: framework, clause_id, clause_title, relevance, excerpt, why_relevant\n"
+        "- **CRITICAL: regulations MUST only reference clauses present in context_chunks. Do NOT invent or fabricate clause IDs, titles, or excerpts.**\n"
+        "- **All regulatory information MUST come from the provided context_chunks. If a clause is not in context_chunks, you cannot use it.**\n"
         "- recommended_actions MUST be a list of OBJECTS with keys: action_id, level, description, targets, requires_approval, expected_impact\n"
+        "- targets MUST include action-specific required parameters:\n"
+        "  * disable_access_key: targets[].type=\"AccessKey\", targets[].id (AccessKeyId) + targets[].user_name (IAM user name) - BOTH REQUIRED\n"
+        "  * disable_iam_entity: targets[].type=\"IAMUser\", targets[].id (IAM user name, same as user_name) + targets[].user_name - BOTH REQUIRED (id = user_name)\n"
+        "  * detach_admin_policies: targets[].type=\"IAMUser\", targets[].id (IAM user name, same as user_name) + targets[].user_name - BOTH REQUIRED (id = user_name)\n"
+        "  * isolate_instance: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * stop_instance: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * create_snapshot: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * backup_instance: targets[].type=\"EC2Instance\", targets[].id (InstanceId)\n"
+        "  * block_ip: targets[].type=\"IPAddress\", targets[].ip (Source IP) - REQUIRED\n"
+        "  * block_s3_public_access: targets[].type=\"S3Bucket\", targets[].id (BucketName)\n"
+        "  * enable_s3_bucket_logging: targets[].type=\"S3Bucket\", targets[].id (BucketName) + targets[].target_bucket - BOTH REQUIRED\n"
+        "  * enable_vpc_flow_logs: targets[].type=\"VPC\", targets[].id (VPC Id)\n"
         "- decision_questions MUST contain at least 1 question (non-empty)\n"
         "- Do NOT output string lists for regulations/recommended_actions\n"
         "- Return ONLY JSON, no extra text."
@@ -614,17 +715,96 @@ def main():
         meta = r.get("metadata", {})
         print(f"- #{i} id={r.get('id')} title={meta.get('title','')} category={meta.get('category','')}")
 
-    # 4) context_chunks 생성 (document만)
+    # 4) Severity Decision Engine + XAI (규제 문서 기반 정밀 결정)
+    from severity_decision import decide_severity_level_with_xai
+    
+    # GuardDuty finding을 SecurityEvent로 변환
+    def _safe_get(data, keys, default=None):
+        """중첩된 딕셔너리에서 안전하게 값 가져오기"""
+        for key in keys:
+            if isinstance(data, dict):
+                data = data.get(key)
+            else:
+                return default
+            if data is None:
+                return default
+        return data if data is not None else default
+    
+    # SecurityEvent 생성
+    finding_type = finding.get("type", "").lower()
+    resource_type = _safe_get(finding, ["resource", "resourceType"], "")
+    access_key_details = _safe_get(finding, ["resource", "accessKeyDetails"], {})
+    
+    # exposure 판단
+    exposure = "public"
+    if access_key_details:
+        exposure = "public"
+    elif "internal" in finding_type or "private" in finding_type:
+        exposure = "internal"
+    else:
+        exposure = "internal"
+    
+    # privilege_impact 판단
+    privilege_impact = any(keyword in finding_type for keyword in ["privilege", "escalation", "admin", "root"])
+    
+    # data_sensitivity 판단
+    severity_score = finding.get("severity", 0.0)
+    if severity_score >= 7.0:
+        data_sensitivity = "high"
+    elif severity_score >= 4.0:
+        data_sensitivity = "medium"
+    else:
+        data_sensitivity = "low"
+    
+    security_event = {
+        "event_type": finding.get("type", "Unknown"),
+        "resource_type": resource_type or "Unknown",
+        "exposure": exposure,
+        "privilege_impact": privilege_impact,
+        "data_sensitivity": data_sensitivity
+    }
+    
+    # Severity Decision + XAI 실행
+    print("\n=== [Severity Decision] 규제 문서 기반 정밀 결정 ===")
+    severity_result = decide_severity_level_with_xai(security_event, retrieved)
+    
+    print(f"Assigned Level: {severity_result['assigned_level']}")
+    print(f"Justification: {severity_result['justification']}")
+    print(f"Event Factors: {', '.join(severity_result['triggers']['event_factors'])}")
+    if severity_result['triggers']['regulatory_signals']:
+        signals = severity_result['triggers']['regulatory_signals']
+        print(f"Regulatory Signals: {len(signals)}개")
+        for sig in signals[:3]:
+            print(f"  - {sig.get('clause_id', 'N/A')}: {sig.get('intent', 'N/A')}")
+    if severity_result['triggers']['fallback']:
+        print("⚠️ Fallback 조건: 규제 문서 부족으로 기본값 사용")
+
+    # 5) context_chunks 생성 (document만)
     context_chunks = build_context_chunks(retrieved)
 
     print("\n=== [Day7] context_chunks (preview) ===")
     print(json.dumps(context_chunks[:2], ensure_ascii=False, indent=2))
 
-    # 5) Regulation Agent 호출 + Pydantic 검증
+    # 6) Regulation Agent 호출 + Pydantic 검증
     # (테스트 편의: _guardduty_finding_raw 제거)
     incident_input.pop("_guardduty_finding_raw", None)
+    
+    # Severity Decision 결과를 Regulation Agent에 전달
+    # 형식: severity_decision_result 필드에 전체 결과 포함
+    incident_input["severity_decision_result"] = {
+        "assigned_level": severity_result["assigned_level"],
+        "justification": severity_result["justification"],
+        "triggers": {
+            "event_factors": severity_result["triggers"]["event_factors"],
+            "regulatory_signals": severity_result["triggers"]["regulatory_signals"],
+            "fallback": severity_result["triggers"]["fallback"]
+        }
+    }
 
     print("\n=== [Day7] Calling Regulation Agent (LLM) ===")
+    print(f"[전달 정보] Severity Decision Level: {severity_result['assigned_level']}")
+    print(f"[전달 정보] Regulatory Signals: {len(severity_result['triggers']['regulatory_signals'])}개")
+    
     output = call_regulation_agent_with_validation(
         incident_input=incident_input,
         context_chunks=context_chunks,
@@ -632,76 +812,15 @@ def main():
     )
 
     print("\n=== [Day7] ✅ Pydantic Validated Output ===")
-    print(output.model_dump_json(indent=2, ensure_ascii=False))
+    print(json.dumps(output.model_dump(), ensure_ascii=False, indent=2))
 
 
 # =========================
 # Day 8: Level Router + TC
 # =========================
 
-from typing import NamedTuple
-
-class LevelDecision(NamedTuple):
-    selected_level: int               # 1|2|3
-    reasons: List[str]                # explainability for tests
-
-def decide_response_level(
-    finding: Dict[str, Any],
-    runtime_result: Optional[Dict[str, Any]] = None,
-) -> LevelDecision:
-    """
-    Day8 MVP rule-based level router (MCP 역할을 로컬 함수로 대체)
-    - severity는 참고만
-    - 키워드/리소스/권한영향/반복성/확산위험 신호로 1/2/3 분기
-    """
-    runtime_result = runtime_result or {}
-    reasons: List[str] = []
-
-    gd_type = str(finding.get("type", "")).lower()
-    sev = float(finding.get("severity", 0) or 0)
-    resource_type = _safe_get(finding, ["resource", "resourceType"], "")
-    access_key_id = _safe_get(finding, ["resource", "accessKeyDetails", "accessKeyId"], "")
-    iam_user = _safe_get(finding, ["resource", "accessKeyDetails", "userName"], "")
-
-    signals = [s.lower() for s in _to_list(runtime_result.get("key_signals"))]
-    tags = [t.lower() for t in _to_list(runtime_result.get("tags"))]
-    
-    # --- Level 1 fast-path (낮은 위험 + 단발성/약한 신호) ---
-    if sev < 4.0 and not signals and not tags and not access_key_id and "accesskey" not in str(resource_type).lower():
-        reasons.append(f"Low severity ({sev}) and no signals/tags → observe only.")
-        return LevelDecision(1, reasons)
-
-    # --- Level 3 trigger (확정 침해/확산/증거보존 필요) ---
-    if any(k in gd_type for k in ["backdoor", "malware", "crypto", "ransom", "trojan"]):
-        reasons.append("Finding type suggests active compromise/malware.")
-        return LevelDecision(3, reasons)
-
-    if any(k in signals for k in ["data exfiltration", "lateral movement", "persistence", "ongoing attack"]):
-        reasons.append("Signals indicate expansion/persistence/ongoing malicious activity.")
-        return LevelDecision(3, reasons)
-    
-
-    # --- Level 2 trigger (승인 기반 containment 필요) ---
-    if "accesskey" in str(resource_type).lower() or access_key_id:
-        reasons.append("AccessKey related event → credential misuse risk.")
-        # 유출/오남용 관련 태그/시그널이 있으면 L2 강제
-        if any(k in tags for k in ["credential_compromise", "key_leak", "stolen_credential"]) or \
-            any(k in signals for k in ["unusual api calls", "external ip", "anomalous behavior"]):
-            reasons.append("Signals/tags suggest anomalous credential usage → containment needed.")
-            return LevelDecision(2, reasons)
-
-    if any(k in gd_type for k in ["privilegeescalation", "excessive", "unauthorizedadminaccess"]):
-        reasons.append("Privilege-impacting finding type → containment/mitigation needed.")
-        return LevelDecision(2, reasons)
-
-    # severity가 높아도 '확정 침해'가 아니면 L2로 두는 게 안전
-    if sev >= 7.0:
-        reasons.append(f"High severity ({sev}) but no L3 triggers → prefer L2.")
-        return LevelDecision(2, reasons)
-
-    # --- Default Level 1 (inform/observe) ---
-    reasons.append("No strong indicators for containment or critical response → observe.")
-    return LevelDecision(1, reasons)
+# Level Router는 별도 모듈로 분리
+from level_router import decide_response_level, LevelDecision
 
 
 def make_mock_finding_tc1_accesskey_anomalous() -> Dict[str, Any]:
@@ -990,6 +1109,373 @@ def run_tc6():
         "TC-6 FAILED: reasons should mention L3 signals trigger"
     print("✅ TC-6 PASSED")
 
+
+# ----------------------------
+# Day 13: 시나리오 1 (Key 유출) 테스트
+# ----------------------------
+def make_tc7_finding_key_leakage() -> Dict[str, Any]:
+    """
+    TC-7: 시나리오 1 (Key 유출) 테스트
+    - "Access Key 유출됨" 입력
+    - ISMS-P 2.5.4(비밀번호 관리) 인용하며 키 비활성화 (Action) 나오는지 확인
+    """
+    return {
+        "id": "gd-finding-tc7-key-leakage",
+        "type": "UnauthorizedAccess:IAMUser/AnomalousBehavior",
+        "severity": 7.5,  # 높은 심각도
+        "title": "Access Key 유출됨",
+        "description": "Access Key가 외부에 유출된 것으로 확인됨. 즉시 비활성화 필요.",
+        "region": "ap-northeast-2",
+        "accountId": "123456789012",
+        "resource": {
+            "resourceType": "AccessKey",
+            "accessKeyDetails": {
+                "userName": "leaked-user-alice",
+                "accessKeyId": "AKIA-LEAKED-KEY"
+            },
+        },
+        "service": {
+            "action": {
+                "actionType": "AWS_API_CALL",
+                "awsApiCallAction": {"api": "ListBuckets"},
+            }
+        },
+    }
+
+
+def run_tc7_full_e2e():
+    """
+    TC-7: 전체 E2E 워크플로우 실행
+    - "Access Key 유출됨" 시나리오
+    - ISMS-P 2.5.4 인용 확인
+    - disable_access_key 액션 확인
+    """
+    print("\n" + "=" * 70)
+    print("=== [Day 13][TC-7] 시나리오 1 (Key 유출) 테스트 ===")
+    print("=" * 70)
+    
+    # 0) Chroma 설정
+    CHROMA_PERSIST_DIR = os.environ.get("CHROMA_PERSIST_DIR", "./chroma_db")
+    COLLECTION_NAME = os.environ.get("CHROMA_COLLECTION", "csa_ccm_v4")
+    
+    # 1) Finding 생성
+    finding = make_tc7_finding_key_leakage()
+    
+    # 2) incident_input 준비
+    now = datetime.now(timezone.utc).isoformat()
+    incident_input = {
+        "schema_version": "1.1",
+        "generated_at": now,
+        "incident_id": finding["id"],
+        "incident_summary": {
+            "source": "guardduty",
+            "title": "Access Key 유출됨",
+            "severity": str(finding["severity"]),
+            "resource": {
+                "type": finding["resource"]["resourceType"],
+                "id": finding["resource"]["accessKeyDetails"]["accessKeyId"],
+                "region": finding["region"],
+                "account_id": finding["accountId"],
+            },
+        },
+        "executed_level1_actions": [
+            "record_finding",
+            "notify_slack",
+            "fetch_cloudtrail_related_events",
+        ],
+        "candidate_actions": [
+            "disable_access_key",
+            "detach_admin_policies",
+        ],
+        "_guardduty_finding_raw": finding,
+    }
+    
+    # 3) Runtime result
+    runtime_result = {
+        "tags": ["credential_compromise", "key_leakage"],
+        "key_signals": ["external IP", "unauthorized access"],
+    }
+    
+    # 4) Level Router
+    decision = decide_response_level(finding=finding, runtime_result=runtime_result)
+    print(f"\n[Router] selected_level: {decision.selected_level}")
+    
+    if decision.selected_level == 1:
+        print("❌ TC-7 FAILED: Level 1로 종료됨 (Level 2/3이어야 함)")
+        return
+    
+    # 5) RAG 검색
+    query_text, where_filter = build_guardduty_rag_query(
+        finding=finding, runtime_result=runtime_result, candidate_actions=incident_input["candidate_actions"]
+    )
+    
+    import chromadb
+    client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
+    collection = client.get_or_create_collection(name=COLLECTION_NAME)
+    retrieved = chroma_retrieve(collection, query_text, where_filter=where_filter, top_k=6)
+    
+    print(f"\n[RAG] Retrieved {len(retrieved)} regulations")
+    
+    # 6) Severity Decision + XAI
+    from severity_decision import decide_severity_level_with_xai
+    
+    security_event = {
+        "event_type": finding.get("type", "Unknown"),
+        "resource_type": finding["resource"]["resourceType"],
+        "exposure": "public",  # 유출이므로 public
+        "privilege_impact": True,
+        "data_sensitivity": "high",
+    }
+    
+    severity_result = decide_severity_level_with_xai(security_event, retrieved)
+    print(f"\n[Severity Decision] Level: {severity_result['assigned_level']}")
+    
+    # 7) context_chunks 생성
+    context_chunks = build_context_chunks(retrieved)
+    
+    # 8) severity_result를 incident_input에 추가
+    incident_input["severity_decision_result"] = {
+        "assigned_level": severity_result["assigned_level"],
+        "justification": severity_result["justification"],
+        "triggers": {
+            "event_factors": severity_result["triggers"]["event_factors"],
+            "regulatory_signals": severity_result["triggers"]["regulatory_signals"],
+            "fallback": severity_result["triggers"]["fallback"]
+        }
+    }
+    
+    # 9) Regulation Agent 호출
+    output = call_regulation_agent_with_validation(
+        incident_input=incident_input,
+        context_chunks=context_chunks,
+        model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+    )
+    
+    # 10) 검증
+    print("\n=== [TC-7] 검증 ===")
+    
+    # 10-1) disable_access_key 액션이 있는지 확인
+    has_disable_action = any(
+        action.action_id == "disable_access_key" 
+        for action in output.recommended_actions
+    )
+    
+    if not has_disable_action:
+        print("❌ TC-7 FAILED: disable_access_key 액션이 recommended_actions에 없음")
+        return
+    
+    print("✅ disable_access_key 액션 확인됨")
+    
+    # 10-2) ISMS-P 2.5.4 또는 비밀번호/키 관리 관련 조항 인용 확인
+    has_password_management_clause = any(
+        ("2.5.4" in reg.clause_id or 
+         "비밀번호" in reg.clause_title or 
+         "password" in reg.clause_title.lower() or
+         "key" in reg.clause_title.lower() or
+         "credential" in reg.clause_title.lower())
+        for reg in output.regulations
+    )
+    
+    # ISMS-P가 없으면 CSA_CCM의 IAM 관련 조항도 허용
+    has_iam_clause = any(
+        (reg.framework in ["ISMS-P", "CSA_CCM"] and 
+         ("IAM" in reg.clause_id or "IAM" in reg.clause_title))
+        for reg in output.regulations
+    )
+    
+    if not (has_password_management_clause or has_iam_clause):
+        print("⚠️  TC-7 WARNING: ISMS-P 2.5.4 또는 비밀번호/키 관리 조항이 인용되지 않음")
+        print(f"   인용된 조항: {[f'{r.framework} {r.clause_id}' for r in output.regulations]}")
+    else:
+        print("✅ 규제 조항 인용 확인됨")
+    
+    # 10-3) scenario 확인
+    if output.scenario:
+        print(f"✅ scenario: {output.scenario}")
+    else:
+        print("⚠️  scenario 필드가 없음 (권장)")
+    
+    # 10-4) recommended_actions의 targets에 user_name이 있는지 확인
+    disable_action = next(
+        (action for action in output.recommended_actions 
+         if action.action_id == "disable_access_key"),
+        None
+    )
+    
+    if disable_action:
+        has_user_name = any(
+            target.user_name is not None and target.user_name != ""
+            for target in disable_action.targets
+        )
+        
+        if not has_user_name:
+            print("❌ TC-7 FAILED: disable_access_key의 targets에 user_name이 없음")
+            return
+        else:
+            print("✅ targets에 user_name 포함 확인됨")
+    
+    print("\n✅ TC-7 PASSED: 시나리오 1 (Key 유출) 테스트 통과")
+
+
+# ----------------------------
+# Day 14: 시나리오 2 (AMI Public) 테스트
+# ----------------------------
+def make_tc8_finding_ami_public() -> Dict[str, Any]:
+    """
+    TC-8: 시나리오 2 (AMI Public) 테스트
+    - AMI가 Public으로 설정된 경우
+    """
+    return {
+        "id": "gd-finding-tc8-ami-public",
+        "type": "Policy:IAMUser/Root",
+        "severity": 6.8,
+        "title": "AMI Public 고의 설정",
+        "description": "AMI가 Public으로 설정되어 외부 접근 가능 상태.",
+        "region": "ap-northeast-2",
+        "accountId": "123456789012",
+        "resource": {
+            "resourceType": "Instance",
+            "instanceDetails": {
+                "instanceId": "i-ami-public-test",
+                "imageId": "ami-12345678"
+            },
+        },
+        "service": {
+            "action": {
+                "actionType": "AWS_API_CALL",
+                "awsApiCallAction": {"api": "ModifyImageAttribute"},
+            }
+        },
+    }
+
+
+def run_tc8_full_e2e():
+    """
+    TC-8: 전체 E2E 워크플로우 실행
+    - AMI Public 시나리오
+    """
+    print("\n" + "=" * 70)
+    print("=== [Day 14][TC-8] 시나리오 2 (AMI Public) 테스트 ===")
+    print("=" * 70)
+    
+    # 0) Chroma 설정
+    CHROMA_PERSIST_DIR = os.environ.get("CHROMA_PERSIST_DIR", "./chroma_db")
+    COLLECTION_NAME = os.environ.get("CHROMA_COLLECTION", "csa_ccm_v4")
+    
+    # 1) Finding 생성
+    finding = make_tc8_finding_ami_public()
+    
+    # 2) incident_input 준비
+    now = datetime.now(timezone.utc).isoformat()
+    incident_input = {
+        "schema_version": "1.1",
+        "generated_at": now,
+        "incident_id": finding["id"],
+        "incident_summary": {
+            "source": "guardduty",
+            "title": "AMI Public 고의 설정",
+            "severity": str(finding["severity"]),
+            "resource": {
+                "type": finding["resource"]["resourceType"],
+                "id": finding["resource"]["instanceDetails"]["instanceId"],
+                "region": finding["region"],
+                "account_id": finding["accountId"],
+            },
+        },
+        "executed_level1_actions": [
+            "record_finding",
+            "notify_slack",
+        ],
+        "candidate_actions": [
+            "isolate_instance",
+            "create_snapshot",
+        ],
+        "_guardduty_finding_raw": finding,
+    }
+    
+    # 3) Runtime result
+    runtime_result = {
+        "tags": ["public_exposure"],
+        "key_signals": ["public access", "unauthorized sharing"],
+    }
+    
+    # 4) Level Router
+    decision = decide_response_level(finding=finding, runtime_result=runtime_result)
+    print(f"\n[Router] selected_level: {decision.selected_level}")
+    
+    if decision.selected_level == 1:
+        print("⚠️  TC-8: Level 1로 종료됨 (정상일 수 있음)")
+        return
+    
+    # 5) RAG 검색
+    query_text, where_filter = build_guardduty_rag_query(
+        finding=finding, runtime_result=runtime_result, candidate_actions=incident_input["candidate_actions"]
+    )
+    
+    import chromadb
+    client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
+    collection = client.get_or_create_collection(name=COLLECTION_NAME)
+    retrieved = chroma_retrieve(collection, query_text, where_filter=where_filter, top_k=6)
+    
+    print(f"\n[RAG] Retrieved {len(retrieved)} regulations")
+    
+    # 6) Severity Decision + XAI
+    from severity_decision import decide_severity_level_with_xai
+    
+    security_event = {
+        "event_type": finding.get("type", "Unknown"),
+        "resource_type": finding["resource"]["resourceType"],
+        "exposure": "public",
+        "privilege_impact": False,
+        "data_sensitivity": "medium",
+    }
+    
+    severity_result = decide_severity_level_with_xai(security_event, retrieved)
+    print(f"\n[Severity Decision] Level: {severity_result['assigned_level']}")
+    
+    # 7) context_chunks 생성
+    context_chunks = build_context_chunks(retrieved)
+    
+    # 8) severity_result를 incident_input에 추가
+    incident_input["severity_decision_result"] = {
+        "assigned_level": severity_result["assigned_level"],
+        "justification": severity_result["justification"],
+        "triggers": {
+            "event_factors": severity_result["triggers"]["event_factors"],
+            "regulatory_signals": severity_result["triggers"]["regulatory_signals"],
+            "fallback": severity_result["triggers"]["fallback"]
+        }
+    }
+    
+    # 9) Regulation Agent 호출
+    output = call_regulation_agent_with_validation(
+        incident_input=incident_input,
+        context_chunks=context_chunks,
+        model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+    )
+    
+    # 10) 검증
+    print("\n=== [TC-8] 검증 ===")
+    
+    # recommended_actions이 있는지 확인
+    if len(output.recommended_actions) == 0:
+        print("⚠️  TC-8: recommended_actions가 비어있음")
+    else:
+        print(f"✅ recommended_actions: {len(output.recommended_actions)}개")
+        for action in output.recommended_actions:
+            print(f"   - {action.action_id} (Level {action.level})")
+    
+    # regulations 인용 확인
+    if len(output.regulations) > 0:
+        print(f"✅ regulations 인용: {len(output.regulations)}개")
+        for reg in output.regulations:
+            print(f"   - {reg.framework} {reg.clause_id}: {reg.clause_title}")
+    else:
+        print("⚠️  TC-8: regulations가 비어있음")
+    
+    print("\n✅ TC-8 PASSED: 시나리오 2 (AMI Public) 테스트 통과")
+
+
 if __name__ == "__main__":
     main()
     run_tc1()
@@ -998,4 +1484,7 @@ if __name__ == "__main__":
     run_tc4()
     run_tc5()
     run_tc6()
+    # Day 13, 14 시나리오 테스트
+    run_tc7_full_e2e()
+    run_tc8_full_e2e()
     

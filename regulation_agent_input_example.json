@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.1",
+  "generated_at": "2024-01-15T10:30:00.000Z",
+  "incident_id": "gd-finding-123",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Access Key suspicious usage (post-L1)",
+    "severity": "5.3",
+    "resource": {
+      "type": "AccessKey",
+      "id": "AKIAIOSFODNN7EXAMPLE",
+      "region": "ap-northeast-2",
+      "account_id": "123456789012"
+    }
+  },
+  "executed_level1_actions": [
+    "record_finding",
+    "notify_slack",
+    "fetch_cloudtrail_related_events",
+    "tag_finding_observe"
+  ],
+  "candidate_actions": [
+    "disable_access_key",
+    "detach_admin_policies",
+    "terminate_sessions",
+    "isolate_instance",
+    "create_snapshot"
+  ],
+  "severity_decision_result": {
+    "assigned_level": 2,
+    "justification": "심각도 레벨 Level 2 (High)이 할당되었습니다.\n\n[이벤트 요인]\n- 공개 노출 (Public Exposure)\n- 권한 영향 (Privilege Impact)\n- 중간 민감도 데이터 (Medium Sensitivity Data)\n\n[규제 신호]\n- IAM-05 (CSA_CCM): 긴급 대응 필요 (Urgent Response Required)\n- SEF-07 (CSA_CCM): 보고 의무 (Reporting Obligation)",
+    "triggers": {
+      "event_factors": [
+        "공개 노출 (Public Exposure)",
+        "권한 영향 (Privilege Impact)",
+        "중간 민감도 데이터 (Medium Sensitivity Data)"
+      ],
+      "regulatory_signals": [
+        {
+          "clause_id": "IAM-05",
+          "doc_type": "CSA_CCM",
+          "intent": "긴급 대응 필요 (Urgent Response Required)",
+          "title": "Least Privilege"
+        },
+        {
+          "clause_id": "SEF-07",
+          "doc_type": "CSA_CCM",
+          "intent": "보고 의무 (Reporting Obligation)",
+          "title": "Security Breach Notification"
+        }
+      ],
+      "fallback": false
+    }
+  },
+  "context_chunks": [
+    {
+      "doc_type": "CSA_CCM",
+      "doc_version": "v4.0",
+      "clause_id": "IAM-05",
+      "title": "Least Privilege",
+      "category": "IAM",
+      "mapping_iso27001": ["A.5.15", "A.8.2"],
+      "mapping_iso27017": [],
+      "content": "Control ID: IAM-05\nControl Title: Least Privilege\n[성격: Least Privilege(최소 권한), Access Control(접근 통제), Mitigation(완화)]\n\nRule: Employ the least privilege principle when implementing information system access.\n(한글 요약: 최소 권한 원칙 - 정보 시스템 접근 권한 부여 시 업무 수행에 필요한 최소한의 권한만 부여해야 한다.)\n\n[적용 시나리오]\n본 규정은 IaaS, PaaS, SaaS 등 모든 클라우드 서비스 모델에서 관리자, 개발자, 보안 담당자 등 사용자에게 시스템 접근 권한을 할당(Provisioning)하거나 변경할 때 적용됩니다. 특히 직무보다 과도한 권한이 부여된 계정(Excessive Privilege)이 식별될 때 필수적입니다.\n\n[대응 조치]\n이에 대한 보안 조치로는 사용자 직무에 필수적인 리소스에만 접근하도록 IAM 정책을 제한(restrict_access)하고, 정기적인 권한 검토를 통해 미사용 권한이나 과도한 권한을 즉시 회수(revoke_permissions)해야 합니다."
+    },
+    {
+      "doc_type": "CSA_CCM",
+      "doc_version": "v4.0",
+      "clause_id": "IAM-13",
+      "title": "Uniquely Identifiable Users",
+      "category": "IAM",
+      "mapping_iso27001": ["A.5.16"],
+      "mapping_iso27017": [],
+      "content": "Control ID: IAM-13\nControl Title: Uniquely Identifiable Users\n[성격: Access Control(접근 통제), Identification(식별), Authentication(인증)]\n\nRule: Ensure that all users are uniquely identifiable and authenticated before accessing information systems.\n(한글 요약: 고유 식별 사용자 - 모든 사용자는 정보 시스템에 접근하기 전에 고유하게 식별되고 인증되어야 한다.)\n\n[적용 시나리오]\n본 규정은 클라우드 환경에서 사용자 계정 생성, 관리, 인증 프로세스에 적용됩니다. 공유 계정이나 익명 접근이 발생할 수 있는 시나리오에서 특히 중요합니다.\n\n[대응 조치]\n사용자 계정은 고유한 식별자(Unique Identifier)를 가지도록 구성하고, 다중 인증(MFA)을 적용하여 인증 강도를 높여야 합니다. 또한 정기적인 계정 검토를 통해 미사용 계정이나 불필요한 계정을 제거해야 합니다."
+    },
+    {
+      "doc_type": "CSA_CCM",
+      "doc_version": "v4.0",
+      "clause_id": "SEF-07",
+      "title": "Security Breach Notification",
+      "category": "SEF",
+      "mapping_iso27001": ["A.6.1.3"],
+      "mapping_iso27017": [],
+      "content": "Control ID: SEF-07\nControl Title: Security Breach Notification\n[성격: Incident Response(사고 대응), Compliance(규정 준수), Reporting(보고)]\n\nRule: Establish and maintain procedures for timely reporting of security breaches to relevant stakeholders and regulatory authorities.\n(한글 요약: 보안 침해 통지 - 관련 이해관계자 및 규제 기관에 보안 침해를 적시에 보고하기 위한 절차를 수립하고 유지해야 한다.)\n\n[적용 시나리오]\n본 규정은 개인정보 유출, 데이터 침해, 무단 접근 등 보안 사고 발생 시 적용됩니다. 특히 규제 기관에 보고 의무가 있는 경우 필수적입니다.\n\n[대응 조치]\n보안 침해 발생 시 즉시 사고 대응 팀에 알리고, 관련 이해관계자에게 통지하며, 법적 보고 의무가 있는 경우 규제 기관에 신고해야 합니다. 사고 발생 시각, 영향 범위, 조치 사항을 문서화하여 기록해야 합니다."
+    }
+  ]
+}
+
+
+
