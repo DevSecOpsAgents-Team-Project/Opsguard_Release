@@ -2,7 +2,7 @@ import json
 import requests
 
 # ⚠️ 본인의 토큰과 채널 ID를 꼭 유지해주세요!
-SLACK_BOT_TOKEN = "xoxb-10299250893681-10564145647505-jVkEytMccRsYpiQahegEIPSZ"
+SLACK_BOT_TOKEN = "***"
 SLACK_CHANNEL = "C0A8E9KCZ7U"
 
 def send_approval_message(mock_json):
