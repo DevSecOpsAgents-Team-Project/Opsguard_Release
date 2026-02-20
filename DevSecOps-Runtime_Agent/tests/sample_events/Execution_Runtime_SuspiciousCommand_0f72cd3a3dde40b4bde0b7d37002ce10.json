@@ -1,0 +1,376 @@
+{
+  "AccountId": "836347236184",
+  "Arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/0f72cd3a3dde40b4bde0b7d37002ce10",
+  "CreatedAt": "2025-11-09T07:43:27.660Z",
+  "Description": "Process GeneratedFindingProcessName in EKSCluster has executed the suspicious command GeneratedCommandLineExample.",
+  "Id": "0f72cd3a3dde40b4bde0b7d37002ce10",
+  "Partition": "aws",
+  "Region": "ap-northeast-2",
+  "Resource": {
+    "InstanceDetails": {
+      "AvailabilityZone": "generated-az-1a",
+      "IamInstanceProfile": {
+        "Arn": "arn:aws:iam::012345678999:instance-profile/generated",
+        "Id": "GeneratedFindingInstanceProfileId"
+      },
+      "ImageDescription": "GeneratedFindingInstanceImageDescription",
+      "ImageId": "ami-99999999",
+      "InstanceId": "i-99999999",
+      "InstanceState": "running",
+      "InstanceType": "m3.xlarge",
+      "OutpostArn": "arn:aws:outposts:us-west-2:123456789012:outpost/op-1234567890abcdef0",
+      "LaunchTime": "2016-08-02T02:05:06.000Z",
+      "NetworkInterfaces": [
+        {
+          "Ipv6Addresses": [],
+          "NetworkInterfaceId": "eni-abcdef00",
+          "PrivateDnsName": "GeneratedFindingPrivateDnsName1",
+          "PrivateIpAddress": "10.0.0.1",
+          "PrivateIpAddresses": [
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName1",
+              "PrivateIpAddress": "10.0.0.1"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName2",
+              "PrivateIpAddress": "10.0.0.2"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName3",
+              "PrivateIpAddress": "10.0.0.3"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName4",
+              "PrivateIpAddress": "10.0.0.4"
+            }
+          ],
+          "PublicDnsName": "GeneratedFindingPublicDNSName1",
+          "PublicIp": "198.51.100.1",
+          "SecurityGroups": [
+            {
+              "GroupId": "GeneratedFindingSecurityId1",
+              "GroupName": "GeneratedFindingSecurityGroupName1"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId2",
+              "GroupName": "GeneratedFindingSecurityGroupName2"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId3",
+              "GroupName": "GeneratedFindingSecurityGroupName3"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId4",
+              "GroupName": "GeneratedFindingSecurityGroupName4"
+            }
+          ],
+          "SubnetId": "GeneratedFindingSubnetId1",
+          "VpcId": "vpc-generatedvpcid1"
+        },
+        {
+          "Ipv6Addresses": [],
+          "NetworkInterfaceId": "eni-abcdef01",
+          "PrivateDnsName": "GeneratedFindingPrivateDnsName2",
+          "PrivateIpAddress": "10.0.0.2",
+          "PrivateIpAddresses": [
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName1",
+              "PrivateIpAddress": "10.0.0.1"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName2",
+              "PrivateIpAddress": "10.0.0.2"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName3",
+              "PrivateIpAddress": "10.0.0.3"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName4",
+              "PrivateIpAddress": "10.0.0.4"
+            }
+          ],
+          "PublicDnsName": "GeneratedFindingPublicDNSName2",
+          "PublicIp": "198.51.100.2",
+          "SecurityGroups": [
+            {
+              "GroupId": "GeneratedFindingSecurityId1",
+              "GroupName": "GeneratedFindingSecurityGroupName1"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId2",
+              "GroupName": "GeneratedFindingSecurityGroupName2"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId3",
+              "GroupName": "GeneratedFindingSecurityGroupName3"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId4",
+              "GroupName": "GeneratedFindingSecurityGroupName4"
+            }
+          ],
+          "SubnetId": "GeneratedFindingSubnetId2",
+          "VpcId": "vpc-generatedvpcid2"
+        },
+        {
+          "Ipv6Addresses": [],
+          "NetworkInterfaceId": "eni-abcdef02",
+          "PrivateDnsName": "GeneratedFindingPrivateDnsName3",
+          "PrivateIpAddress": "10.0.0.3",
+          "PrivateIpAddresses": [
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName1",
+              "PrivateIpAddress": "10.0.0.1"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName2",
+              "PrivateIpAddress": "10.0.0.2"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName3",
+              "PrivateIpAddress": "10.0.0.3"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName4",
+              "PrivateIpAddress": "10.0.0.4"
+            }
+          ],
+          "PublicDnsName": "GeneratedFindingPublicDNSName3",
+          "PublicIp": "198.51.100.3",
+          "SecurityGroups": [
+            {
+              "GroupId": "GeneratedFindingSecurityId1",
+              "GroupName": "GeneratedFindingSecurityGroupName1"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId2",
+              "GroupName": "GeneratedFindingSecurityGroupName2"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId3",
+              "GroupName": "GeneratedFindingSecurityGroupName3"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId4",
+              "GroupName": "GeneratedFindingSecurityGroupName4"
+            }
+          ],
+          "SubnetId": "GeneratedFindingSubnetId3",
+          "VpcId": "vpc-generatedvpcid3"
+        },
+        {
+          "Ipv6Addresses": [],
+          "NetworkInterfaceId": "eni-abcdef03",
+          "PrivateDnsName": "GeneratedFindingPrivateDnsName4",
+          "PrivateIpAddress": "10.0.0.4",
+          "PrivateIpAddresses": [
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName1",
+              "PrivateIpAddress": "10.0.0.1"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName2",
+              "PrivateIpAddress": "10.0.0.2"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName3",
+              "PrivateIpAddress": "10.0.0.3"
+            },
+            {
+              "PrivateDnsName": "GeneratedFindingPrivateName4",
+              "PrivateIpAddress": "10.0.0.4"
+            }
+          ],
+          "PublicDnsName": "GeneratedFindingPublicDNSName4",
+          "PublicIp": "198.51.100.4",
+          "SecurityGroups": [
+            {
+              "GroupId": "GeneratedFindingSecurityId1",
+              "GroupName": "GeneratedFindingSecurityGroupName1"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId2",
+              "GroupName": "GeneratedFindingSecurityGroupName2"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId3",
+              "GroupName": "GeneratedFindingSecurityGroupName3"
+            },
+            {
+              "GroupId": "GeneratedFindingSecurityId4",
+              "GroupName": "GeneratedFindingSecurityGroupName4"
+            }
+          ],
+          "SubnetId": "GeneratedFindingSubnetId4",
+          "VpcId": "vpc-generatedvpcid4"
+        }
+      ],
+      "ProductCodes": [
+        {
+          "Code": "GeneratedFindingProductCodeId1",
+          "ProductType": "marketplace"
+        },
+        {
+          "Code": "GeneratedFindingProductCodeId2",
+          "ProductType": "marketplace"
+        },
+        {
+          "Code": "GeneratedFindingProductCodeId3",
+          "ProductType": "marketplace"
+        },
+        {
+          "Code": "GeneratedFindingProductCodeId4",
+          "ProductType": "marketplace"
+        },
+        {
+          "Code": "GeneratedFindingProductCodeId5",
+          "ProductType": "marketplace"
+        }
+      ],
+      "Tags": [
+        {
+          "Key": "GeneratedFindingInstanceTag1",
+          "Value": "GeneratedFindingInstanceValue1"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag2",
+          "Value": "GeneratedFindingInstanceTagValue2"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag3",
+          "Value": "GeneratedFindingInstanceTagValue3"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag4",
+          "Value": "GeneratedFindingInstanceTagValue4"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag5",
+          "Value": "GeneratedFindingInstanceTagValue5"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag6",
+          "Value": "GeneratedFindingInstanceTagValue6"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag7",
+          "Value": "GeneratedFindingInstanceTagValue7"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag8",
+          "Value": "GeneratedFindingInstanceTagValue8"
+        },
+        {
+          "Key": "GeneratedFindingInstanceTag9",
+          "Value": "GeneratedFindingInstanceTagValue9"
+        }
+      ]
+    },
+    "EksClusterDetails": {
+      "Name": "GeneratedFindingEKSClusterName",
+      "Arn": "arn:aws:eks:us-east-1:123456789012:cluster/generated",
+      "VpcId": "vpc-12345678",
+      "Status": "ACTIVE",
+      "Tags": [
+        {
+          "Key": "GeneratedFindingEKSClusterTag1",
+          "Value": "GeneratedFindingEKSClusterTagValue1"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag2",
+          "Value": "GeneratedFindingEKSClusterTagValue2"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag3",
+          "Value": "GeneratedFindingEKSClusterTagValue3"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag4",
+          "Value": "GeneratedFindingEKSClusterTagValue4"
+        }
+      ],
+      "CreatedAt": "2021-11-11 19:15:55.218000+09:00"
+    },
+    "KubernetesDetails": {
+      "KubernetesWorkloadDetails": {
+        "Name": "GeneratedFindingKubernetesWorkloadName",
+        "Type": "pods",
+        "Uid": "00112233-4455-6677-8899-aabbccddeeff",
+        "Namespace": "GeneratedFindingKubernetesWorkloadNamespace"
+      }
+    },
+    "ResourceType": "EKSCluster",
+    "ContainerDetails": {
+      "Id": "GeneratedFindingContainerId",
+      "Name": "GeneratedFindingContainerName",
+      "Image": "GeneratedFindingContainerImage"
+    }
+  },
+  "SchemaVersion": "2.0",
+  "Service": {
+    "Archived": false,
+    "Count": 5,
+    "DetectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+    "EventFirstSeen": "2025-11-09T07:43:27.000Z",
+    "EventLastSeen": "2025-11-13T01:20:18.000Z",
+    "ServiceName": "guardduty",
+    "AdditionalInfo": {
+      "Value": "{\"agentDetails\":{\"agentId\":\"GeneratedFindingAgentId\",\"agentVersion\":\"1\"},\"sample\":true,\"threatListName\":\"GeneratedFindingThreatListName\"}",
+      "Type": "default"
+    },
+    "FeatureName": "RuntimeMonitoring",
+    "RuntimeDetails": {
+      "Process": {
+        "Name": "GeneratedFindingProcessName",
+        "ExecutablePath": "GeneratedFindingPath",
+        "ExecutableSha256": "GeneratedFindingHash",
+        "Pwd": "GeneratedFindingPath",
+        "Pid": 1234,
+        "StartTime": "2021-11-16 06:38:14+09:00",
+        "Uuid": "GeneratedFindingUUId",
+        "ParentUuid": "GeneratedFindingUUId",
+        "User": "ec2-user",
+        "UserId": 1000,
+        "Euid": 1000,
+        "Lineage": [
+          {
+            "Pid": 1233,
+            "Uuid": "GeneratedFindingUUId1",
+            "ExecutablePath": "GeneratedFindingPath1",
+            "Euid": 1000,
+            "ParentUuid": "GeneratedFindingParentUUId1"
+          },
+          {
+            "Pid": 1234,
+            "Uuid": "GeneratedFindingUUId2",
+            "ExecutablePath": "GeneratedFindingPath2",
+            "Euid": 1001,
+            "ParentUuid": "GeneratedFindingParentUUId2"
+          },
+          {
+            "Pid": 1235,
+            "Uuid": "GeneratedFindingUUId3",
+            "ExecutablePath": "GeneratedFindingPath3",
+            "Euid": 1002,
+            "ParentUuid": "GeneratedFindingParentUUId3"
+          },
+          {
+            "Pid": 1236,
+            "Uuid": "GeneratedFindingUUId4",
+            "ExecutablePath": "GeneratedFindingPath4",
+            "Euid": 1003,
+            "ParentUuid": "GeneratedFindingParentUUId4"
+          }
+        ]
+      },
+      "Context": {
+        "CommandLineExample": "GeneratedCommandLineExample"
+      }
+    }
+  },
+  "Severity": 2.0,
+  "Title": "A resource of type EKSCluster has executed a suspicious command.",
+  "Type": "Execution:Runtime/SuspiciousCommand",
+  "UpdatedAt": "2025-11-13T01:20:18.949Z"
+}

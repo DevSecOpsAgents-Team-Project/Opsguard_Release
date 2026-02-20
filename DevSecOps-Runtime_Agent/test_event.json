@@ -1,0 +1,91 @@
+{
+  "incident_id": "TEST-ALL-ACTIONS-001",
+  "scenario": "IntegrationTest_All_Actions",
+  "incident_summary": {
+    "source": "manual_test",
+    "title": "Full Scale Action Test"
+  },
+  "recommended_actions": [
+    {
+      
+      "action_id": "isolate_instance",
+      "targets": [
+        { "type": "EC2Instance", "id": "i-0d68459de0b881557" }
+      ]
+    },
+    {
+      "action_id": "create_snapshot",
+      "targets": [
+        { "type": "EC2Instance", "id": "i-0d68459de0b881557" }
+      ]
+    },
+    {
+      "action_id": "backup_instance",
+      "targets": [
+        { "type": "EC2Instance", "id": "i-0d68459de0b881557" }
+      ]
+    },
+    {
+      "action_id": "stop_instance",
+      "targets": [
+        { "type": "EC2Instance", "id": "i-04ea8e8b68329c987" }
+      ]
+    },
+
+    {
+      
+      "action_id": "disable_access_key",
+      "targets": [
+        { 
+          "type": "AccessKey", 
+          "id": "AKIA4FOROB5MES2EQSEJ", 
+          "user_name": "iam-2026-02-14-test1" 
+        }
+      ]
+    },
+    {
+      "action_id": "detach_admin_policies",
+      "targets": [
+        { "type": "IAMUser", "user_name": "iam-2026-02-14-test1" }
+      ]
+    },
+    {
+      "action_id": "disable_iam_entity",
+      "targets": [
+        { "type": "IAMUser", "user_name": "iam-2026-02-14-test2" }
+      ]
+    },
+
+    {
+      
+      "action_id": "block_ip",
+      "targets": [
+        { "type": "IPAddress", "ip": "1.2.3.4" }
+      ]
+    },
+    {
+      "action_id": "enable_vpc_flow_logs",
+      "targets": [
+        { "type": "VPC", "id": "vpc-0e5013adedd2e44a6" }
+      ]
+    },
+
+    {
+      
+      "action_id": "block_s3_public_access",
+      "targets": [
+        { "type": "S3Bucket", "id": "s3-2026-02-14-test1" }
+      ]
+    },
+    {
+      "action_id": "enable_s3_bucket_logging",
+      "targets": [
+        { 
+          "type": "S3Bucket", 
+          "id": "s3-2026-02-14-test1",
+          "target_bucket": "mcp-security-logs-bucket" 
+        }
+      ]
+    }
+  ]
+}

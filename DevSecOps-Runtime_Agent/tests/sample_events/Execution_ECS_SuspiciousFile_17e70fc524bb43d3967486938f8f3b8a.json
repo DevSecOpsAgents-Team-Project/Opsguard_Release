@@ -1,0 +1,271 @@
+{
+  "AccountId": "836347236184",
+  "Arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/17e70fc524bb43d3967486938f8f3b8a",
+  "CreatedAt": "2025-11-09T07:43:27.669Z",
+  "Description": "2 security risk(s) detected including EICAR-Test-File on ECS Cluster GeneratedFindingECSClusterName.",
+  "Id": "17e70fc524bb43d3967486938f8f3b8a",
+  "Partition": "aws",
+  "Region": "ap-northeast-2",
+  "Resource": {
+    "ResourceType": "ECSCluster",
+    "EbsVolumeDetails": {
+      "ScannedVolumeDetails": [
+        {
+          "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+          "VolumeType": "GeneratedScannedVolumeType1",
+          "DeviceName": "GeneratedScannedDeviceName1",
+          "VolumeSizeInGB": 8,
+          "EncryptionType": "UNENCRYPTED",
+          "SnapshotArn": "arn:aws:ec2:us-west-2:123456789000:snapshot/snap-12345678901234567"
+        },
+        {
+          "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+          "VolumeType": "GeneratedScannedVolumeType2",
+          "DeviceName": "GeneratedScannedDeviceName2",
+          "VolumeSizeInGB": 8,
+          "EncryptionType": "UNENCRYPTED",
+          "SnapshotArn": "arn:aws:ec2:us-west-2:123456789000:snapshot/snap-12345678901234567"
+        },
+        {
+          "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+          "VolumeType": "GeneratedScannedVolumeType3",
+          "DeviceName": "GeneratedScannedDeviceName3",
+          "VolumeSizeInGB": 8,
+          "EncryptionType": "UNENCRYPTED",
+          "SnapshotArn": "arn:aws:ec2:us-west-2:123456789000:snapshot/snap-12345678901234567"
+        },
+        {
+          "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+          "VolumeType": "GeneratedScannedVolumeType4",
+          "DeviceName": "GeneratedScannedDeviceName4",
+          "VolumeSizeInGB": 8,
+          "EncryptionType": "UNENCRYPTED",
+          "SnapshotArn": "arn:aws:ec2:us-west-2:123456789000:snapshot/snap-12345678901234567"
+        }
+      ]
+    },
+    "EcsClusterDetails": {
+      "Name": "GeneratedFindingECSClusterName",
+      "Arn": "arn:aws:ecs:us-east-1:123456789000:cluster/clusterName",
+      "Status": "ACTIVE",
+      "Tags": [
+        {
+          "Key": "GeneratedFindingECSClusterTag1",
+          "Value": "GeneratedFindingECSClusterTagValue1"
+        },
+        {
+          "Key": "GeneratedFindingECSClusterTag2",
+          "Value": "GeneratedFindingECSClusterTagValue2"
+        },
+        {
+          "Key": "GeneratedFindingECSClusterTag3",
+          "Value": "GeneratedFindingECSClusterTagValue3"
+        },
+        {
+          "Key": "GeneratedFindingECSClusterTag4",
+          "Value": "GeneratedFindingECSClusterTagValue4"
+        }
+      ],
+      "TaskDetails": {
+        "Arn": "arn:aws:ecs:us-east-1:123456789000:task/mycluster/043de9ab3",
+        "DefinitionArn": "arn:aws:ecs:us-east-1:123456789000:task-definition/mycluster/76f1f1asdf",
+        "Version": "1",
+        "TaskCreatedAt": "2025-02-05 07:53:26.154000+09:00",
+        "StartedAt": "2025-02-05 07:57:39.627000+09:00",
+        "StartedBy": "GeneratedFindingECSTaskStartedBy",
+        "Containers": [
+          {
+            "Name": "GeneratedFindingContainerName1",
+            "Image": "GeneratedFindingContainerImage1"
+          },
+          {
+            "Name": "GeneratedFindingContainerName2",
+            "Image": "GeneratedFindingContainerImage2"
+          },
+          {
+            "Name": "GeneratedFindingContainerName3",
+            "Image": "GeneratedFindingContainerImage3"
+          },
+          {
+            "Name": "GeneratedFindingContainerName4",
+            "Image": "GeneratedFindingContainerImage4"
+          }
+        ]
+      }
+    }
+  },
+  "SchemaVersion": "2.0",
+  "Service": {
+    "Archived": false,
+    "Count": 5,
+    "DetectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+    "EventFirstSeen": "2025-11-09T07:43:27.000Z",
+    "EventLastSeen": "2025-11-13T01:20:18.000Z",
+    "ServiceName": "guardduty",
+    "AdditionalInfo": {
+      "Value": "{\"sample\":true}",
+      "Type": "default"
+    },
+    "FeatureName": "EbsVolumeScan",
+    "EbsVolumeScanDetails": {
+      "ScanId": "bd6ce77dcacb163330a1a40ec143f590",
+      "ScanStartedAt": "2021-12-09 09:45:03+09:00",
+      "ScanCompletedAt": "2021-12-09 09:53:46+09:00",
+      "TriggerFindingId": "aebf726700725c2ffe5a2418d71b95gh",
+      "Sources": [
+        "Amazon"
+      ],
+      "ScanDetections": {
+        "ScannedItemCount": {
+          "TotalGb": 1,
+          "Files": 65226,
+          "Volumes": 1
+        },
+        "ThreatsDetectedItemCount": {
+          "Files": 2
+        },
+        "HighestSeverityThreatDetails": {
+          "Severity": "MEDIUM",
+          "ThreatName": "EICAR-Test-File",
+          "Count": 2
+        },
+        "ThreatDetectedByName": {
+          "ItemCount": 4,
+          "UniqueThreatNameCount": 1,
+          "Shortened": false,
+          "ThreatNames": [
+            {
+              "Name": "EICAR-Test-File1",
+              "Severity": "MEDIUM",
+              "ItemCount": 4,
+              "FilePaths": [
+                {
+                  "FilePath": "tmp/eicar.com",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1200",
+                  "FileName": "eicar.com"
+                },
+                {
+                  "FilePath": "tmp/eicar-2.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1201",
+                  "FileName": "eicar-2.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-3.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1202",
+                  "FileName": "eicar-3.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-4.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1203",
+                  "FileName": "eicar-4.txt"
+                }
+              ]
+            },
+            {
+              "Name": "EICAR-Test-File2",
+              "Severity": "MEDIUM",
+              "ItemCount": 4,
+              "FilePaths": [
+                {
+                  "FilePath": "tmp/eicar.com",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1210",
+                  "FileName": "eicar.com"
+                },
+                {
+                  "FilePath": "tmp/eicar-2.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1211",
+                  "FileName": "eicar-2.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-3.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1212",
+                  "FileName": "eicar-3.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-4.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1213",
+                  "FileName": "eicar-4.txt"
+                }
+              ]
+            },
+            {
+              "Name": "EICAR-Test-File3",
+              "Severity": "MEDIUM",
+              "ItemCount": 4,
+              "FilePaths": [
+                {
+                  "FilePath": "tmp/eicar.com",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1220",
+                  "FileName": "eicar.com"
+                },
+                {
+                  "FilePath": "tmp/eicar-2.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1221",
+                  "FileName": "eicar-2.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-3.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1222",
+                  "FileName": "eicar-3.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-4.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1223",
+                  "FileName": "eicar-4.txt"
+                }
+              ]
+            },
+            {
+              "Name": "EICAR-Test-File4",
+              "Severity": "MEDIUM",
+              "ItemCount": 4,
+              "FilePaths": [
+                {
+                  "FilePath": "tmp/eicar.com",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1230",
+                  "FileName": "eicar.com"
+                },
+                {
+                  "FilePath": "tmp/eicar-2.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1231",
+                  "FileName": "eicar-2.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-3.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1232",
+                  "FileName": "eicar-3.txt"
+                },
+                {
+                  "FilePath": "tmp/eicar-4.txt",
+                  "VolumeArn": "arn:aws:ec2:us-west-2:123456789000:volume/vol-09d5050dea915943d",
+                  "Hash": "123456789abcdef123456789abcdef123456789abcdef123456789abcdef1233",
+                  "FileName": "eicar-4.txt"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "ScanType": "GUARDDUTY_INITIATED"
+    }
+  },
+  "Severity": 6.0,
+  "Title": "2 security risk(s) detected including EICAR-Test-File on ECS Cluster GeneratedFindingECSClusterName.",
+  "Type": "Execution:ECS/SuspiciousFile",
+  "UpdatedAt": "2025-11-13T01:20:18.954Z"
+}

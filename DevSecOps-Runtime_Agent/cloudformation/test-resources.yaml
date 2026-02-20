@@ -1,0 +1,267 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'GuardDuty 테스트용 최소 취약 리소스 (EC2, S3, IAM) - 3개 플레이북 테스트용'
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 인스턴스 타입
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+  
+  AMIId:
+    Type: AWS::EC2::Image::Id
+    Description: 'EC2 인스턴스용 AMI ID (기본값: Amazon Linux 2023 ap-northeast-2)'
+    Default: ami-0c9c942bd7bf113a2
+
+Resources:
+  # VPC 및 네트워크 설정
+  TestVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: GuardDuty-Test-VPC
+        - Key: Purpose
+          Value: GuardDuty-Testing
+
+  TestInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: GuardDuty-Test-IGW
+        - Key: Purpose
+          Value: GuardDuty-Testing
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref TestVPC
+      InternetGatewayId: !Ref TestInternetGateway
+
+  TestPublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref TestVPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: GuardDuty-Test-Public-Subnet
+        - Key: Purpose
+          Value: GuardDuty-Testing
+
+  TestRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref TestVPC
+      Tags:
+        - Key: Name
+          Value: GuardDuty-Test-RouteTable
+        - Key: Purpose
+          Value: GuardDuty-Testing
+
+  TestDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref TestRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref TestInternetGateway
+
+  TestSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TestPublicSubnet
+      RouteTableId: !Ref TestRouteTable
+
+  # 취약한 보안 그룹 (모든 트래픽 허용 - GuardDuty가 감지할 수 있음)
+  VulnerableSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: guardduty-test-vulnerable-sg
+      GroupDescription: Vulnerable security group for GuardDuty testing (all traffic allowed)
+      VpcId: !Ref TestVPC
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all inbound traffic (vulnerable for testing)
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
+      Tags:
+        - Key: Name
+          Value: GuardDuty-Test-Vulnerable-SG
+        - Key: Purpose
+          Value: GuardDuty-Testing
+
+  # IAM 역할 (SSM 에이전트용)
+  EC2SSMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: GuardDuty-Test-EC2-SSM-Role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Tags:
+        - Key: Purpose
+          Value: GuardDuty-Testing
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: GuardDuty-Test-EC2-Profile
+      Roles:
+        - !Ref EC2SSMRole
+
+  # 취약한 EC2 인스턴스 (공개 IP, 넓은 보안 그룹)
+  VulnerableEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref AMIId
+      InstanceType: !Ref InstanceType
+      SubnetId: !Ref TestPublicSubnet
+      SecurityGroupIds:
+        - !Ref VulnerableSecurityGroup
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      # KeyPairName은 선택사항 (SSM 사용 시 불필요)
+      # KeyName: !If [HasKeyPair, !Ref KeyPairName, !Ref "AWS::NoValue"]
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y amazon-ssm-agent
+          systemctl enable amazon-ssm-agent
+          systemctl start amazon-ssm-agent
+          # GuardDuty 테스트용 태그
+          INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+          aws ec2 create-tags --region ap-northeast-2 --resources $INSTANCE_ID --tags Key=Purpose,Value=GuardDuty-Testing Key=Environment,Value=Test || true
+      Tags:
+        - Key: Name
+          Value: GuardDuty-Test-EC2-Vulnerable
+        - Key: Purpose
+          Value: GuardDuty-Testing
+        - Key: Environment
+          Value: Test
+
+  # 취약한 S3 버킷 (퍼블릭 액세스 허용)
+  VulnerableS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'guardduty-test-bucket-${AWS::AccountId}-${AWS::Region}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Name
+          Value: GuardDuty-Test-S3-Vulnerable
+        - Key: Purpose
+          Value: GuardDuty-Testing
+        - Key: Environment
+          Value: Test
+
+  # S3 버킷 정책 (퍼블릭 읽기 허용 - GuardDuty가 감지할 수 있음)
+  VulnerableS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref VulnerableS3Bucket
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::${VulnerableS3Bucket}/*'
+          - Sid: PublicListBucket
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:ListBucket'
+            Resource: !Sub 'arn:aws:s3:::${VulnerableS3Bucket}'
+
+  # IAM 테스트 사용자 (IAM 플레이북 테스트용)
+  TestIAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: guardduty-test-user
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      Tags:
+        - Key: Purpose
+          Value: GuardDuty-Testing
+        - Key: Environment
+          Value: Test
+
+Outputs:
+  VPCId:
+    Description: 생성된 VPC ID
+    Value: !Ref TestVPC
+    Export:
+      Name: !Sub '${AWS::StackName}-VPCId'
+
+  SecurityGroupId:
+    Description: 생성된 보안 그룹 ID
+    Value: !Ref VulnerableSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-SecurityGroupId'
+
+  EC2InstanceId:
+    Description: 생성된 EC2 인스턴스 ID
+    Value: !Ref VulnerableEC2Instance
+    Export:
+      Name: !Sub '${AWS::StackName}-EC2InstanceId'
+
+  EC2PublicIP:
+    Description: EC2 인스턴스 공개 IP
+    Value: !GetAtt VulnerableEC2Instance.PublicIp
+    Export:
+      Name: !Sub '${AWS::StackName}-EC2PublicIP'
+
+  S3BucketName:
+    Description: 생성된 S3 버킷 이름
+    Value: !Ref VulnerableS3Bucket
+    Export:
+      Name: !Sub '${AWS::StackName}-S3BucketName'
+
+  S3BucketArn:
+    Description: S3 버킷 ARN
+    Value: !GetAtt VulnerableS3Bucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-S3BucketArn'
+
+  IAMUserName:
+    Description: 생성된 IAM 사용자 이름
+    Value: !Ref TestIAMUser
+    Export:
+      Name: !Sub '${AWS::StackName}-IAMUserName'
+
+  StackInfo:
+    Description: 스택 정보
+    Value: !Sub |
+      테스트 리소스가 생성되었습니다.
+      EC2 인스턴스 ID: ${VulnerableEC2Instance}
+      S3 버킷 이름: ${VulnerableS3Bucket}
+      IAM 사용자 이름: ${TestIAMUser}
+      
+      3개 플레이북 위협 시뮬레이션 테스트:
+      python tools/test_threat_simulation.py --scenario ec2_attack --instance-id ${VulnerableEC2Instance}
+      python tools/test_threat_simulation.py --scenario s3_public --bucket-name ${VulnerableS3Bucket}
+      python tools/test_threat_simulation.py --scenario iam_abuse --user-name ${TestIAMUser}
+

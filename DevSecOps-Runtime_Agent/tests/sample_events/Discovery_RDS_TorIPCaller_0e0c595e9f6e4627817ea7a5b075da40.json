@@ -1,0 +1,128 @@
+{
+  "AccountId": "836347236184",
+  "Arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/0e0c595e9f6e4627817ea7a5b075da40",
+  "CreatedAt": "2025-11-09T07:43:27.694Z",
+  "Description": "A Tor exit node IP address probed an RDS database in your account, and no authentication attempt was made.",
+  "Id": "0e0c595e9f6e4627817ea7a5b075da40",
+  "Partition": "aws",
+  "Region": "ap-northeast-2",
+  "Resource": {
+    "ResourceType": "RDSLimitlessDB",
+    "RdsLimitlessDbDetails": {
+      "DbShardGroupIdentifier": "dbshardgroupidentifier",
+      "DbShardGroupResourceId": "shardgroup-generated-dbShardGroupResourceId",
+      "DbShardGroupArn": "arn:aws:rds:us-east-1:123456789000:shard-group:shardgroup-GeneratedDBShardGroupArn",
+      "Engine": "GeneratedFindingEngine",
+      "EngineVersion": "13.6",
+      "DbClusterIdentifier": "GeneratedFindingDBClusterId",
+      "Tags": [
+        {
+          "Key": "GeneratedFindingRDSDBInstanceTag1",
+          "Value": "GeneratedFindingRDSDBInstanceValue1"
+        },
+        {
+          "Key": "GeneratedFindingRDSDBInstanceTag2",
+          "Value": "GeneratedFindingRDSDBInstanceValue2"
+        },
+        {
+          "Key": "GeneratedFindingRDSDBInstanceTag3",
+          "Value": "GeneratedFindingRDSDBInstanceValue3"
+        },
+        {
+          "Key": "GeneratedFindingRDSDBInstanceTag4",
+          "Value": "GeneratedFindingRDSDBInstanceValue4"
+        }
+      ]
+    },
+    "RdsDbUserDetails": {
+      "User": "GeneratedFindingUserName",
+      "Application": "GeneratedFindingApplicationName",
+      "Database": "GeneratedFindingDatabaseName",
+      "Ssl": "GeneratedFindingSSLValue",
+      "AuthMethod": "GeneratedFindingAuthMethod"
+    }
+  },
+  "SchemaVersion": "2.0",
+  "Service": {
+    "Action": {
+      "ActionType": "RDS_LOGIN_ATTEMPT",
+      "RdsLoginAttemptAction": {
+        "RemoteIpDetails": {
+          "City": {
+            "CityName": "GeneratedFindingCityName"
+          },
+          "Country": {
+            "CountryName": "GeneratedFindingCountryName"
+          },
+          "GeoLocation": {
+            "Lat": 0.0,
+            "Lon": 0.0
+          },
+          "IpAddressV4": "1.2.3.4",
+          "IpAddressV6": "1234:5678:90ab:cdef:1234:5678:90ab:cde0",
+          "Organization": {
+            "Asn": "0",
+            "AsnOrg": "GeneratedFindingAsnOrg",
+            "Isp": "GeneratedFindingIsp",
+            "Org": "GeneratedFindingOrg"
+          }
+        }
+      }
+    },
+    "Evidence": {
+      "ThreatIntelligenceDetails": [
+        {
+          "ThreatListName": "GeneratedFindingThreatListName1",
+          "ThreatNames": [
+            "GeneratedFindingThreatName1",
+            "GeneratedFindingThreatName2",
+            "GeneratedFindingThreatName3",
+            "GeneratedFindingThreatName4"
+          ]
+        },
+        {
+          "ThreatListName": "GeneratedFindingThreatListName2",
+          "ThreatNames": [
+            "GeneratedFindingThreatName1",
+            "GeneratedFindingThreatName2",
+            "GeneratedFindingThreatName3",
+            "GeneratedFindingThreatName4"
+          ]
+        },
+        {
+          "ThreatListName": "GeneratedFindingThreatListName3",
+          "ThreatNames": [
+            "GeneratedFindingThreatName1",
+            "GeneratedFindingThreatName2",
+            "GeneratedFindingThreatName3",
+            "GeneratedFindingThreatName4"
+          ]
+        },
+        {
+          "ThreatListName": "GeneratedFindingThreatListName4",
+          "ThreatNames": [
+            "GeneratedFindingThreatName1",
+            "GeneratedFindingThreatName2",
+            "GeneratedFindingThreatName3",
+            "GeneratedFindingThreatName4"
+          ]
+        }
+      ]
+    },
+    "Archived": false,
+    "Count": 5,
+    "DetectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+    "EventFirstSeen": "2025-11-09T07:43:27.000Z",
+    "EventLastSeen": "2025-11-13T01:20:18.000Z",
+    "ResourceRole": "TARGET",
+    "ServiceName": "guardduty",
+    "AdditionalInfo": {
+      "Value": "{\"sample\":true}",
+      "Type": "default"
+    }
+  },
+  "Severity": 5.0,
+  "Title": "A Tor exit node IP address probed an RDS database in your account, and no authentication attempt was made.",
+  "Type": "Discovery:RDS/TorIPCaller",
+  "UpdatedAt": "2025-11-13T01:20:18.969Z"
+}

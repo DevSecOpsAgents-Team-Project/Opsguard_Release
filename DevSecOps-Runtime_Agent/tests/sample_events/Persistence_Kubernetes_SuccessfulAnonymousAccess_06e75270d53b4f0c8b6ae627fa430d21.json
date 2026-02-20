@@ -1,0 +1,109 @@
+{
+  "AccountId": "836347236184",
+  "Arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/06e75270d53b4f0c8b6ae627fa430d21",
+  "CreatedAt": "2025-11-09T07:43:27.636Z",
+  "Description": "A Kubernetes API commonly used in Persistence tactics was invoked on cluster GeneratedFindingEKSClusterName by the anonymous user system:anonymous.",
+  "Id": "06e75270d53b4f0c8b6ae627fa430d21",
+  "Partition": "aws",
+  "Region": "ap-northeast-2",
+  "Resource": {
+    "EksClusterDetails": {
+      "Name": "GeneratedFindingEKSClusterName",
+      "Arn": "arn:aws:eks:us-east-1:123456789000:cluster/clusterName",
+      "VpcId": "vpc-0123456789",
+      "Status": "ACTIVE",
+      "Tags": [
+        {
+          "Key": "GeneratedFindingEKSClusterTag1",
+          "Value": "GeneratedFindingEKSClusterTagValue1"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag2",
+          "Value": "GeneratedFindingEKSClusterTagValue2"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag3",
+          "Value": "GeneratedFindingEKSClusterTagValue3"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag4",
+          "Value": "GeneratedFindingEKSClusterTagValue4"
+        }
+      ],
+      "CreatedAt": "2021-11-11 19:15:55.218000+09:00"
+    },
+    "KubernetesDetails": {
+      "KubernetesUserDetails": {
+        "Username": "system:anonymous",
+        "Uid": "GeneratedFindingUID",
+        "Groups": [
+          "GeneratedFindingUserGroup1",
+          "GeneratedFindingUserGroup2",
+          "GeneratedFindingUserGroup3",
+          "GeneratedFindingUserGroup4"
+        ],
+        "SessionName": [
+          "GeneratedFindingSessionName1",
+          "GeneratedFindingSessionName2",
+          "GeneratedFindingSessionName3",
+          "GeneratedFindingSessionName4"
+        ]
+      }
+    },
+    "ResourceType": "EKSCluster"
+  },
+  "SchemaVersion": "2.0",
+  "Service": {
+    "Action": {
+      "ActionType": "KUBERNETES_API_CALL",
+      "KubernetesApiCallAction": {
+        "RequestUri": "GeneratedFindingRequestURI",
+        "Verb": "get",
+        "SourceIps": [
+          "10.0.0.23",
+          "10.0.0.24",
+          "10.0.0.25",
+          "10.0.0.26"
+        ],
+        "UserAgent": "",
+        "RemoteIpDetails": {
+          "City": {
+            "CityName": "GeneratedFindingCityName"
+          },
+          "Country": {
+            "CountryName": "GeneratedFindingCountryName"
+          },
+          "GeoLocation": {
+            "Lat": 0.0,
+            "Lon": 0.0
+          },
+          "IpAddressV4": "198.51.100.0",
+          "IpAddressV6": "1234:5678:90ab:cdef:1234:5678:90ab:cde0",
+          "Organization": {
+            "Asn": "0",
+            "AsnOrg": "GeneratedFindingASNOrg",
+            "Isp": "GeneratedFindingISP",
+            "Org": "GeneratedFindingORG"
+          }
+        },
+        "StatusCode": 200,
+        "Parameters": "GeneratedFindingActionParameters"
+      }
+    },
+    "Archived": false,
+    "Count": 5,
+    "DetectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+    "EventFirstSeen": "2025-11-09T07:43:27.000Z",
+    "EventLastSeen": "2025-11-13T01:20:18.000Z",
+    "ResourceRole": "TARGET",
+    "ServiceName": "guardduty",
+    "AdditionalInfo": {
+      "Value": "{\"sample\":true}",
+      "Type": "default"
+    }
+  },
+  "Severity": 8.0,
+  "Title": "A Kubernetes API commonly used in Persistence tactics invoked by the anonymous user.",
+  "Type": "Persistence:Kubernetes/SuccessfulAnonymousAccess",
+  "UpdatedAt": "2025-11-13T01:20:18.935Z"
+}

@@ -1,0 +1,23 @@
+# Agent B (Lambda) 필수 라이브러리: AWS API 호출을 담당하는 팀 B의 핵심 도구
+boto3
+botocore
+
+# 향후 Agent A (IaC 분석) 개발 시 필요한 Terraform HCL 파싱 라이브러리
+python-hcl2
+
+# 향후 Agent C (RAG) 개발 시 필요한 LLM 연동 및 벡터 검색 프레임워크
+langchain
+pydantic
+
+# 향후 MCP 서버 (Phase 3) 개발 시 필요한 빠르고 현대적인 웹 프레임워크
+fastapi
+uvicorn
+
+# 테스트 및 검증 도구
+pytest
+
+# 비동기 작업 및 상태 관리를 위한 라이브러리 (필요시)
+# celery
+
+slack_sdk[socket-mode]
+python-dotenv

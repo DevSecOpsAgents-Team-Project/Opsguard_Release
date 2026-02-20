@@ -1,0 +1,270 @@
+{
+  "AccountId": "836347236184",
+  "Arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/0abe0c37905c419c8564e65ccf6f55b8",
+  "CreatedAt": "2025-11-09T07:43:27.681Z",
+  "Description": "The user GeneratedFindingUserName has created or modified a RoleBinding or ClusterRoleBinding to role GeneratedFindingRoleRefName in an unusual way in cluster GeneratedFindingEKSClusterName.",
+  "Id": "0abe0c37905c419c8564e65ccf6f55b8",
+  "Partition": "aws",
+  "Region": "ap-northeast-2",
+  "Resource": {
+    "EksClusterDetails": {
+      "Name": "GeneratedFindingEKSClusterName",
+      "Arn": "arn:aws:eks:us-east-1:123456789000:cluster/clusterName",
+      "VpcId": "vpc-0123456789",
+      "Status": "ACTIVE",
+      "Tags": [
+        {
+          "Key": "GeneratedFindingEKSClusterTag1",
+          "Value": "GeneratedFindingEKSClusterTagValue1"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag2",
+          "Value": "GeneratedFindingEKSClusterTagValue2"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag3",
+          "Value": "GeneratedFindingEKSClusterTagValue3"
+        },
+        {
+          "Key": "GeneratedFindingEKSClusterTag4",
+          "Value": "GeneratedFindingEKSClusterTagValue4"
+        }
+      ],
+      "CreatedAt": "2021-11-11 19:15:55.218000+09:00"
+    },
+    "KubernetesDetails": {
+      "KubernetesUserDetails": {
+        "Username": "GeneratedFindingUserName",
+        "Uid": "GeneratedFindingUID",
+        "Groups": [
+          "GeneratedFindingUserGroup1",
+          "GeneratedFindingUserGroup2",
+          "GeneratedFindingUserGroup3",
+          "GeneratedFindingUserGroup4"
+        ],
+        "SessionName": [
+          "GeneratedFindingSessionName1",
+          "GeneratedFindingSessionName2",
+          "GeneratedFindingSessionName3",
+          "GeneratedFindingSessionName4"
+        ],
+        "ImpersonatedUser": {
+          "Username": "GeneratedFindingImpersonatedUserName",
+          "Groups": [
+            "GeneratedFindingUserGroup1",
+            "GeneratedFindingUserGroup2",
+            "GeneratedFindingUserGroup3",
+            "GeneratedFindingUserGroup4"
+          ]
+        }
+      }
+    },
+    "ResourceType": "EKSCluster"
+  },
+  "SchemaVersion": "2.0",
+  "Service": {
+    "Action": {
+      "ActionType": "KUBERNETES_API_CALL",
+      "KubernetesApiCallAction": {
+        "RequestUri": "GeneratedFindingRequestURI",
+        "Verb": "GeneratedFindingVerb",
+        "SourceIps": [
+          "10.0.0.23",
+          "10.0.0.24",
+          "10.0.0.25",
+          "10.0.0.26"
+        ],
+        "UserAgent": "GeneratedFindingUserAgent",
+        "RemoteIpDetails": {
+          "City": {
+            "CityName": "GeneratedFindingCityName"
+          },
+          "Country": {
+            "CountryName": "GeneratedFindingCountryName"
+          },
+          "GeoLocation": {
+            "Lat": 0.0,
+            "Lon": 0.0
+          },
+          "IpAddressV4": "10.0.0.23",
+          "IpAddressV6": "1234:5678:90ab:cdef:1234:5678:90ab:cde0",
+          "Organization": {
+            "Asn": "0",
+            "AsnOrg": "GeneratedFindingASNOrg",
+            "Isp": "GeneratedFindingISP",
+            "Org": "GeneratedFindingORG"
+          }
+        },
+        "StatusCode": 200,
+        "Resource": "generatedfindingresource",
+        "Subresource": "GeneratedFindingSubResource",
+        "Namespace": "GeneratedFindingNamespace",
+        "ResourceName": "GeneratedFindingResourceName"
+      },
+      "KubernetesRoleBindingDetails": {
+        "Kind": "RoleBinding",
+        "Name": "GeneratedFindingRoleBindingName",
+        "Uid": "12345678-1111-2222-3333-123456789012",
+        "RoleRefName": "GeneratedFindingRoleRefName",
+        "RoleRefKind": "ClusterRole"
+      }
+    },
+    "Archived": false,
+    "Count": 5,
+    "DetectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+    "EventFirstSeen": "2025-11-09T07:43:27.000Z",
+    "EventLastSeen": "2025-11-13T01:20:18.000Z",
+    "ResourceRole": "TARGET",
+    "ServiceName": "guardduty",
+    "AdditionalInfo": {
+      "Value": "{\"sample\":true}",
+      "Type": "default"
+    },
+    "Detection": {
+      "Anomaly": {
+        "Profiles": {
+          "GeneratedFindingScope1": {
+            "GeneratedFindingFeature1": [
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "FREQUENT",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation2",
+                    "GeneratedFindingObservation3",
+                    "GeneratedFindingObservation4",
+                    "GeneratedFindingObservation5"
+                  ]
+                }
+              },
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "INFREQUENT",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation6",
+                    "GeneratedFindingObservation7",
+                    "GeneratedFindingObservation8",
+                    "GeneratedFindingObservation9"
+                  ]
+                }
+              },
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "RARE",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation10",
+                    "GeneratedFindingObservation11",
+                    "GeneratedFindingObservation12",
+                    "GeneratedFindingObservation13"
+                  ]
+                }
+              },
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "RARE",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation14",
+                    "GeneratedFindingObservation15",
+                    "GeneratedFindingObservation16",
+                    "GeneratedFindingObservation17"
+                  ]
+                }
+              }
+            ]
+          },
+          "GeneratedFindingScope2": {
+            "GeneratedFindingFeature1": [
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "FREQUENT",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation2",
+                    "GeneratedFindingObservation3",
+                    "GeneratedFindingObservation4",
+                    "GeneratedFindingObservation5"
+                  ]
+                }
+              },
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "INFREQUENT",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation6",
+                    "GeneratedFindingObservation7",
+                    "GeneratedFindingObservation8",
+                    "GeneratedFindingObservation9"
+                  ]
+                }
+              },
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "RARE",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation10",
+                    "GeneratedFindingObservation11",
+                    "GeneratedFindingObservation12",
+                    "GeneratedFindingObservation13"
+                  ]
+                }
+              },
+              {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "RARE",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObservation14",
+                    "GeneratedFindingObservation15",
+                    "GeneratedFindingObservation16",
+                    "GeneratedFindingObservation17"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "Unusual": {
+          "Behavior": {
+            "GeneratedFindingScope1": {
+              "GeneratedFindingFeature1": {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "UNSEEN",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObervation1",
+                    "GeneratedFindingObervation2",
+                    "GeneratedFindingObervation3",
+                    "GeneratedFindingObervation4"
+                  ]
+                }
+              }
+            },
+            "GeneratedFindingScope2": {
+              "GeneratedFindingFeature1": {
+                "ProfileType": "FREQUENCY",
+                "ProfileSubtype": "UNSEEN",
+                "Observations": {
+                  "Text": [
+                    "GeneratedFindingObervation1",
+                    "GeneratedFindingObervation2",
+                    "GeneratedFindingObervation3",
+                    "GeneratedFindingObervation4"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "Severity": 5.0,
+  "Title": "A RoleBinding or ClusterRoleBinding to an overly permissive role or sensitive namespace was created or modified in an unusual way in cluster GeneratedFindingEKSClusterName.",
+  "Type": "PrivilegeEscalation:Kubernetes/AnomalousBehavior.RoleBindingCreated",
+  "UpdatedAt": "2025-11-13T01:20:18.961Z"
+}
