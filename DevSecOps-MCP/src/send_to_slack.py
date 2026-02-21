@@ -2,13 +2,13 @@ import json
 import requests
 
 # ⚠️ 본인의 토큰과 채널 ID를 꼭 유지해주세요!
-SLACK_BOT_TOKEN = "***"
-SLACK_CHANNEL = "***"
+SLACK_BOT_TOKEN = "xoxb-10299250893681-10564145647505-jVkEytMccRsYpiQahegEIPSZ"
+SLACK_CHANNEL = "C0A8E9KCZ7U"
 
 def send_approval_message(mock_json):
     incident_id = mock_json["incident_id"]
     summary = mock_json["incident_summary"]
-    actions = mock_json["recommended_actions"]
+    playbooks = mock_json["recommended_actions"]
     regs = mock_json["regulations"]
     
     # 규제 근거 텍스트 만들기
@@ -62,33 +62,37 @@ def send_approval_message(mock_json):
     ]
 
     # 2. 하단: 2.png 스타일의 다중 선택형 대응 방안 리스트
-    for action in actions:
-        action_id = action["action_id"]
-        level = action["level"]
-        desc = action["description"]
-        impact = action["expected_impact"]
+    for pb in playbooks:
+        level = pb["level"]
+        pb_name = pb["playbook_name"]
+        actions_list = pb["actions"] # 이 레벨에 포함된 액션들
+        
+        # Dispatcher가 즉시 인식할 수 있는 형태로 데이터 포맷팅
+        # 이 데이터를 버튼의 'value'에 심어버립니다.
+        button_payload = {
+            "incident_id": incident_id,
+            "scenario": mock_json["scenario"],
+            "recommended_actions": actions_list # 여기에 여러 함수 정보가 들어감!
+        }
 
-        # 서버로 보낼 값 (어떤 사건의 어떤 액션을 선택했는지)
-        button_value = json.dumps({"incident_id": incident_id, "action_id": action_id})
+        # 슬랙에 보여줄 액션 요약 (예: disable_access_key, block_ip)
+        action_ids_str = ", ".join([f"`{a['action_id']}`" for a in actions_list])
 
         blocks.append({
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"> *[Level {level}] `{action_id}`*\n> {desc}\n> *예상 영향도:* `{impact}`"
+                "text": f"> *[Level {level}] {pb_name}*\n> *포함된 조치:* {action_ids_str}\n> {pb['description']}\n> *영향도:* `{pb['expected_impact']}`"
             },
             "accessory": {
                 "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": f"✅ Level {level} 승인"
-                },
-                "style": "primary",
-                "value": button_value, 
-                "action_id": f"approve_{action_id}"
+                "text": {"type": "plain_text", "text": f"L{level} 실행"},
+                "style": "primary" if level == 2 else "danger",
+                "value": json.dumps(button_payload),
+                "action_id": f"approve_l{level}"
             }
         })
-
+        
     # 3. 전체 거절 버튼 추가
     blocks.append({"type": "divider"})
     blocks.append({
@@ -122,6 +126,7 @@ def send_approval_message(mock_json):
     else:
         print(f"❌ 실패! 이유: {result.get('error')}")
 
+
 # --- 원본 JSON 데이터 (비교 테스트를 위해 추천 액션을 2개로 늘려두었습니다) ---
 full_mock_data = {
   "schema_version": "1.2",
@@ -134,43 +139,92 @@ full_mock_data = {
     "severity": "5.3",
     "resource": {
       "type": "AccessKey",
-      "id": "AKIA-HACKED-KEY123",
+      "id": "AKIA...",
       "region": "ap-northeast-2",
       "account_id": "123456789012"
     }
   },
   "executed_level1_actions": [
-    "record_finding", "notify_slack", "fetch_cloudtrail_related_events", "tag_finding_observe"
+    "record_finding",
+    "notify_slack",
+    "fetch_cloudtrail_related_events",
+    "tag_finding_observe"
   ],
+  "escalation_assessment": {
+    "escalation_needed": True,
+    "recommended_level": 2,
+    "confidence": 0.9,
+    "decision_questions": [
+      "Do you approve escalation actions (Level 2/3) given the observed anomalous IAM access behavior?"
+    ],
+    "approval_notes": "Recommended actions are necessary to mitigate potential unauthorized access."
+  },
   "reasoning_bullets": [
-    "The incident involves suspicious usage of an access key, indicating potential unauthorized access."
+    "The incident involves suspicious usage of an access key, indicating potential unauthorized access.",
+    "Regulatory requirements emphasize the need for urgent response and least privilege principles."
   ],
   "regulations": [
     {
       "framework": "CSA_CCM",
       "clause_id": "IAM-05",
-      "clause_title": "Least Privilege"
+      "clause_title": "Least Privilege",
+      "relevance": 0.9,
+      "excerpt": "Employ the least privilege principle when implementing information system access.",
+      "why_relevant": "This incident highlights the need to restrict access to only necessary privileges to prevent unauthorized actions."
     },
     {
       "framework": "CSA_CCM",
       "clause_id": "IAM-13",
-      "clause_title": "Uniquely Identifiable Users"
+      "clause_title": "Uniquely Identifiable Users",
+      "relevance": 0.8,
+      "excerpt": "Define, implement and evaluate processes, procedures and technical measures that ensure users are identifiable through unique IDs.",
+      "why_relevant": "The use of shared or compromised access keys reduces accountability and increases risk."
     }
   ],
   "recommended_actions": [
-    {
-      "action_id": "disable_access_key",
-      "level": 2,
-      "description": "Disable the suspicious access key to prevent further unauthorized access.",
-      "expected_impact": "LOW"
+      {
+          "level": 2,
+          "playbook_name": "계정 권한 제한 및 관찰",
+          "description": "위험 요소를 제거하고 활동을 제한합니다.",
+          "actions": [ # L2 선택 시 실행될 함수들 리스트
+              {
+                  "action_id": "disable_access_key",
+                  "targets": [
+                      {"type": "AccessKey", "id": "AKIA...", "user_name": "alice"}
+                    ]
+            },
+            {
+                  "action_id": "block_ip",
+                  "targets": [{"type": "IPAddress", "ip": "1.2.3.4"}]
+            }
+        ],
+          "requires_approval": True,
+          "expected_impact": "LOW"
     },
-    {
-      "action_id": "delete_access_key",
-      "level": 3,
-      "description": "Permanently delete the key and force password reset for the user.",
-      "expected_impact": "HIGH"
-    }
-  ]
+      {
+          "level": 3,
+          "playbook_name": "강력한 격리 및 계정 삭제",
+          "description": "인프라 접근을 완전히 차단하고 자격 증명을 파괴합니다.",
+          "actions": [ # L3 선택 시 실행될 함수들 리스트
+              {
+                  "action_id": "delete_access_key",
+                  "targets": [
+                      {"type": "AccessKey", "id": "AKIA...", "user_name": "alice"}
+                    ]
+                },
+              {
+                  "action_id": "detach_admin_policies",
+                  "targets": [
+                      {"type": "IAMUser", "user_name": "alice"}
+                    ]
+                }
+              ],
+            "requires_approval": True,
+            "expected_impact": "HIGH"
+          }
+      ],
+      "insufficient_context": False,
+      "missing_context_requests": []
 }
 
 # --- 실행 ---
