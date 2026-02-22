@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "incident_id",
+    "policy_version",
+    "policy_meta",
+    "assumption_hash",
+    "cost_summary",
+    "driver_breakdown",
+    "top3_drivers"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "incident_id": { "type": "string" },
+    "policy_version": { "type": "string" },
+    "policy_meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approved_by", "approved_at"],
+      "properties": {
+        "approved_by": { "type": "string" },
+        "approved_at": { "type": "string" }
+      }
+    },
+    "assumption_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "cost_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["estimated_monthly_cost", "currency"],
+      "properties": {
+        "estimated_monthly_cost": { "type": "number", "minimum": 0 },
+        "currency": { "enum": ["USD", "KRW"] }
+      }
+    },
+    "driver_breakdown": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["driver", "cost", "percentage"],
+        "properties": {
+          "driver": { "enum": ["CloudWatchLogs", "S3Storage", "NAT_Egress", "Snapshot"] },
+          "cost": { "type": "number", "minimum": 0 },
+          "percentage": { "type": "number", "minimum": 0, "maximum": 100 }
+        }
+      }
+    },
+    "top3_drivers": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "string" }
+    },
+    "xai": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assumption_disclosure", "top3_drivers", "sensitivity", "trade_off"],
+      "properties": {
+        "assumption_disclosure": { "type": "string" },
+        "top3_drivers": { "type": "string" },
+        "sensitivity": { "type": "string" },
+        "trade_off": { "type": "string" }
+      }
+    },
+    "xai_schema_version": { "type": "string" }
+  }
+}

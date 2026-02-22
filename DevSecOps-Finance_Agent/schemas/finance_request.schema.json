@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "incident_id", "policy_version", "assumptions", "resource_change"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "incident_id": { "type": "string" },
+    "policy_version": { "type": "string" },
+    "assumptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_hours", "traffic_multiplier", "region", "service_tier", "org_profile"],
+      "properties": {
+        "duration_hours": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+        "traffic_multiplier": { "oneOf": [{ "type": "number" }, { "type": "string" }] },
+        "region": { "type": "string" },
+        "service_tier": { "type": "string" },
+        "org_profile": { "type": "string" }
+      }
+    },
+    "resource_change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cloudwatch_log_gb_per_day", "s3_storage_gb", "nat_egress_gb", "snapshot_gb"],
+      "properties": {
+        "cloudwatch_log_gb_per_day": { "type": "number", "minimum": 0 },
+        "s3_storage_gb": { "type": "number", "minimum": 0 },
+        "nat_egress_gb": { "type": "number", "minimum": 0 },
+        "snapshot_gb": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}
