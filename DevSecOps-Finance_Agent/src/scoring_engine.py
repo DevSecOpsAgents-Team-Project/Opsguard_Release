@@ -3,8 +3,8 @@ Finance Agent (Week2) Weighted Decision Score 계산.
 profile 가중치로 cost/risk/availability 반영, 최적 대응안 선택.
 """
 
-from actions import get_actions
-from policy import PROFILE_WEIGHTS
+from .actions import get_actions
+from .policy import PROFILE_WEIGHTS
 
 
 def compute_action_scores(

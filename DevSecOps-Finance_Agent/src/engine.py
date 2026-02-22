@@ -1,8 +1,11 @@
 """Finance Agent engine: request -> validate -> contract -> policy -> pricing -> result."""
 
+import logging
 import jsonschema
 
 from .contract import normalize_and_validate_assumptions
+
+logger = logging.getLogger(__name__)
 from .errors import ContractViolation, contract_error_response
 from .policy_loader import load_policy
 from .pricing import compute_costs
@@ -38,10 +41,13 @@ def finance_run(request_obj: dict) -> dict:
     5) Build result (no xai)
     6) Result schema validate and return (after optional post_process_hook)
     """
+    incident_id = request_obj.get("incident_id", "")
+    logger.info("엔진 실행 시작 incident_id=%s", incident_id)
     # 1) Request schema validate
     try:
         validate_request(request_obj)
     except jsonschema.ValidationError as e:
+        logger.warning("엔진 스키마 검증 실패 incident_id=%s: %s", incident_id, str(e))
         return {
             "error": {
                 "type": "SCHEMA_VALIDATION_ERROR",
@@ -59,6 +65,7 @@ def finance_run(request_obj: dict) -> dict:
     try:
         normalized = normalize_and_validate_assumptions(assumptions)
     except ContractViolation as e:
+        logger.warning("엔진 계약 위반 incident_id=%s: %s", incident_id, e.errors)
         return contract_error_response(e, incident_id)
 
     # 3) Load policy
@@ -110,4 +117,5 @@ def finance_run(request_obj: dict) -> dict:
             }
         }
 
+    logger.info("엔진 실행 완료 incident_id=%s total=%s", incident_id, result.get("cost_summary", {}).get("estimated_monthly_cost"))
     return result

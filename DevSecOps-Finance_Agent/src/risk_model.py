@@ -3,7 +3,7 @@ Finance Agent (Week2) Expected Loss / Risk Adjusted Loss.
 정책 기반, deterministic.
 """
 
-from policy import SEVERITY_PROBABILITY, SERVICE_TIER_IMPACT
+from .policy import SEVERITY_PROBABILITY, SERVICE_TIER_IMPACT
 
 
 def calculate_expected_loss(severity: str, service_tier: str) -> float:

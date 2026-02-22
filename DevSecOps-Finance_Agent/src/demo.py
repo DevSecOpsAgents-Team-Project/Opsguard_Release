@@ -3,8 +3,8 @@ Finance Agent (Week1 + Week2) 실행 예제.
 동일 입력 → 동일 출력 검증. profile 변경 시 추천 변경 확인.
 """
 
-from models import FinanceRequest
-from simulator import simulate
+from .models import FinanceRequest
+from .simulator import simulate
 
 if __name__ == "__main__":
     request = FinanceRequest(

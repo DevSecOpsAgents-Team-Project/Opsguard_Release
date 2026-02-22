@@ -3,7 +3,7 @@ Finance Agent (Week1 – B) 비용 계산.
 순수 Python 로직, 랜덤/전역 변수/LLM/외부 API 없음.
 """
 
-from models import FinanceRequest
+from .models import FinanceRequest
 
 # Week1 단가 (하드코딩)
 CloudWatchLogs_per_gb = 0.50

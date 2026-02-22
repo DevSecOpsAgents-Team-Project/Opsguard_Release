@@ -3,7 +3,7 @@ Finance Agent (Week1 – B) 템플릿 기반 XAI 설명.
 LLM 미사용, 고정 템플릿만 사용. 동일 입력 → 동일 문장.
 """
 
-from models import FinanceRequest
+from .models import FinanceRequest
 
 
 def generate_xai_explanation(
