@@ -1,7 +1,7 @@
 import json
 import requests
 
-# ⚠️ 본인의 토큰과 채널 ID를 꼭 유지해주세요!
+# ⚠️ 본인의 토큰과 채널 ID 유지
 SLACK_BOT_TOKEN = "xoxb-10299250893681-10564145647505-jVkEytMccRsYpiQahegEIPSZ"
 SLACK_CHANNEL = "C0A8E9KCZ7U"
 
@@ -11,22 +11,10 @@ def send_approval_message(mock_json):
     playbooks = mock_json["recommended_actions"]
     regs = mock_json["regulations"]
     
-    # 규제 근거 텍스트 만들기
-    reg_text = ""
-    for reg in regs:
-        reg_text += f"• *{reg['framework']} ({reg['clause_id']})*: {reg['clause_title']}\n"
-    if not reg_text:
-        reg_text = "매핑된 규제 근거 없음"
+    reg_text = "".join([f"• *{r['framework']} ({r['clause_id']})*: {r['clause_title']}\n" for r in regs]) or "매핑된 규제 근거 없음"
 
-    # 1. 상단: 1.png 스타일의 상세한 컨텍스트 정보
     blocks = [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": f"🚨 보안 이벤트 요약: {summary['title']}"
-            }
-        },
+        {"type": "header", "text": {"type": "plain_text", "text": f"🚨 보안 이벤트 요약: {summary['title']}"}},
         {
             "type": "section",
             "fields": [
@@ -37,97 +25,55 @@ def send_approval_message(mock_json):
             ]
         },
         {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*🔍 AI 판단 근거 (Reasoning):*\n{mock_json['reasoning_bullets'][0]}"
-            }
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*⚖️ 위반 의심 규제 (Regulations):*\n{reg_text}"
-            }
-        },
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"*🔍 AI 판단 근거:*\n{mock_json['reasoning_bullets'][0]}"}},
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"*⚖️ 위반 의심 규제:*\n{reg_text}"}},
         {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*🛠️ 추천 대응 방안 (원하는 조치를 선택해 승인하세요):*"
-            }
-        }
+        {"type": "section", "text": {"type": "mrkdwn", "text": "*🛠️ 추천 대응 방안 (Playbook 선택):*"}}
     ]
 
-    # 2. 하단: 2.png 스타일의 다중 선택형 대응 방안 리스트
     for pb in playbooks:
         level = pb["level"]
-        pb_name = pb["playbook_name"]
-        actions_list = pb["actions"] # 이 레벨에 포함된 액션들
-        
-        # Dispatcher가 즉시 인식할 수 있는 형태로 데이터 포맷팅
-        # 이 데이터를 버튼의 'value'에 심어버립니다.
+        # [중요] Dispatcher가 인식할 수 있는 '최종 실행용 JSON'을 버튼 value에 주입
         button_payload = {
             "incident_id": incident_id,
             "scenario": mock_json["scenario"],
-            "recommended_actions": actions_list # 여기에 여러 함수 정보가 들어감!
+            "recommended_actions": pb["actions"] # 해당 레벨의 액션 리스트만 추출
         }
 
-        # 슬랙에 보여줄 액션 요약 (예: disable_access_key, block_ip)
-        action_ids_str = ", ".join([f"`{a['action_id']}`" for a in actions_list])
+        action_ids_str = ", ".join([f"`{a['action_id']}`" for a in pb["actions"]])
 
         blocks.append({
             "type": "section",
             "text": {
-                "type": "mrkdwn",
-                "text": f"> *[Level {level}] {pb_name}*\n> *포함된 조치:* {action_ids_str}\n> {pb['description']}\n> *영향도:* `{pb['expected_impact']}`"
+                "type": "mrkdwn", 
+                "text": f"> *[Level {level}] {pb['playbook_name']}*\n> *조치:* {action_ids_str}\n> {pb['description']}"
             },
             "accessory": {
                 "type": "button",
                 "text": {"type": "plain_text", "text": f"L{level} 실행"},
                 "style": "primary" if level == 2 else "danger",
-                "value": json.dumps(button_payload),
+                "value": json.dumps(button_payload), # JSON 문자열로 변환하여 저장
                 "action_id": f"approve_l{level}"
             }
         })
         
-    # 3. 전체 거절 버튼 추가
     blocks.append({"type": "divider"})
     blocks.append({
         "type": "actions",
-        "elements": [
-            {
-                "type": "button",
-                "text": {"type": "plain_text", "text": "❌ 전체 거절 (조치 안 함)"},
-                "style": "danger",
-                "value": incident_id,
-                "action_id": "reject_all_action"
-            }
-        ]
+        "elements": [{
+            "type": "button", "text": {"type": "plain_text", "text": "❌ 전체 거절"},
+            "style": "danger", "value": incident_id, "action_id": "reject_all_action"
+        }]
     })
 
-    # 4. Slack API로 전송
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {SLACK_BOT_TOKEN}"
-    }
-    payload = {
-        "channel": SLACK_CHANNEL,
-        "blocks": blocks
-    }
-    
-    response = requests.post("https://slack.com/api/chat.postMessage", headers=headers, json=payload)
-    result = response.json()
-    
-    if result.get("ok"):
-        print("✅ 성공! 슬랙을 확인하세요.")
-    else:
-        print(f"❌ 실패! 이유: {result.get('error')}")
+    response = requests.post(
+        "https://slack.com/api/chat.postMessage",
+        headers={"Authorization": f"Bearer {SLACK_BOT_TOKEN}"},
+        json={"channel": SLACK_CHANNEL, "blocks": blocks}
+    )
+    print("✅ 슬랙 전송 완료" if response.json().get("ok") else f"❌ 실패: {response.json()}")
 
-
-# --- 원본 JSON 데이터 (비교 테스트를 위해 추천 액션을 2개로 늘려두었습니다) ---
+# --- 테스트용 데이터 ---
 full_mock_data = {
   "schema_version": "1.2",
   "generated_at": "2026-02-14T09:23:35.765312+00:00",        
@@ -190,12 +136,14 @@ full_mock_data = {
               {
                   "action_id": "disable_access_key",
                   "targets": [
-                      {"type": "AccessKey", "id": "AKIA...", "user_name": "alice"}
+                      {"type": "AccessKey", "id": "AKIA...", "user_name": "alice", "ip": None, "target_bucket": None}
                     ]
             },
             {
                   "action_id": "block_ip",
-                  "targets": [{"type": "IPAddress", "ip": "1.2.3.4"}]
+                  "targets": [
+                  {"type": "IPAddress", "id": None, "user_name": None, "ip": "1.2.3.4", "target_bucket": None}
+                  ]
             }
         ],
           "requires_approval": True,
@@ -205,29 +153,39 @@ full_mock_data = {
           "level": 3,
           "playbook_name": "강력한 격리 및 계정 삭제",
           "description": "인프라 접근을 완전히 차단하고 자격 증명을 파괴합니다.",
-          "actions": [ # L3 선택 시 실행될 함수들 리스트
-              {
-                  "action_id": "delete_access_key",
-                  "targets": [
-                      {"type": "AccessKey", "id": "AKIA...", "user_name": "alice"}
-                    ]
+          "actions": [
+                # 1. EC2 조치 세트
+                {"action_id": "isolate_instance", "targets": [{"type": "EC2Instance", "id": "i-086b9b73e1452c8ee", "user_name": None, "ip": None, "target_bucket": None}]},
+                {"action_id": "create_snapshot", "targets": [{"type": "EC2Instance", "id": "i-0d9f339409aaf1992", "user_name": None, "ip": None, "target_bucket": None}]},
+                {"action_id": "backup_instance", "targets": [{"type": "EC2Instance", "id": "i-0d9f339409aaf1992", "user_name": None, "ip": None, "target_bucket": None}]},
+                {"action_id": "stop_instance", "targets": [{"type": "EC2Instance", "id": "i-0d9f339409aaf1992", "user_name": None, "ip": None, "target_bucket": None}]},
+                
+                # 2. IAM 조치 세트
+                {
+                    "action_id": "disable_access_key", 
+                    "targets": [{"type": "IAMUser", "id": "AKIA4FOROB5ME2C4Q3H2", "user_name": "IAM-2026-03-04-test2", "ip": None, "target_bucket": None}]
                 },
-              {
-                  "action_id": "detach_admin_policies",
-                  "targets": [
-                      {"type": "IAMUser", "user_name": "alice"}
-                    ]
+                {"action_id": "detach_admin_policies", "targets": [{"type": "IAMUser", "id": None, "user_name": "IAM-2026-03-04-test2", "ip": None, "target_bucket": None}]},
+                {"action_id": "disable_iam_entity", "targets": [{"type": "IAMUser", "id": None, "user_name": "IAM-2026-03-04-test1", "ip": None, "target_bucket": None}]},
+
+                # 3. Network / WAF 조치 세트
+                {"action_id": "block_ip", "targets": [{"type": "IPAddress", "id": None, "user_name": None, "ip": "1.2.3.4", "target_bucket": None}]},
+                {"action_id": "enable_vpc_flow_logs", "targets": [{"type": "VPC", "id": "vpc-0be19f1f16b457b93", "user_name": None, "ip": "1.2.3.4", "target_bucket": None}]},
+
+                # 4. S3 조치 세트
+                {"action_id": "block_s3_public_access", "targets": [{"type": "S3Bucket", "id": "s3-2026-03-04-test1", "user_name": None, "ip": None, "target_bucket": None}]},
+                {
+                    "action_id": "enable_s3_bucket_logging", 
+                    "targets": [{"type": "S3Bucket","id": "s3-2026-03-04-test1", "user_name": None, "ip": None, "target_bucket": "mcp-security-logs-bucket"}]
                 }
-              ],
+            ],
             "requires_approval": True,
             "expected_impact": "HIGH"
           }
       ],
-      "insufficient_context": False,
-      "missing_context_requests": []
+  "insufficient_context": False,
+  "missing_context_requests": []
 }
 
-# --- 실행 ---
 if __name__ == "__main__":
-    print("🚀 융합형 슬랙 메시지 전송을 시작합니다...")
     send_approval_message(full_mock_data)
