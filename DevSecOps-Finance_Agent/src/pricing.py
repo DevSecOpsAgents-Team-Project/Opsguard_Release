@@ -2,6 +2,12 @@
 
 DRIVERS = ["CloudWatchLogs", "S3Storage", "NAT_Egress", "Snapshot"]
 
+# 기간(duration_hours) 영향: CloudWatch·S3만 기간 비례. NAT·Snapshot은 1회성.
+# 격리/설정 변경 같은 액션 위주면 1회 비용 비중이 커서 기간 차이가 작음 → 통상 30일 기준으로 비교.
+# - CloudWatchLogs: 기간 비례 (로그 적재 기간)
+# - S3Storage: 기간 비례 (보관 기간, 720=30일 기준)
+# - NAT_Egress, Snapshot: 기간 무관 (이그레스/스냅샷 1회)
+
 
 def compute_costs(resource_change: dict, assumptions: dict, pricing_table: dict) -> dict:
     """Compute cost breakdown (deterministic).
@@ -9,8 +15,8 @@ def compute_costs(resource_change: dict, assumptions: dict, pricing_table: dict)
     Formulas:
     - CloudWatchLogs: cloudwatch_log_gb_per_day * traffic_multiplier * (duration_hours/24) * cloudwatch_per_gb
     - S3Storage: s3_storage_gb * s3_per_gb * (duration_hours/720)
-    - NAT_Egress: nat_egress_gb * traffic_multiplier * nat_egress_per_gb
-    - Snapshot: snapshot_gb * snapshot_per_gb
+    - NAT_Egress: nat_egress_gb * traffic_multiplier * nat_egress_per_gb  [기간 무관]
+    - Snapshot: snapshot_gb * snapshot_per_gb  [기간 무관]
 
     Returns:
         dict with keys: total, breakdown (list of {driver, cost, percentage}), top3_drivers (list of 3 strings)

@@ -37,7 +37,9 @@
       "required": ["estimated_monthly_cost", "currency"],
       "properties": {
         "estimated_monthly_cost": { "type": "number", "minimum": 0 },
-        "currency": { "enum": ["USD", "KRW"] }
+        "currency": { "enum": ["USD", "KRW"] },
+        "period_hours": { "type": "integer", "minimum": 1, "description": "과금 계산에 사용한 기간(시간). 1|24|168|720" },
+        "period_label": { "type": "string", "description": "표시용 기간(예: 24h, 7d, 30d)" }
       }
     },
     "driver_breakdown": {

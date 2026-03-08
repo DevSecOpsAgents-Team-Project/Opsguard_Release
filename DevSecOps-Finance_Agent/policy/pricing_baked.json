@@ -1,0 +1,14 @@
+{
+  "us-east-1": {
+    "cloudwatch_per_gb": 0.50,
+    "s3_per_gb": 0.023,
+    "nat_egress_per_gb": 0.045,
+    "snapshot_per_gb": 0.05
+  },
+  "ap-northeast-2": {
+    "cloudwatch_per_gb": 0.50,
+    "s3_per_gb": 0.023,
+    "nat_egress_per_gb": 0.045,
+    "snapshot_per_gb": 0.05
+  }
+}

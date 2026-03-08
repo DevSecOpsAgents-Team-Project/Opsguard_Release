@@ -8,6 +8,7 @@ from .contract import normalize_and_validate_assumptions
 from .errors import ContractViolation, contract_error_response
 from .policy_loader import load_policy
 from .pricing import compute_costs
+from .pricing_provider import get_pricing_provider
 from .assumption_hash import assumption_hash
 from .validate import validate_request, validate_result, validate_audit_record, should_validate_output_schema
 from .risk_model import calculate_expected_loss, calculate_risk_adjusted_loss
@@ -19,21 +20,8 @@ logger = logging.getLogger(__name__)
 DEFAULT_AUDIT_LOG_PATH = "logs/audit.jsonl"
 
 
-# --- Extension point for B-part (XAI): A-part does not call with any implementation ---
 def post_process_hook(result: dict, request: dict, context: dict) -> dict:
-    """Optional hook for post-processing result (e.g. B-part can inject xai).
-
-    A-part calls this but uses a no-op; B-part may override to add xai to result.
-    Caller should use: result = post_process_hook(result, request, context).
-
-    Args:
-        result: Current result dict (without xai in A-part).
-        request: Original request dict.
-        context: Optional context (e.g. policy, normalized assumptions).
-
-    Returns:
-        result (unchanged in A-part).
-    """
+    """후처리 훅. 기본은 no-op. 필요 시 result 수정 후 반환."""
     return result
 
 
@@ -86,11 +74,14 @@ def finance_run(request_obj: dict) -> dict:
             }
         }
 
-    # 4) Pricing
-    pricing_table = policy["pricing_table"]
+    # 4) Pricing (정책 단가 또는 USE_AWS_PRICING_API 시 API 호출, 리전별 캐시로 호출 절감)
+    region = normalized.get("region", "us-east-1")
+    pricing_table = get_pricing_provider().get_pricing_table(region, policy)
     computed = compute_costs(resource_change, normalized, pricing_table)
+    duration_hours = normalized.get("duration_hours", 720)
+    period_label = {1: "1h", 24: "24h", 168: "7d", 720: "30d"}.get(duration_hours, "30d")
 
-    # 5) Build result
+    # 5) Build result (과금은 요청의 duration_hours 기준)
     result = {
         "schema_version": "1.0",
         "incident_id": incident_id,
@@ -103,6 +94,8 @@ def finance_run(request_obj: dict) -> dict:
         "cost_summary": {
             "estimated_monthly_cost": computed["total"],
             "currency": policy.get("currency", "USD"),
+            "period_hours": duration_hours,
+            "period_label": period_label,
         },
         "driver_breakdown": _breakdown_with_why(computed["breakdown"]),
         "top3_drivers": computed["top3_drivers"],

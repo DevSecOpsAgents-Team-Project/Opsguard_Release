@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Simulation Recommendation Result (MCP 전달용)",
+  "description": "Finance Agent가 OpenAI 추천 후 MCP에 전달하는 JSON. Slack 등에 표시.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["recommended_playbook", "user_response", "source"],
+  "properties": {
+    "recommended_playbook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommended_level", "playbook_name", "reason"],
+      "properties": {
+        "recommended_level": { "type": "integer", "enum": [2, 3] },
+        "playbook_name": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "user_response": {
+      "type": "object",
+      "properties": {
+        "environment": { "type": "string" },
+        "data_sensitivity": { "type": "string" },
+        "downtime_tolerance": { "type": "string" },
+        "priority": { "type": "string" }
+      }
+    },
+    "source": {
+      "type": "string",
+      "enum": ["llm", "fallback"]
+    }
+  }
+}

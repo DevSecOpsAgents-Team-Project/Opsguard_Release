@@ -30,3 +30,11 @@ def get_result_schema():
 
 def get_audit_schema():
     return load_schema("audit_record")
+
+
+def get_simulation_questions_schema():
+    return load_schema("simulation_questions")
+
+
+def get_simulation_user_response_schema():
+    return load_schema("simulation_user_response")
