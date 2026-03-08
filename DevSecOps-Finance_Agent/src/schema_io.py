@@ -26,3 +26,7 @@ def get_request_schema():
 
 def get_result_schema():
     return load_schema("finance_result")
+
+
+def get_audit_schema():
+    return load_schema("audit_record")

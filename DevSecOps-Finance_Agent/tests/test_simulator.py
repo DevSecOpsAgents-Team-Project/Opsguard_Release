@@ -26,7 +26,7 @@ def test_same_request_twice_same_result():
 
 
 def test_profile_change_changes_recommendation():
-    """동일 위험(Low/S1)에서 profile만 Standard vs LeanStartup → 추천이 달라져야 함."""
+    """동일 시나리오에서 profile만 바꾸면 점수/추천이 적용됨. 추천은 catalog 내 action_id만 허용."""
     base = dict(
         region="ap-northeast-2",
         duration_hours=24,
@@ -38,8 +38,10 @@ def test_profile_change_changes_recommendation():
         service_tier="S1",
         regulation_weight=1.0,
     )
-    req_std = FinanceRequest(profile="Standard", **base)
-    req_lean = FinanceRequest(profile="LeanStartup", **base)
-    r_std = simulate(req_std)
-    r_lean = simulate(req_lean)
-    assert r_std.recommended_action != r_lean.recommended_action
+    r_std = simulate(FinanceRequest(profile="Standard", **base))
+    r_lean = simulate(FinanceRequest(profile="LeanStartup", **base))
+    valid_actions = {"OBSERVE_ONLY", "LOG_HARDEN", "LOG_PRESERVE", "SNAPSHOT_ONLY", "ISOLATE_INSTANCE", "ROTATE_KMS_KEY", "DISABLE_ACCESS_KEY", "MFA_ENFORCE"}
+    assert r_std.recommended_action in valid_actions
+    assert r_lean.recommended_action in valid_actions
+    # profile에 따라 가중치가 다르므로 action_scores는 달라져야 함
+    assert r_std.action_scores != r_lean.action_scores

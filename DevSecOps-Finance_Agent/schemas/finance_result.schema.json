@@ -16,6 +16,11 @@
     "schema_version": { "type": "string" },
     "incident_id": { "type": "string" },
     "policy_version": { "type": "string" },
+    "policy_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "applied_profile": { "type": "string" },
+    "applied_regulation_weights": { "type": "object" },
+    "recommendation": { "type": "string" },
+    "action_scores": { "type": "object", "additionalProperties": { "type": "number" } },
     "policy_meta": {
       "type": "object",
       "additionalProperties": false,
@@ -44,7 +49,8 @@
         "properties": {
           "driver": { "enum": ["CloudWatchLogs", "S3Storage", "NAT_Egress", "Snapshot"] },
           "cost": { "type": "number", "minimum": 0 },
-          "percentage": { "type": "number", "minimum": 0, "maximum": 100 }
+          "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+          "why": { "type": "string" }
         }
       }
     },

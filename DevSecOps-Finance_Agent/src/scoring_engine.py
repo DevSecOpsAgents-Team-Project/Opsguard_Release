@@ -1,35 +1,47 @@
 """
-Finance Agent (Week2) Weighted Decision Score 계산.
-profile 가중치로 cost/risk/availability 반영, 최적 대응안 선택.
+Action scoring from policy only: action_catalog, profile_weights. Recommendation constraints applied.
+Only action_ids present in action_catalog may be recommended.
 """
 
-from .actions import get_actions
-from .policy import PROFILE_WEIGHTS
+from .recommendation_constraints import evaluate_constraints
 
 
 def compute_action_scores(
     base_cost: float,
     risk_adjusted_loss: float,
     profile: str,
-) -> tuple[dict[str, float], str]:
+    policy_bundle: dict,
+    scenario_class: str,
+    severity: str,
+    context: dict | None = None,
+) -> tuple[dict[str, float], str, list]:
     """
-    각 대응안에 대해 DecisionScore 계산 후 action_scores, recommended_action 반환.
+    Score only actions in policy action_catalog; apply recommendation_constraints to forbid some.
+    Returns (action_scores, recommended_action_id, forbidden_actions_list).
+    forbidden_actions_list: [{"action_id", "constraint_id", "reason_code"}].
     """
-    weights = PROFILE_WEIGHTS.get(
-        profile,
-        PROFILE_WEIGHTS["Standard"],
+    catalog = (policy_bundle.get("action_catalog") or {}).get("actions") or {}
+    profile_weights = policy_bundle.get("profile_weights") or {}
+    weights = profile_weights.get(profile) or profile_weights.get("Standard") or profile_weights.get("Default") or {"cost": 0.33, "risk": 0.33, "availability": 0.34}
+    w_cost = weights.get("cost", 0.33)
+    w_risk = weights.get("risk", 0.33)
+    w_availability = weights.get("availability", 0.34)
+
+    ctx = {"scenario_class": scenario_class, "severity": severity, **(context or {})}
+    forbidden_list, forbidden = evaluate_constraints(
+        ctx,
+        policy_bundle.get("recommendation_constraints") or {},
     )
-    w_cost = weights["cost"]
-    w_risk = weights["risk"]
-    w_availability = weights["availability"]
 
-    actions = get_actions()
     scores: dict[str, float] = {}
-
-    for action_id, spec in actions.items():
-        cost_mult = spec["cost_multiplier"]
-        risk_reduction_rate = spec["risk_reduction_rate"]
-        availability_impact = spec["availability_impact"]
+    for action_id, spec in catalog.items():
+        if action_id in forbidden:
+            continue
+        if not isinstance(spec, dict):
+            continue
+        cost_mult = spec.get("cost_multiplier", 1.0)
+        risk_reduction_rate = spec.get("risk_reduction_rate", 0.0)
+        availability_impact = spec.get("availability_impact", 0.0)
 
         adjusted_cost = base_cost * cost_mult
         normalized_cost = 1.0 / (1.0 + adjusted_cost)
@@ -43,5 +55,7 @@ def compute_action_scores(
         )
         scores[action_id] = decision_score
 
+    if not scores:
+        return {}, "", forbidden_list
     recommended = max(scores.items(), key=lambda x: x[1])[0]
-    return scores, recommended
+    return scores, recommended, forbidden_list

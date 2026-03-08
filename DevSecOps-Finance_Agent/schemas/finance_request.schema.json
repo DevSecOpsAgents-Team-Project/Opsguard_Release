@@ -16,7 +16,15 @@
         "traffic_multiplier": { "oneOf": [{ "type": "number" }, { "type": "string" }] },
         "region": { "type": "string" },
         "service_tier": { "type": "string" },
-        "org_profile": { "type": "string" }
+        "org_profile": { "type": "string" },
+        "severity": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "regulation_context": {
+          "type": "object",
+          "properties": {
+            "weight_profile": { "type": "string", "enum": ["strict", "normal", "relaxed"] }
+          }
+        },
+        "allow_isolate_standby": { "type": "boolean" }
       }
     },
     "resource_change": {

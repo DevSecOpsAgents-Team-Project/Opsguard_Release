@@ -7,6 +7,8 @@ TRAFFIC_MULTIPLIER_ALLOWED = [1.0, 1.5, 2.0]
 REGION_ALLOWED = ["ap-northeast-2", "us-east-1"]
 SERVICE_TIER_ALLOWED = ["S1", "S2", "S3"]
 ORG_PROFILE_ALLOWED = ["MissionCritical", "ComplianceGuard", "LeanStartup", "Standard"]
+SEVERITY_ALLOWED = ["Low", "Medium", "High"]
+WEIGHT_PROFILE_ALLOWED = ["strict", "normal", "relaxed"]
 
 
 def _to_int(v):
@@ -105,6 +107,27 @@ def normalize_and_validate_assumptions(assumptions: dict) -> dict:
         })
     else:
         out["org_profile"] = o
+
+    # severity (optional, default Medium)
+    sev = assumptions.get("severity", "Medium")
+    if not isinstance(sev, str) or sev not in SEVERITY_ALLOWED:
+        out["severity"] = "Medium"
+    else:
+        out["severity"] = sev
+
+    # regulation_context (optional)
+    rc = assumptions.get("regulation_context")
+    if rc is not None and isinstance(rc, dict):
+        wp = rc.get("weight_profile")
+        if isinstance(wp, str) and wp in WEIGHT_PROFILE_ALLOWED:
+            out["regulation_context"] = {"weight_profile": wp}
+        else:
+            out["regulation_context"] = {"weight_profile": "normal"}
+    else:
+        out["regulation_context"] = {"weight_profile": "normal"}
+
+    # allow_isolate_standby (optional)
+    out["allow_isolate_standby"] = bool(assumptions.get("allow_isolate_standby", False))
 
     if errors:
         raise ContractViolation(errors)
