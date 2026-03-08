@@ -7,6 +7,14 @@
 
 **합친 구조와 로직 설명**: [docs/합친_구조_및_로직.md](docs/합친_구조_및_로직.md)
 
+## 코드 변경 확인 (Git)
+
+- **최근 커밋 목록**: `git log --oneline -10`
+- **현재 브랜치에서 수정된 파일**: `git status`
+- **특정 커밋에서 바뀐 내용**: `git show <커밋해시>`
+- **두 브랜치 차이**: `git diff main..finance-b` (예: main과 finance-b 비교)
+- **Cursor/VS Code**: 왼쪽 **Source Control** (Ctrl+Shift+G) → 변경 파일 클릭 시 diff 확인
+
 ## 요구사항
 
 - Python 3.10+
@@ -27,21 +35,23 @@ python run_all.py
 - 엔진: 샘플 JSON → `finance_run` → schema 결과
 - 시뮬레이터: `FinanceRequest` → `simulate` → 재현성·profile 변경 검증
 
-## 테스트 한 번에
+## 전체 통합 테스트
 
-프로젝트 루트(`DevSecOps-Finance_Agent`)에서:
+프로젝트 루트 **DevSecOps-Finance_Agent**에서 아래 중 하나로 실행합니다.
 
-```bash
-pytest tests/ -v
-```
-
-또는 PowerShell:
-
+**PowerShell:**
 ```powershell
+cd DevSecOps-Finance_Agent
 .\run_tests.ps1
 ```
 
-스키마 검증, 계약 거부, 정책 버전, 재현성(엔진/시뮬레이터), profile 변경 테스트가 모두 실행됩니다.
+**또는 직접 pytest:**
+```bash
+cd DevSecOps-Finance_Agent
+python -m pytest tests/ -v
+```
+
+포함되는 테스트: 스키마 검증, 계약 거부, 정책 버전, 재현성(엔진/시뮬레이터), bridge(A↔B 연결), 시나리오 회귀(격리 금지/허용), audit 필드, constraints 정책.
 
 ### 테스트 로그 (동작 확인용)
 
