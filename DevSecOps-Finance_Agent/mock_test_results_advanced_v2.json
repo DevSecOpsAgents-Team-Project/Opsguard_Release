@@ -3,11 +3,11 @@
   "pass": 8,
   "fail": 1,
   "xai_summary": {
-    "rule_based_cases": 6,
-    "llm_cases": 3,
+    "rule_based_cases": 0,
+    "llm_cases": 9,
     "fallback_cases": 0,
-    "high_confidence_cases": 6,
-    "medium_confidence_cases": 3,
+    "high_confidence_cases": 0,
+    "medium_confidence_cases": 9,
     "low_confidence_cases": 0
   },
   "test_results": [
@@ -21,10 +21,10 @@
         "priority": "security"
       },
       "result": {
-        "source": "rule_based",
+        "source": "llm",
         "recommended_level": 3,
         "playbook_name": "강력한 격리 및 계정 삭제",
-        "reason": "rule_based_decision"
+        "reason": "① 이번 시나리오는 production 환경에서 pii 데이터와 관련된 보안 사건으로 발생하였으며, 추천 플레이북인 '강력한 격리 및 계정 삭제'의 예상 영향도가 HIGH인 점에서 시나리오의 심각성을 나타냅니다. ② '강력한 격리 및 계정 삭제'는 위협을 신속하게 격리하고, 관련 계정을 삭제하여 추가적인 피해를 방지하는 조치를 취합니다. 사용자가 보안 우선순위를 두고 서비스 중단을 허용하는 상황에서, 예상 비용이 8.0 USD인 이 플레이북은 보안 강화를 위해 적합한 선택입니다."
       },
       "xai": {
         "decision_trace": [
@@ -80,7 +80,7 @@
         "applied_rules": [
           "RULE_PRODUCTION_PII_SECURITY_FORCE_L3"
         ],
-        "confidence_hint": "high",
+        "confidence_hint": "medium",
         "reason_alignment": {
           "aligned": true,
           "hint": ""
@@ -101,7 +101,7 @@
         "source": "llm",
         "recommended_level": 2,
         "playbook_name": "계정 권한 제한 및 관찰",
-        "reason": "운영 환경이 내부이고 데이터 민감도가 낮아 서비스 중단을 최소화하는 것이 중요합니다. L2 플레이북은 비용이 저렴하면서도 낮은 영향으로 계정 권한을 제한하고 관찰할 수 있어, 현재 상황에 적합합니다."
+        "reason": "① 이번 시나리오는 internal 운영 환경과 internal 데이터 민감도에서 발생한 보안 사건으로, 추천 플레이북인 '계정 권한 제한 및 관찰'의 예상 영향도가 LOW인 점에서 시나리오의 심각성이 낮음을 나타냅니다. ② L2 계정 권한 제한 및 관찰은 계정의 접근을 제한하고, 의심스러운 활동을 관찰하여 추가적인 위험을 방지하는 조치를 취합니다. 사용자 선택에서 보안과 비용의 우선순위가 균형을 이루고 있으며, 예상 비용이 2.5 USD로 저렴하여 이번 선택에 적합합니다."
       },
       "xai": {
         "decision_trace": [
@@ -111,8 +111,7 @@
           "Downtime tolerance is approval_required",
           "Candidate L2 계정 권한 제한 및 관찰 cost = 2.5 USD, impact = LOW",
           "Candidate L3 강력한 격리 및 계정 삭제 cost = 8.0 USD, impact = HIGH",
-          "Selected L2 playbook: 계정 권한 제한 및 관찰",
-          "Warning: explanation text may not match the selected playbook"
+          "Selected L2 playbook: 계정 권한 제한 및 관찰"
         ],
         "decision_factors": {
           "environment": "internal",
@@ -157,8 +156,8 @@
         "applied_rules": [],
         "confidence_hint": "medium",
         "reason_alignment": {
-          "aligned": false,
-          "hint": "Selected playbook '계정 권한 제한 및 관찰' is not mentioned in the reason text"
+          "aligned": true,
+          "hint": ""
         }
       },
       "validation": "PASS"
@@ -173,10 +172,10 @@
         "priority": "cost"
       },
       "result": {
-        "source": "rule_based",
+        "source": "llm",
         "recommended_level": 2,
         "playbook_name": "계정 권한 제한 및 관찰",
-        "reason": "rule_based_decision"
+        "reason": "① 이번 시나리오는 dev_test 환경에서 발생한 보안 사건으로, 데이터 민감도가 public인 점을 고려할 때, 추천 플레이북인 '계정 권한 제한 및 관찰'의 예상 영향도가 LOW인 것은 시나리오의 심각성이 낮음을 나타냅니다. ② 'L2 계정 권한 제한 및 관찰'은 계정의 접근을 제한하고, 의심스러운 활동을 관찰하여 추가적인 위험을 방지하는 조치를 취합니다. 사용자께서 비용을 우선시하고 서비스 중단을 허용하지 않으신 점을 고려할 때, 예상 비용이 2.5 USD인 이 플레이북이 이번 선택에 적합합니다."
       },
       "xai": {
         "decision_trace": [
@@ -242,7 +241,7 @@
           "RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
           "RULE_COST_PRIORITY_SELECT_LOWEST_COST"
         ],
-        "confidence_hint": "high",
+        "confidence_hint": "medium",
         "reason_alignment": {
           "aligned": true,
           "hint": ""
@@ -260,10 +259,10 @@
         "priority": "security"
       },
       "result": {
-        "source": "rule_based",
+        "source": "llm",
         "recommended_level": 3,
         "playbook_name": "리소스 격리 및 포렌식 수집",
-        "reason": "rule_based_decision"
+        "reason": "① 이번 시나리오는 production 환경에서 pii 데이터와 관련된 보안 사건으로 발생하였으며, 추천 플레이북인 '리소스 격리 및 포렌식 수집'의 예상 영향도가 MEDIUM인 점에서 사건의 심각성을 나타냅니다. ② 'L3 리소스 격리 및 포렌식 수집'은 침해된 리소스를 격리하고, 증거를 확보하며, 접근을 제한하는 조치를 취합니다. 보안 우선순위를 고려하고 서비스 중단이 허용되는 상황에서 예상 비용이 6.0 USD인 이 플레이북은 보안 강화를 위해 적합한 선택입니다."
       },
       "xai": {
         "decision_trace": [
@@ -319,7 +318,7 @@
         "applied_rules": [
           "RULE_PRODUCTION_PII_SECURITY_FORCE_L3"
         ],
-        "confidence_hint": "high",
+        "confidence_hint": "medium",
         "reason_alignment": {
           "aligned": true,
           "hint": ""
@@ -340,7 +339,7 @@
         "source": "llm",
         "recommended_level": 2,
         "playbook_name": "로그 보존 및 접근 제한",
-        "reason": "운영 환경이 내부이고 데이터 민감도가 낮은 상황에서, L2 플레이북은 비용이 더 저렴하면서도 중간 정도의 영향을 미칠 수 있습니다. 서비스 중단이 필요할 경우 승인이 필요하므로, 비용과 보안의 균형을 맞추는 데 적합합니다."
+        "reason": "① 이번 시나리오는 internal 운영 환경과 internal 데이터 민감도에서 발생한 보안 사건입니다. 추천 플레이북인 '로그 보존 및 접근 제한'의 예상 영향도가 MEDIUM인 점에서 시나리오의 심각성은 중간 수준으로 평가됩니다. ② 'L2 로그 보존 및 접근 제한'은 로그 데이터를 보존하고 접근을 제한하는 조치를 통해 사건의 증거를 확보하고, 불필요한 접근을 차단하여 보안을 강화합니다. 사용자께서 비용과 보안의 균형을 고려하고, 서비스 중단에 대한 승인이 필요한 상황에서 예상 월 비용이 5.0 USD인 이 플레이북은 적절한 선택으로 판단됩니다."
       },
       "xai": {
         "decision_trace": [
@@ -350,8 +349,7 @@
           "Downtime tolerance is approval_required",
           "Candidate L2 로그 보존 및 접근 제한 cost = 5.0 USD, impact = MEDIUM",
           "Candidate L3 리소스 격리 및 포렌식 수집 cost = 6.0 USD, impact = MEDIUM",
-          "Selected L2 playbook: 로그 보존 및 접근 제한",
-          "Warning: explanation text may not match the selected playbook"
+          "Selected L2 playbook: 로그 보존 및 접근 제한"
         ],
         "decision_factors": {
           "environment": "internal",
@@ -396,8 +394,8 @@
         "applied_rules": [],
         "confidence_hint": "medium",
         "reason_alignment": {
-          "aligned": false,
-          "hint": "Selected playbook '로그 보존 및 접근 제한' is not mentioned in the reason text"
+          "aligned": true,
+          "hint": ""
         }
       },
       "validation": "PASS"
@@ -412,10 +410,10 @@
         "priority": "cost"
       },
       "result": {
-        "source": "rule_based",
+        "source": "llm",
         "recommended_level": 2,
         "playbook_name": "로그 보존 및 접근 제한",
-        "reason": "rule_based_decision"
+        "reason": "① 이번 시나리오는 dev_test 환경에서 발생한 보안 사건으로, 데이터 민감도가 public인 상황에서 발생했습니다. 추천 플레이북인 '로그 보존 및 접근 제한'의 예상 영향도가 MEDIUM인 점에서 시나리오의 심각성이 중간 수준임을 알 수 있습니다. ② 'L2 로그 보존 및 접근 제한'은 로그를 보존하고 접근을 제한하는 조치를 통해 사건의 증거를 확보하고, 불필요한 접근을 차단하여 보안을 강화합니다. 사용자께서 비용을 우선시하고 서비스 중단을 허용하지 않으신 점을 고려할 때, 예상 비용이 5.0 USD로 저렴하면서도 적절한 대응을 제공하는 이 플레이북이 이번 선택에 적합합니다."
       },
       "xai": {
         "decision_trace": [
@@ -474,7 +472,7 @@
           "RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
           "RULE_COST_PRIORITY_SELECT_LOWEST_COST"
         ],
-        "confidence_hint": "high",
+        "confidence_hint": "medium",
         "reason_alignment": {
           "aligned": true,
           "hint": ""
@@ -492,10 +490,10 @@
         "priority": "security"
       },
       "result": {
-        "source": "rule_based",
+        "source": "llm",
         "recommended_level": 3,
         "playbook_name": "즉시 격리 및 증거 확보",
-        "reason": "rule_based_decision"
+        "reason": "① 이번 시나리오는 production 환경에서 pii 데이터와 관련된 보안 사건으로 발생하였으며, 추천 플레이북인 '즉시 격리 및 증거 확보'의 예상 영향도가 HIGH인 점에서 시나리오의 심각성을 나타냅니다. ② '즉시 격리 및 증거 확보'는 위협을 즉시 격리하고, 관련 증거를 확보하여 추가 피해를 방지하는 조치를 취합니다. 보안 우선순위를 고려할 때, 예상 비용이 7.0 USD로 상대적으로 낮으면서도 높은 보안 효과를 제공하므로 이번 선택에 적합합니다."
       },
       "xai": {
         "decision_trace": [
@@ -551,7 +549,7 @@
         "applied_rules": [
           "RULE_PRODUCTION_PII_SECURITY_FORCE_L3"
         ],
-        "confidence_hint": "high",
+        "confidence_hint": "medium",
         "reason_alignment": {
           "aligned": true,
           "hint": ""
@@ -572,7 +570,7 @@
         "source": "llm",
         "recommended_level": 3,
         "playbook_name": "즉시 격리 및 증거 확보",
-        "reason": "운영 환경이 내부이고 데이터 민감도가 낮아 서비스 중단을 최소화하는 것이 중요합니다. L2 플레이북은 비용이 저렴하면서도 장기적인 모니터링을 통해 안정성을 유지할 수 있어 균형 잡힌 접근 방식입니다."
+        "reason": "① 이번 시나리오는 internal 운영 환경과 internal 데이터 민감도에서 발생한 보안 사건으로, 추천 플레이북인 '즉시 격리 및 증거 확보'의 예상 영향도가 HIGH인 점에서 시나리오의 심각성을 나타냅니다. ② '즉시 격리 및 증거 확보'는 보안 위협을 즉각적으로 격리하고, 관련 증거를 확보하여 추가 피해를 방지하는 조치를 취합니다. 사용자의 우선순위가 balanced이고 서비스 중단이 승인 필요하다는 점을 고려할 때, 예상 비용이 7.0 USD로 적정하며, 이 플레이북이 이번 선택에 적합한 이유입니다."
       },
       "xai": {
         "decision_trace": [
@@ -582,8 +580,7 @@
           "Downtime tolerance is approval_required",
           "Candidate L2 장기 모니터링 및 단계적 제한 cost = 12.0 USD, impact = LOW",
           "Candidate L3 즉시 격리 및 증거 확보 cost = 7.0 USD, impact = HIGH",
-          "Selected L3 playbook: 즉시 격리 및 증거 확보",
-          "Warning: explanation text may not match the selected playbook"
+          "Selected L3 playbook: 즉시 격리 및 증거 확보"
         ],
         "decision_factors": {
           "environment": "internal",
@@ -628,8 +625,8 @@
         "applied_rules": [],
         "confidence_hint": "medium",
         "reason_alignment": {
-          "aligned": false,
-          "hint": "Selected playbook '즉시 격리 및 증거 확보' is not mentioned in the reason text"
+          "aligned": true,
+          "hint": ""
         }
       },
       "validation": "FAIL",
@@ -645,10 +642,10 @@
         "priority": "cost"
       },
       "result": {
-        "source": "rule_based",
+        "source": "llm",
         "recommended_level": 2,
         "playbook_name": "장기 모니터링 및 단계적 제한",
-        "reason": "rule_based_decision"
+        "reason": "① 이번 시나리오는 dev_test 환경에서 발생한 보안 사건으로, 데이터 민감도가 public인 점을 고려할 때, 추천 플레이북인 '장기 모니터링 및 단계적 제한'의 예상 영향도가 LOW인 것은 시나리오의 심각성이 낮음을 나타냅니다. ② 'L2 장기 모니터링 및 단계적 제한'은 장기적인 모니터링을 통해 이상 징후를 탐지하고, 필요 시 단계적으로 접근을 제한하는 조치를 취합니다. 사용자께서 비용을 우선시하고 서비스 중단을 허용하지 않으신 점을 고려할 때, 예상 월 비용이 12.0 USD인 이 플레이북이 적합한 선택입니다."
       },
       "xai": {
         "decision_trace": [
@@ -714,7 +711,7 @@
           "RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
           "RULE_COST_PRIORITY_SELECT_LOWEST_COST"
         ],
-        "confidence_hint": "high",
+        "confidence_hint": "medium",
         "reason_alignment": {
           "aligned": true,
           "hint": ""

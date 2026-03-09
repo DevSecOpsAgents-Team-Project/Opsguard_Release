@@ -110,6 +110,41 @@ def build_excluded_candidates_summary(
     ]
 
 
+# 규칙별 사용자용 설명 (감사/디버깅용). rule-based 시 reason은 "rule_based_decision" 고정 반환.
+RULE_REASON_MESSAGES = {
+    RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT: "서비스 중단이 불가한 설정이므로 고영향(HIGH) 플레이북을 제외한 뒤, 남은 후보 중에서 선택했습니다.",
+    RULE_PRODUCTION_PII_SECURITY_FORCE_L3: "운영 환경이 프로덕션이고 PII 데이터이며 보안을 우선하므로, Level 3 이상의 강력한 대응 플레이북을 추천했습니다.",
+    RULE_COST_PRIORITY_SELECT_LOWEST_COST: "비용 우선 설정에 따라 예상 비용이 가장 낮은 플레이북을 추천했습니다.",
+    RULE_FALLBACK_LOWEST_COST: "기본 규칙에 따라 예상 비용이 가장 낮은 플레이북을 추천했습니다.",
+}
+
+
+def _template_reason(
+    user_response: dict,
+    level: int | None,
+    playbook_name: str,
+    estimated_monthly_cost: int | float | None,
+) -> str:
+    """run_mocks / simulation_questions와 동일한 reason 형식: 사용자 선택 + 예상 비용 반영 문장."""
+    env = user_response.get("environment", "")
+    data_sens = user_response.get("data_sensitivity", "")
+    downtime = user_response.get("downtime_tolerance", "")
+    priority = user_response.get("priority", "")
+    cost_str = f"{estimated_monthly_cost} USD" if estimated_monthly_cost is not None else "알 수 없음"
+    return (
+        f"사용자 선택(환경={env}, 데이터민감도={data_sens}, 중단허용={downtime}, 우선순위={priority})과 "
+        f"예상 비용({cost_str})을 반영하여 L{level} ({playbook_name})를 추천합니다."
+    )
+
+
+def _rule_based_reason(applied_rules: list[str]) -> str:
+    """applied_rules를 사용자용 한글 설명으로 변환. 규칙이 없으면 기본 문구 반환. (폴백용)"""
+    if not applied_rules:
+        return "규칙에 따라 자동 추천되었습니다."
+    parts = [RULE_REASON_MESSAGES[r] for r in applied_rules if r in RULE_REASON_MESSAGES]
+    return " ".join(parts) if parts else "규칙에 따라 자동 추천되었습니다."
+
+
 def rule_based_recommendation(playbooks: list, user_response: dict) -> dict | None:
     """
     Deterministic rule filter before LLM.
@@ -360,13 +395,16 @@ def validate_reason_alignment(
     """
     Check whether the explanation text is aligned with the selected playbook.
     Returns { "aligned": bool, "hint": str }.
-    Skip check for rule_based_decision or very short reasons (no LLM explanation to validate).
+    Skip check for rule-based reasons (고정 문구) or very short reasons (no LLM explanation to validate).
     """
     selected_name = (selected_playbook.get("playbook_name") or "").strip()
     reason = (reason_text or "").strip()
     if not selected_name:
         return {"aligned": True, "hint": ""}
     if not reason or reason == "rule_based_decision" or len(reason) < 20:
+        return {"aligned": True, "hint": ""}
+    # 규칙 기반 한글 설명이면 플레이북 이름 없어도 정합성 검사 스킵
+    if any(msg in reason for msg in RULE_REASON_MESSAGES.values()):
         return {"aligned": True, "hint": ""}
 
     names = extract_candidate_names(all_candidates or [])
@@ -426,39 +464,69 @@ def infer_confidence_hint(
 
 def run_llm_recommendation_safe(playbook_mock: dict, user_response: dict) -> dict:
     """
-    Try rule-based first; then call LLM; on failure use fallback.
-    Returns normalized structure: source, recommended_playbook, applied_rules, fallback_used, error.
+    결정(level, playbook_name)은 rule-based로 하고, reason만 LLM이 자연어로 생성.
+    rule_based_recommendation으로 결정 후 get_simulation_recommendation_for_mcp에 넘겨 reason만 LLM 생성.
+    rule이 없으면 결정은 recommend_level_from_user_response, reason은 LLM.
+    LLM 실패 시 reason만 "rule_based_decision" 또는 템플릿으로 폴백.
     """
     playbooks = playbook_mock.get("playbooks") or []
     applied_rules: list[str] = []
     fallback_used = False
     err_msg: str | None = None
+    rule_metadata = None
 
+    # 1) 결정은 rule-based로 (있으면 사용)
     rule_rec = rule_based_recommendation(playbooks, user_response)
     if rule_rec is not None:
+        applied_rules = rule_rec.get("applied_rules", [])
+        rule_metadata = rule_rec.get("rule_metadata")
+        # 2) 이 결정으로 reason만 LLM에 요청
+        try:
+            result = get_simulation_recommendation_for_mcp(
+                playbook_mock,
+                user_response,
+                recommended_level=rule_rec.get("recommended_level"),
+                playbook_name=rule_rec.get("playbook_name", ""),
+            )
+            rec = result.get("recommended_playbook")
+            if rec and rec.get("recommended_level") is not None and rec.get("playbook_name") is not None:
+                return {
+                    "source": result.get("source", "llm"),
+                    "recommended_playbook": rec,
+                    "applied_rules": applied_rules,
+                    "fallback_used": result.get("source") == "fallback",
+                    "error": None,
+                    "user_response": result.get("user_response", user_response),
+                    "rule_metadata": rule_metadata,
+                }
+        except Exception as e:
+            err_msg = str(e)
+            fallback_used = True
+        # LLM 실패 시 rule 결정 + rule_based_decision reason
         return {
-            "source": "rule_based",
+            "source": "fallback",
             "recommended_playbook": {
                 "recommended_level": rule_rec.get("recommended_level"),
                 "playbook_name": rule_rec.get("playbook_name", ""),
-                "reason": rule_rec.get("reason", ""),
+                "reason": "rule_based_decision",
             },
-            "applied_rules": rule_rec.get("applied_rules", []),
-            "fallback_used": False,
-            "error": None,
+            "applied_rules": applied_rules,
+            "fallback_used": True,
+            "error": err_msg,
             "user_response": user_response,
-            "rule_metadata": rule_rec.get("rule_metadata"),
+            "rule_metadata": rule_metadata,
         }
 
+    # 3) rule 없음: 결정은 recommend_level_from_user_response, reason은 LLM
     try:
         result = get_simulation_recommendation_for_mcp(playbook_mock, user_response)
         rec = result.get("recommended_playbook")
         if rec and rec.get("recommended_level") is not None and rec.get("playbook_name") is not None:
             return {
-                "source": "llm",
+                "source": result.get("source", "llm"),
                 "recommended_playbook": rec,
                 "applied_rules": [],
-                "fallback_used": False,
+                "fallback_used": result.get("source") == "fallback",
                 "error": None,
                 "user_response": result.get("user_response", user_response),
             }
@@ -466,21 +534,6 @@ def run_llm_recommendation_safe(playbook_mock: dict, user_response: dict) -> dic
     except Exception as e:
         err_msg = str(e)
         fallback_used = True
-        rule_rec = rule_based_recommendation(playbooks, user_response)
-        if rule_rec is not None:
-            return {
-                "source": "fallback",
-                "recommended_playbook": {
-                    "recommended_level": rule_rec.get("recommended_level"),
-                    "playbook_name": rule_rec.get("playbook_name", ""),
-                    "reason": "LLM failure fallback (rule_based)",
-                },
-                "applied_rules": rule_rec.get("applied_rules", []),
-                "fallback_used": True,
-                "error": err_msg,
-                "user_response": user_response,
-                "rule_metadata": rule_rec.get("rule_metadata"),
-            }
         lowest = select_lowest_cost_playbook(normalize_playbooks(playbooks))
         if lowest:
             return {
@@ -488,7 +541,7 @@ def run_llm_recommendation_safe(playbook_mock: dict, user_response: dict) -> dic
                 "recommended_playbook": {
                     "recommended_level": lowest.get("level", 2),
                     "playbook_name": lowest.get("playbook_name", "fallback_lowest_cost"),
-                    "reason": "LLM failure fallback",
+                    "reason": "rule_based_decision",
                 },
                 "applied_rules": [RULE_FALLBACK_LOWEST_COST],
                 "fallback_used": True,
@@ -500,7 +553,7 @@ def run_llm_recommendation_safe(playbook_mock: dict, user_response: dict) -> dic
             "recommended_playbook": {
                 "recommended_level": 2,
                 "playbook_name": "fallback_lowest_cost",
-                "reason": "LLM failure fallback",
+                "reason": "rule_based_decision",
             },
             "applied_rules": [RULE_FALLBACK_LOWEST_COST],
             "fallback_used": True,
