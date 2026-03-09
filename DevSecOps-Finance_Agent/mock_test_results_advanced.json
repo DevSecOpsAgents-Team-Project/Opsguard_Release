@@ -1,0 +1,726 @@
+{
+  "total_cases": 9,
+  "pass": 8,
+  "fail": 1,
+  "xai_summary": {
+    "rule_based_cases": 6,
+    "llm_cases": 3,
+    "fallback_cases": 0,
+    "high_confidence_cases": 6,
+    "medium_confidence_cases": 3,
+    "low_confidence_cases": 0
+  },
+  "test_results": [
+    {
+      "playbook_scenario": "예시 1: L2 저비용 vs L3 고비용",
+      "user_profile": "사용자 1: 보안 우선 (production, pii, 중단 허용, security)",
+      "user_response": {
+        "environment": "production",
+        "data_sensitivity": "pii",
+        "downtime_tolerance": "allowed",
+        "priority": "security"
+      },
+      "result": {
+        "source": "rule_based",
+        "recommended_level": 3,
+        "playbook_name": "강력한 격리 및 계정 삭제",
+        "reason": "rule_based_decision"
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is security",
+          "Environment is production",
+          "Data sensitivity is pii",
+          "Downtime tolerance is allowed",
+          "Candidate L2 계정 권한 제한 및 관찰 cost = 2.5 USD, impact = LOW",
+          "Candidate L3 강력한 격리 및 계정 삭제 cost = 8.0 USD, impact = HIGH",
+          "Production + pii + security triggers stronger control preference",
+          "Selected L3 playbook: 강력한 격리 및 계정 삭제"
+        ],
+        "decision_factors": {
+          "environment": "production",
+          "data_sensitivity": "pii",
+          "downtime_tolerance": "allowed",
+          "priority": "security",
+          "selected_level": 3,
+          "selected_cost": 8.0,
+          "selected_impact": "HIGH",
+          "cost_preference_active": false,
+          "security_preference_active": true,
+          "downtime_constraint_active": false,
+          "production_sensitive_context": true,
+          "selected_from_remaining_candidates": false
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "계정 권한 제한 및 관찰",
+              "estimated_monthly_cost": 2.5,
+              "expected_impact": "LOW"
+            },
+            {
+              "level": 3,
+              "playbook_name": "강력한 격리 및 계정 삭제",
+              "estimated_monthly_cost": 8.0,
+              "expected_impact": "HIGH"
+            }
+          ],
+          "lowest_cost_level": 2,
+          "highest_cost_level": 3,
+          "lowest_cost_playbook_name": "계정 권한 제한 및 관찰",
+          "highest_cost_playbook_name": "강력한 격리 및 계정 삭제",
+          "cost_gap": 5.5
+        },
+        "candidate_summary": [
+          "L2 / 계정 권한 제한 및 관찰 / cost=2.5 / impact=LOW",
+          "L3 / 강력한 격리 및 계정 삭제 / cost=8.0 / impact=HIGH"
+        ],
+        "excluded_candidates": [],
+        "applied_rules": [
+          "RULE_PRODUCTION_PII_SECURITY_FORCE_L3"
+        ],
+        "confidence_hint": "high",
+        "reason_alignment": {
+          "aligned": true,
+          "hint": ""
+        }
+      },
+      "validation": "PASS"
+    },
+    {
+      "playbook_scenario": "예시 1: L2 저비용 vs L3 고비용",
+      "user_profile": "사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)",
+      "user_response": {
+        "environment": "internal",
+        "data_sensitivity": "internal",
+        "downtime_tolerance": "approval_required",
+        "priority": "balanced"
+      },
+      "result": {
+        "source": "llm",
+        "recommended_level": 2,
+        "playbook_name": "계정 권한 제한 및 관찰",
+        "reason": "운영 환경이 내부이고 데이터 민감도가 낮아 서비스 중단을 최소화하는 것이 중요합니다. L2 플레이북은 비용이 저렴하면서도 낮은 영향으로 계정 권한을 제한하고 관찰할 수 있어, 현재 상황에 적합합니다."
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is balanced",
+          "Environment is internal",
+          "Data sensitivity is internal",
+          "Downtime tolerance is approval_required",
+          "Candidate L2 계정 권한 제한 및 관찰 cost = 2.5 USD, impact = LOW",
+          "Candidate L3 강력한 격리 및 계정 삭제 cost = 8.0 USD, impact = HIGH",
+          "Selected L2 playbook: 계정 권한 제한 및 관찰",
+          "Warning: explanation text may not match the selected playbook"
+        ],
+        "decision_factors": {
+          "environment": "internal",
+          "data_sensitivity": "internal",
+          "downtime_tolerance": "approval_required",
+          "priority": "balanced",
+          "selected_level": 2,
+          "selected_cost": 2.5,
+          "selected_impact": "LOW",
+          "cost_preference_active": false,
+          "security_preference_active": false,
+          "downtime_constraint_active": false,
+          "production_sensitive_context": false,
+          "selected_from_remaining_candidates": false
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "계정 권한 제한 및 관찰",
+              "estimated_monthly_cost": 2.5,
+              "expected_impact": "LOW"
+            },
+            {
+              "level": 3,
+              "playbook_name": "강력한 격리 및 계정 삭제",
+              "estimated_monthly_cost": 8.0,
+              "expected_impact": "HIGH"
+            }
+          ],
+          "lowest_cost_level": 2,
+          "highest_cost_level": 3,
+          "lowest_cost_playbook_name": "계정 권한 제한 및 관찰",
+          "highest_cost_playbook_name": "강력한 격리 및 계정 삭제",
+          "cost_gap": 5.5
+        },
+        "candidate_summary": [
+          "L2 / 계정 권한 제한 및 관찰 / cost=2.5 / impact=LOW",
+          "L3 / 강력한 격리 및 계정 삭제 / cost=8.0 / impact=HIGH"
+        ],
+        "excluded_candidates": [],
+        "applied_rules": [],
+        "confidence_hint": "medium",
+        "reason_alignment": {
+          "aligned": false,
+          "hint": "Selected playbook '계정 권한 제한 및 관찰' is not mentioned in the reason text"
+        }
+      },
+      "validation": "PASS"
+    },
+    {
+      "playbook_scenario": "예시 1: L2 저비용 vs L3 고비용",
+      "user_profile": "사용자 3: 비용 우선 (dev_test, public, 중단 불가, cost)",
+      "user_response": {
+        "environment": "dev_test",
+        "data_sensitivity": "public",
+        "downtime_tolerance": "not_allowed",
+        "priority": "cost"
+      },
+      "result": {
+        "source": "rule_based",
+        "recommended_level": 2,
+        "playbook_name": "계정 권한 제한 및 관찰",
+        "reason": "rule_based_decision"
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is cost",
+          "Environment is dev_test",
+          "Data sensitivity is public",
+          "Downtime tolerance is not_allowed",
+          "Original candidate L2 계정 권한 제한 및 관찰 cost = 2.5 USD, impact = LOW",
+          "Original candidate L3 강력한 격리 및 계정 삭제 cost = 8.0 USD, impact = HIGH",
+          "Applied rule RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
+          "Excluded candidate L3 강력한 격리 및 계정 삭제 because impact is HIGH",
+          "Remaining candidates: L2 계정 권한 제한 및 관찰",
+          "Applied rule RULE_COST_PRIORITY_SELECT_LOWEST_COST within remaining candidates",
+          "Selected L2 playbook: 계정 권한 제한 및 관찰"
+        ],
+        "decision_factors": {
+          "environment": "dev_test",
+          "data_sensitivity": "public",
+          "downtime_tolerance": "not_allowed",
+          "priority": "cost",
+          "selected_level": 2,
+          "selected_cost": 2.5,
+          "selected_impact": "LOW",
+          "cost_preference_active": true,
+          "security_preference_active": false,
+          "downtime_constraint_active": true,
+          "production_sensitive_context": false,
+          "selected_from_remaining_candidates": true
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "계정 권한 제한 및 관찰",
+              "estimated_monthly_cost": 2.5,
+              "expected_impact": "LOW"
+            },
+            {
+              "level": 3,
+              "playbook_name": "강력한 격리 및 계정 삭제",
+              "estimated_monthly_cost": 8.0,
+              "expected_impact": "HIGH"
+            }
+          ],
+          "lowest_cost_level": 2,
+          "highest_cost_level": 3,
+          "lowest_cost_playbook_name": "계정 권한 제한 및 관찰",
+          "highest_cost_playbook_name": "강력한 격리 및 계정 삭제",
+          "cost_gap": 5.5
+        },
+        "candidate_summary": [
+          "L2 / 계정 권한 제한 및 관찰 / cost=2.5 / impact=LOW",
+          "L3 / 강력한 격리 및 계정 삭제 / cost=8.0 / impact=HIGH"
+        ],
+        "excluded_candidates": [
+          {
+            "level": 3,
+            "playbook_name": "강력한 격리 및 계정 삭제",
+            "reason": "HIGH impact excluded due to downtime_tolerance=not_allowed"
+          }
+        ],
+        "applied_rules": [
+          "RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
+          "RULE_COST_PRIORITY_SELECT_LOWEST_COST"
+        ],
+        "confidence_hint": "high",
+        "reason_alignment": {
+          "aligned": true,
+          "hint": ""
+        }
+      },
+      "validation": "PASS"
+    },
+    {
+      "playbook_scenario": "예시 2: L2/L3 비용 비슷",
+      "user_profile": "사용자 1: 보안 우선 (production, pii, 중단 허용, security)",
+      "user_response": {
+        "environment": "production",
+        "data_sensitivity": "pii",
+        "downtime_tolerance": "allowed",
+        "priority": "security"
+      },
+      "result": {
+        "source": "rule_based",
+        "recommended_level": 3,
+        "playbook_name": "리소스 격리 및 포렌식 수집",
+        "reason": "rule_based_decision"
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is security",
+          "Environment is production",
+          "Data sensitivity is pii",
+          "Downtime tolerance is allowed",
+          "Candidate L2 로그 보존 및 접근 제한 cost = 5.0 USD, impact = MEDIUM",
+          "Candidate L3 리소스 격리 및 포렌식 수집 cost = 6.0 USD, impact = MEDIUM",
+          "Production + pii + security triggers stronger control preference",
+          "Selected L3 playbook: 리소스 격리 및 포렌식 수집"
+        ],
+        "decision_factors": {
+          "environment": "production",
+          "data_sensitivity": "pii",
+          "downtime_tolerance": "allowed",
+          "priority": "security",
+          "selected_level": 3,
+          "selected_cost": 6.0,
+          "selected_impact": "MEDIUM",
+          "cost_preference_active": false,
+          "security_preference_active": true,
+          "downtime_constraint_active": false,
+          "production_sensitive_context": true,
+          "selected_from_remaining_candidates": false
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "로그 보존 및 접근 제한",
+              "estimated_monthly_cost": 5.0,
+              "expected_impact": "MEDIUM"
+            },
+            {
+              "level": 3,
+              "playbook_name": "리소스 격리 및 포렌식 수집",
+              "estimated_monthly_cost": 6.0,
+              "expected_impact": "MEDIUM"
+            }
+          ],
+          "lowest_cost_level": 2,
+          "highest_cost_level": 3,
+          "lowest_cost_playbook_name": "로그 보존 및 접근 제한",
+          "highest_cost_playbook_name": "리소스 격리 및 포렌식 수집",
+          "cost_gap": 1.0
+        },
+        "candidate_summary": [
+          "L2 / 로그 보존 및 접근 제한 / cost=5.0 / impact=MEDIUM",
+          "L3 / 리소스 격리 및 포렌식 수집 / cost=6.0 / impact=MEDIUM"
+        ],
+        "excluded_candidates": [],
+        "applied_rules": [
+          "RULE_PRODUCTION_PII_SECURITY_FORCE_L3"
+        ],
+        "confidence_hint": "high",
+        "reason_alignment": {
+          "aligned": true,
+          "hint": ""
+        }
+      },
+      "validation": "PASS"
+    },
+    {
+      "playbook_scenario": "예시 2: L2/L3 비용 비슷",
+      "user_profile": "사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)",
+      "user_response": {
+        "environment": "internal",
+        "data_sensitivity": "internal",
+        "downtime_tolerance": "approval_required",
+        "priority": "balanced"
+      },
+      "result": {
+        "source": "llm",
+        "recommended_level": 2,
+        "playbook_name": "로그 보존 및 접근 제한",
+        "reason": "운영 환경이 내부이고 데이터 민감도가 낮은 상황에서, L2 플레이북은 비용이 더 저렴하면서도 중간 정도의 영향을 미칠 수 있습니다. 서비스 중단이 필요할 경우 승인이 필요하므로, 비용과 보안의 균형을 맞추는 데 적합합니다."
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is balanced",
+          "Environment is internal",
+          "Data sensitivity is internal",
+          "Downtime tolerance is approval_required",
+          "Candidate L2 로그 보존 및 접근 제한 cost = 5.0 USD, impact = MEDIUM",
+          "Candidate L3 리소스 격리 및 포렌식 수집 cost = 6.0 USD, impact = MEDIUM",
+          "Selected L2 playbook: 로그 보존 및 접근 제한",
+          "Warning: explanation text may not match the selected playbook"
+        ],
+        "decision_factors": {
+          "environment": "internal",
+          "data_sensitivity": "internal",
+          "downtime_tolerance": "approval_required",
+          "priority": "balanced",
+          "selected_level": 2,
+          "selected_cost": 5.0,
+          "selected_impact": "MEDIUM",
+          "cost_preference_active": false,
+          "security_preference_active": false,
+          "downtime_constraint_active": false,
+          "production_sensitive_context": false,
+          "selected_from_remaining_candidates": false
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "로그 보존 및 접근 제한",
+              "estimated_monthly_cost": 5.0,
+              "expected_impact": "MEDIUM"
+            },
+            {
+              "level": 3,
+              "playbook_name": "리소스 격리 및 포렌식 수집",
+              "estimated_monthly_cost": 6.0,
+              "expected_impact": "MEDIUM"
+            }
+          ],
+          "lowest_cost_level": 2,
+          "highest_cost_level": 3,
+          "lowest_cost_playbook_name": "로그 보존 및 접근 제한",
+          "highest_cost_playbook_name": "리소스 격리 및 포렌식 수집",
+          "cost_gap": 1.0
+        },
+        "candidate_summary": [
+          "L2 / 로그 보존 및 접근 제한 / cost=5.0 / impact=MEDIUM",
+          "L3 / 리소스 격리 및 포렌식 수집 / cost=6.0 / impact=MEDIUM"
+        ],
+        "excluded_candidates": [],
+        "applied_rules": [],
+        "confidence_hint": "medium",
+        "reason_alignment": {
+          "aligned": false,
+          "hint": "Selected playbook '로그 보존 및 접근 제한' is not mentioned in the reason text"
+        }
+      },
+      "validation": "PASS"
+    },
+    {
+      "playbook_scenario": "예시 2: L2/L3 비용 비슷",
+      "user_profile": "사용자 3: 비용 우선 (dev_test, public, 중단 불가, cost)",
+      "user_response": {
+        "environment": "dev_test",
+        "data_sensitivity": "public",
+        "downtime_tolerance": "not_allowed",
+        "priority": "cost"
+      },
+      "result": {
+        "source": "rule_based",
+        "recommended_level": 2,
+        "playbook_name": "로그 보존 및 접근 제한",
+        "reason": "rule_based_decision"
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is cost",
+          "Environment is dev_test",
+          "Data sensitivity is public",
+          "Downtime tolerance is not_allowed",
+          "Original candidate L2 로그 보존 및 접근 제한 cost = 5.0 USD, impact = MEDIUM",
+          "Original candidate L3 리소스 격리 및 포렌식 수집 cost = 6.0 USD, impact = MEDIUM",
+          "Applied rule RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
+          "Remaining candidates: L2 로그 보존 및 접근 제한, L3 리소스 격리 및 포렌식 수집",
+          "Applied rule RULE_COST_PRIORITY_SELECT_LOWEST_COST within remaining candidates",
+          "Selected L2 playbook: 로그 보존 및 접근 제한"
+        ],
+        "decision_factors": {
+          "environment": "dev_test",
+          "data_sensitivity": "public",
+          "downtime_tolerance": "not_allowed",
+          "priority": "cost",
+          "selected_level": 2,
+          "selected_cost": 5.0,
+          "selected_impact": "MEDIUM",
+          "cost_preference_active": true,
+          "security_preference_active": false,
+          "downtime_constraint_active": true,
+          "production_sensitive_context": false,
+          "selected_from_remaining_candidates": true
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "로그 보존 및 접근 제한",
+              "estimated_monthly_cost": 5.0,
+              "expected_impact": "MEDIUM"
+            },
+            {
+              "level": 3,
+              "playbook_name": "리소스 격리 및 포렌식 수집",
+              "estimated_monthly_cost": 6.0,
+              "expected_impact": "MEDIUM"
+            }
+          ],
+          "lowest_cost_level": 2,
+          "highest_cost_level": 3,
+          "lowest_cost_playbook_name": "로그 보존 및 접근 제한",
+          "highest_cost_playbook_name": "리소스 격리 및 포렌식 수집",
+          "cost_gap": 1.0
+        },
+        "candidate_summary": [
+          "L2 / 로그 보존 및 접근 제한 / cost=5.0 / impact=MEDIUM",
+          "L3 / 리소스 격리 및 포렌식 수집 / cost=6.0 / impact=MEDIUM"
+        ],
+        "excluded_candidates": [],
+        "applied_rules": [
+          "RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
+          "RULE_COST_PRIORITY_SELECT_LOWEST_COST"
+        ],
+        "confidence_hint": "high",
+        "reason_alignment": {
+          "aligned": true,
+          "hint": ""
+        }
+      },
+      "validation": "PASS"
+    },
+    {
+      "playbook_scenario": "예시 3: L3이 더 저렴",
+      "user_profile": "사용자 1: 보안 우선 (production, pii, 중단 허용, security)",
+      "user_response": {
+        "environment": "production",
+        "data_sensitivity": "pii",
+        "downtime_tolerance": "allowed",
+        "priority": "security"
+      },
+      "result": {
+        "source": "rule_based",
+        "recommended_level": 3,
+        "playbook_name": "즉시 격리 및 증거 확보",
+        "reason": "rule_based_decision"
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is security",
+          "Environment is production",
+          "Data sensitivity is pii",
+          "Downtime tolerance is allowed",
+          "Candidate L2 장기 모니터링 및 단계적 제한 cost = 12.0 USD, impact = LOW",
+          "Candidate L3 즉시 격리 및 증거 확보 cost = 7.0 USD, impact = HIGH",
+          "Production + pii + security triggers stronger control preference",
+          "Selected L3 playbook: 즉시 격리 및 증거 확보"
+        ],
+        "decision_factors": {
+          "environment": "production",
+          "data_sensitivity": "pii",
+          "downtime_tolerance": "allowed",
+          "priority": "security",
+          "selected_level": 3,
+          "selected_cost": 7.0,
+          "selected_impact": "HIGH",
+          "cost_preference_active": false,
+          "security_preference_active": true,
+          "downtime_constraint_active": false,
+          "production_sensitive_context": true,
+          "selected_from_remaining_candidates": false
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "장기 모니터링 및 단계적 제한",
+              "estimated_monthly_cost": 12.0,
+              "expected_impact": "LOW"
+            },
+            {
+              "level": 3,
+              "playbook_name": "즉시 격리 및 증거 확보",
+              "estimated_monthly_cost": 7.0,
+              "expected_impact": "HIGH"
+            }
+          ],
+          "lowest_cost_level": 3,
+          "highest_cost_level": 2,
+          "lowest_cost_playbook_name": "즉시 격리 및 증거 확보",
+          "highest_cost_playbook_name": "장기 모니터링 및 단계적 제한",
+          "cost_gap": 5.0
+        },
+        "candidate_summary": [
+          "L2 / 장기 모니터링 및 단계적 제한 / cost=12.0 / impact=LOW",
+          "L3 / 즉시 격리 및 증거 확보 / cost=7.0 / impact=HIGH"
+        ],
+        "excluded_candidates": [],
+        "applied_rules": [
+          "RULE_PRODUCTION_PII_SECURITY_FORCE_L3"
+        ],
+        "confidence_hint": "high",
+        "reason_alignment": {
+          "aligned": true,
+          "hint": ""
+        }
+      },
+      "validation": "PASS"
+    },
+    {
+      "playbook_scenario": "예시 3: L3이 더 저렴",
+      "user_profile": "사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)",
+      "user_response": {
+        "environment": "internal",
+        "data_sensitivity": "internal",
+        "downtime_tolerance": "approval_required",
+        "priority": "balanced"
+      },
+      "result": {
+        "source": "llm",
+        "recommended_level": 3,
+        "playbook_name": "즉시 격리 및 증거 확보",
+        "reason": "운영 환경이 내부이고 데이터 민감도가 낮아 서비스 중단을 최소화하는 것이 중요합니다. L2 플레이북은 비용이 저렴하면서도 장기적인 모니터링을 통해 안정성을 유지할 수 있어 균형 잡힌 접근 방식입니다."
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is balanced",
+          "Environment is internal",
+          "Data sensitivity is internal",
+          "Downtime tolerance is approval_required",
+          "Candidate L2 장기 모니터링 및 단계적 제한 cost = 12.0 USD, impact = LOW",
+          "Candidate L3 즉시 격리 및 증거 확보 cost = 7.0 USD, impact = HIGH",
+          "Selected L3 playbook: 즉시 격리 및 증거 확보",
+          "Warning: explanation text may not match the selected playbook"
+        ],
+        "decision_factors": {
+          "environment": "internal",
+          "data_sensitivity": "internal",
+          "downtime_tolerance": "approval_required",
+          "priority": "balanced",
+          "selected_level": 3,
+          "selected_cost": 7.0,
+          "selected_impact": "HIGH",
+          "cost_preference_active": false,
+          "security_preference_active": false,
+          "downtime_constraint_active": false,
+          "production_sensitive_context": false,
+          "selected_from_remaining_candidates": false
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "장기 모니터링 및 단계적 제한",
+              "estimated_monthly_cost": 12.0,
+              "expected_impact": "LOW"
+            },
+            {
+              "level": 3,
+              "playbook_name": "즉시 격리 및 증거 확보",
+              "estimated_monthly_cost": 7.0,
+              "expected_impact": "HIGH"
+            }
+          ],
+          "lowest_cost_level": 3,
+          "highest_cost_level": 2,
+          "lowest_cost_playbook_name": "즉시 격리 및 증거 확보",
+          "highest_cost_playbook_name": "장기 모니터링 및 단계적 제한",
+          "cost_gap": 5.0
+        },
+        "candidate_summary": [
+          "L2 / 장기 모니터링 및 단계적 제한 / cost=12.0 / impact=LOW",
+          "L3 / 즉시 격리 및 증거 확보 / cost=7.0 / impact=HIGH"
+        ],
+        "excluded_candidates": [],
+        "applied_rules": [],
+        "confidence_hint": "medium",
+        "reason_alignment": {
+          "aligned": false,
+          "hint": "Selected playbook '즉시 격리 및 증거 확보' is not mentioned in the reason text"
+        }
+      },
+      "validation": "FAIL",
+      "validation_hint": "expected L2 for balanced profile, but L3 was selected because L3 had lower estimated cost in this scenario"
+    },
+    {
+      "playbook_scenario": "예시 3: L3이 더 저렴",
+      "user_profile": "사용자 3: 비용 우선 (dev_test, public, 중단 불가, cost)",
+      "user_response": {
+        "environment": "dev_test",
+        "data_sensitivity": "public",
+        "downtime_tolerance": "not_allowed",
+        "priority": "cost"
+      },
+      "result": {
+        "source": "rule_based",
+        "recommended_level": 2,
+        "playbook_name": "장기 모니터링 및 단계적 제한",
+        "reason": "rule_based_decision"
+      },
+      "xai": {
+        "decision_trace": [
+          "Input priority is cost",
+          "Environment is dev_test",
+          "Data sensitivity is public",
+          "Downtime tolerance is not_allowed",
+          "Original candidate L2 장기 모니터링 및 단계적 제한 cost = 12.0 USD, impact = LOW",
+          "Original candidate L3 즉시 격리 및 증거 확보 cost = 7.0 USD, impact = HIGH",
+          "Applied rule RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
+          "Excluded candidate L3 즉시 격리 및 증거 확보 because impact is HIGH",
+          "Remaining candidates: L2 장기 모니터링 및 단계적 제한",
+          "Applied rule RULE_COST_PRIORITY_SELECT_LOWEST_COST within remaining candidates",
+          "Selected L2 playbook: 장기 모니터링 및 단계적 제한"
+        ],
+        "decision_factors": {
+          "environment": "dev_test",
+          "data_sensitivity": "public",
+          "downtime_tolerance": "not_allowed",
+          "priority": "cost",
+          "selected_level": 2,
+          "selected_cost": 12.0,
+          "selected_impact": "LOW",
+          "cost_preference_active": true,
+          "security_preference_active": false,
+          "downtime_constraint_active": true,
+          "production_sensitive_context": false,
+          "selected_from_remaining_candidates": true
+        },
+        "cost_comparison": {
+          "candidates": [
+            {
+              "level": 2,
+              "playbook_name": "장기 모니터링 및 단계적 제한",
+              "estimated_monthly_cost": 12.0,
+              "expected_impact": "LOW"
+            },
+            {
+              "level": 3,
+              "playbook_name": "즉시 격리 및 증거 확보",
+              "estimated_monthly_cost": 7.0,
+              "expected_impact": "HIGH"
+            }
+          ],
+          "lowest_cost_level": 3,
+          "highest_cost_level": 2,
+          "lowest_cost_playbook_name": "즉시 격리 및 증거 확보",
+          "highest_cost_playbook_name": "장기 모니터링 및 단계적 제한",
+          "cost_gap": 5.0
+        },
+        "candidate_summary": [
+          "L2 / 장기 모니터링 및 단계적 제한 / cost=12.0 / impact=LOW",
+          "L3 / 즉시 격리 및 증거 확보 / cost=7.0 / impact=HIGH"
+        ],
+        "excluded_candidates": [
+          {
+            "level": 3,
+            "playbook_name": "즉시 격리 및 증거 확보",
+            "reason": "HIGH impact excluded due to downtime_tolerance=not_allowed"
+          }
+        ],
+        "applied_rules": [
+          "RULE_DOWNTIME_NOT_ALLOWED_EXCLUDE_HIGH_IMPACT",
+          "RULE_COST_PRIORITY_SELECT_LOWEST_COST"
+        ],
+        "confidence_hint": "high",
+        "reason_alignment": {
+          "aligned": true,
+          "hint": ""
+        }
+      },
+      "validation": "PASS"
+    }
+  ]
+}
