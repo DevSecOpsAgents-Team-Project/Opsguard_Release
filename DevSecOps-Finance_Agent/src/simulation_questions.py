@@ -9,6 +9,7 @@ import os
 
 import jsonschema
 
+from .recommendation_xai import build_mcp_simulation_response
 from .schema_io import get_simulation_user_response_schema
 
 logger = logging.getLogger(__name__)
@@ -182,13 +183,17 @@ def run_simulation_recommendation(
     """
     시뮬레이션 비교 결과 + 사용자 응답으로 추천 레벨과 이유 반환 (결정론적만).
     MCP에서 사용자 선택 수신 후 Finance Agent에 넘길 때 사용.
-    반환: { "recommended_playbook": { recommended_level, playbook_name, reason }, "user_response": user_response }
+    반환: MCP 시뮬레이션 응답 형식(build_mcp_simulation_response, source=fallback).
     """
     rec = recommend_level_from_user_response(user_response, comparison)
-    return {
-        "recommended_playbook": rec,
-        "user_response": user_response,
-    }
+    return build_mcp_simulation_response(
+        comparison,
+        user_response,
+        rec,
+        "fallback",
+        playbook_scenario=(comparison or {}).get("playbook_scenario") or "",
+        user_profile=(comparison or {}).get("user_profile") or "",
+    )
 
 
 def _build_llm_prompt(
@@ -334,6 +339,23 @@ def _call_openai_recommendation(
         return None
 
 
+def extract_recommended_playbook_from_mcp_payload(payload: dict) -> dict:
+    """
+    신규 MCP 응답(result.*) 또는 구형 recommended_playbook에서 추천 dict 추출.
+    """
+    if isinstance(payload.get("result"), dict) and payload["result"].get("recommended_level") is not None:
+        r = payload["result"]
+        return {
+            "recommended_level": r.get("recommended_level"),
+            "playbook_name": r.get("playbook_name", ""),
+            "reason": r.get("reason", ""),
+        }
+    rp = payload.get("recommended_playbook")
+    if isinstance(rp, dict):
+        return rp
+    return {}
+
+
 def get_simulation_recommendation_for_mcp(
     comparison: dict,
     user_response: dict,
@@ -345,15 +367,16 @@ def get_simulation_recommendation_for_mcp(
     recommended_level, playbook_name이 주어지면 그대로 결정으로 사용(rule-based)하고 reason만 LLM 생성.
     없으면 recommend_level_from_user_response로 결정 후 reason만 LLM 생성.
     OPENAI_API_KEY가 있으면 LLM 호출, 없거나 실패 시 결정론적 추천 + 템플릿 reason 사용.
-    반환 (MCP 전달용):
-    {
-      "recommended_playbook": { "recommended_level", "playbook_name", "reason" },
-      "user_response": { ... },
-      "source": "llm" | "fallback"
-    }
+
+    반환 (MCP mock 동일):
+      playbook_scenario, user_profile, user_response, result{source, recommended_level, playbook_name, reason},
+      xai{...}, validation
     """
     _load_dotenv_if_present()
     validate_user_response(user_response)
+
+    playbook_scenario = (comparison or {}).get("playbook_scenario") or ""
+    user_profile = (comparison or {}).get("user_profile") or ""
 
     api_key = (os.environ.get("OPENAI_API_KEY") or os.environ.get("api_key") or "").strip()
     if api_key:
@@ -365,11 +388,14 @@ def get_simulation_recommendation_for_mcp(
             fixed_playbook_name=playbook_name,
         )
         if rec is not None:
-            return {
-                "recommended_playbook": rec,
-                "user_response": user_response,
-                "source": "llm",
-            }
+            return build_mcp_simulation_response(
+                comparison,
+                user_response,
+                rec,
+                "llm",
+                playbook_scenario=playbook_scenario,
+                user_profile=user_profile,
+            )
 
     # Fallback: 결정은 넘겨받은 값 또는 recommend_level_from_user_response
     if recommended_level is not None and playbook_name is not None:
@@ -381,8 +407,11 @@ def get_simulation_recommendation_for_mcp(
         }
     else:
         rec = recommend_level_from_user_response(user_response, comparison)
-    return {
-        "recommended_playbook": rec,
-        "user_response": user_response,
-        "source": "fallback",
-    }
+    return build_mcp_simulation_response(
+        comparison,
+        user_response,
+        rec,
+        "fallback",
+        playbook_scenario=playbook_scenario,
+        user_profile=user_profile,
+    )

@@ -90,6 +90,17 @@ def _extract_region_from_regulation(reg: dict) -> str | None:
     return None
 
 
+def _normalize_playbook_level(level: Any) -> int | None:
+    """DynamoDB/JSON 에서 level 이 문자열 \"2\"/\"3\" 로 올 수 있음 — 비용 계산 경로에서 반드시 정규화."""
+    if level is None or isinstance(level, bool):
+        return None
+    try:
+        n = int(float(level))
+    except (TypeError, ValueError):
+        return None
+    return n if n in (2, 3) else None
+
+
 def _extract_candidates(reg: dict) -> tuple[dict, dict]:
     """
     반환:
@@ -104,7 +115,7 @@ def _extract_candidates(reg: dict) -> tuple[dict, dict]:
     for a in actions:
         if not isinstance(a, dict):
             continue
-        lvl = a.get("level")
+        lvl = _normalize_playbook_level(a.get("level"))
         if lvl == 2 and level2 is None:
             level2 = a
         elif lvl == 3 and level3 is None:
@@ -254,6 +265,11 @@ def get_simulation_recommendation_from_regulation(
     comparison = {
         "incident_id": incident_id,
         "event_summary": scenario,
+        "playbook_scenario": str(scenario or ""),
+        "user_profile": (
+            f"environment={user_response.get('environment')}, data_sensitivity={user_response.get('data_sensitivity')}, "
+            f"downtime_tolerance={user_response.get('downtime_tolerance')}, priority={user_response.get('priority')}"
+        ),
         "playbooks": [
             {
                 "level": 2,
@@ -270,21 +286,6 @@ def get_simulation_recommendation_from_regulation(
         ],
     }
 
-    rec = get_simulation_recommendation_for_mcp(comparison, user_response)
-
-    return {
-        "level2": {
-            "playbook_name": computed_candidates[2].playbook_name,
-            "estimated_monthly_cost": computed_candidates[2].cost_monthly,
-            "expected_impact": computed_candidates[2].expected_impact,
-        },
-        "level3": {
-            "playbook_name": computed_candidates[3].playbook_name,
-            "estimated_monthly_cost": computed_candidates[3].cost_monthly,
-            "expected_impact": computed_candidates[3].expected_impact,
-        },
-        "recommended_playbook": rec.get("recommended_playbook"),
-        "user_response": rec.get("user_response"),
-        "source": rec.get("source"),
-    }
+    # MCP mock 동일 형식: playbook_scenario, user_profile, result, xai, validation
+    return get_simulation_recommendation_for_mcp(comparison, user_response)
 

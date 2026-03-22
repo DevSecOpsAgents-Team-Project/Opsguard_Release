@@ -26,7 +26,7 @@ except ImportError:
     pass
 
 from src.engine import finance_run
-from src.simulation_questions import get_simulation_recommendation_for_mcp
+from src.simulation_questions import extract_recommended_playbook_from_mcp_payload, get_simulation_recommendation_for_mcp
 
 
 # ---------------------------------------------------------------------------
@@ -170,8 +170,8 @@ def run_llm_playbook_tests():
         print("---", label, "---")
         print("user_response:", json.dumps(user_response, ensure_ascii=False))
         result = get_simulation_recommendation_for_mcp(comparison, user_response)
-        print("source:", result.get("source"))
-        rec = result.get("recommended_playbook") or {}
+        print("source:", (result.get("result") or {}).get("source"))
+        rec = extract_recommended_playbook_from_mcp_payload(result)
         print("recommended_level:", rec.get("recommended_level"))
         print("playbook_name:", rec.get("playbook_name"))
         print("reason:", rec.get("reason", ""))

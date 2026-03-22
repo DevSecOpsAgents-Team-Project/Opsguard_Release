@@ -20,7 +20,8 @@ def lambda_handler(event, context=None):
     event.action:
       - finance_run: event["request"]으로 비용 계산. 반환 result dict.
       - get_simulation_questions: 시뮬레이션 질문 4개 반환 (MCP용).
-      - get_simulation_recommendation: event["comparison"], event["user_response"]로 추천 반환 (MCP용).
+      - get_simulation_recommendation: event["comparison"], event["user_response"]로 추천 (playbooks에 cost_summary 없으면 비용 null).
+      - get_simulation_recommendation_from_regulation: regulation_result + user_response — L2/L3 비용을 정책으로 산정 후 추천 (MCP/Slack 권장).
     """
     try:
         action = (event.get("action") or "").strip() or (event.get("httpMethod") and "finance_run")

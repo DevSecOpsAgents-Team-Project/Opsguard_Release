@@ -31,7 +31,7 @@ except ImportError:
     pass
 
 from src.engine import finance_run
-from src.simulation_questions import get_simulation_recommendation_for_mcp
+from src.simulation_questions import extract_recommended_playbook_from_mcp_payload, get_simulation_recommendation_for_mcp
 
 from run_mocks import (
     INPUT_FINANCE_REQUEST,
@@ -488,13 +488,14 @@ def run_llm_recommendation_safe(playbook_mock: dict, user_response: dict) -> dic
                 recommended_level=rule_rec.get("recommended_level"),
                 playbook_name=rule_rec.get("playbook_name", ""),
             )
-            rec = result.get("recommended_playbook")
+            rec = extract_recommended_playbook_from_mcp_payload(result)
+            src = (result.get("result") or {}).get("source", "llm")
             if rec and rec.get("recommended_level") is not None and rec.get("playbook_name") is not None:
                 return {
-                    "source": result.get("source", "llm"),
+                    "source": src,
                     "recommended_playbook": rec,
                     "applied_rules": applied_rules,
-                    "fallback_used": result.get("source") == "fallback",
+                    "fallback_used": src == "fallback",
                     "error": None,
                     "user_response": result.get("user_response", user_response),
                     "rule_metadata": rule_metadata,
@@ -520,13 +521,14 @@ def run_llm_recommendation_safe(playbook_mock: dict, user_response: dict) -> dic
     # 3) rule 없음: 결정은 recommend_level_from_user_response, reason은 LLM
     try:
         result = get_simulation_recommendation_for_mcp(playbook_mock, user_response)
-        rec = result.get("recommended_playbook")
+        rec = extract_recommended_playbook_from_mcp_payload(result)
+        src = (result.get("result") or {}).get("source", "llm")
         if rec and rec.get("recommended_level") is not None and rec.get("playbook_name") is not None:
             return {
-                "source": result.get("source", "llm"),
+                "source": src,
                 "recommended_playbook": rec,
                 "applied_rules": [],
-                "fallback_used": result.get("source") == "fallback",
+                "fallback_used": src == "fallback",
                 "error": None,
                 "user_response": result.get("user_response", user_response),
             }
