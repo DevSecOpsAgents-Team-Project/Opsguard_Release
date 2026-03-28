@@ -1,4 +1,5 @@
 import json
+import os
 import urllib.parse
 import requests
 
@@ -18,21 +19,44 @@ def lambda_handler(event, context):
     incident_id = action['value']   # 'gd-finding-123'
     user_name = slack_payload['user']['username']
     response_url = slack_payload['response_url'] # 슬랙 메시지를 업데이트하기 위한 전용 URL
+    value_raw = action['value']
     
-    print(f"사용자 {user_name}가 {incident_id}에 대해 {action_id}를 클릭함.")
+    if action_id == "reject_all_action":
+        incident_id = value_raw  # 문자열
+        status_text = f"❌ *{user_name}* 님에 의해 전체 거절되었습니다."
+        update_message = {
+            "replace_original": "true",
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"🚨 *보안 이벤트 처리 완료 ({incident_id})*\n{status_text}"
+                    }
+                }
+            ]
+        }
+        requests.post(response_url, json=update_message)
+        return {"statusCode": 200, "body": "OK"}
 
-    # 3. DB에서 Playbook 조회 및 Runtime Agent 실행
-    # playbook = db.get_item(Key={'incident_id': incident_id})
-    if action_id == "approve_action":
-        # runtime_agent.execute(playbook)
-        status_text = f"✅ *{user_name}* 님에 의해 승인되어 조치가 완료되었습니다."
-        # db.update_item(status="COMPLETED", log="...") # DB 로깅 (어필 포인트)
-    else:
-        # runtime_agent.rollback(playbook)
-        status_text = f"❌ *{user_name}* 님에 의해 거절/롤백 되었습니다."
-        # db.update_item(status="REJECTED", log="...") # DB 로깅
-        
-    # 4. 슬랙 원본 메시지 업데이트 (버튼을 없애고 결과 텍스트로 대체)
+    # approve_l2 또는 approve_l3
+    try:
+        runtime_event = json.loads(value_raw)
+    except json.JSONDecodeError:
+        return {"statusCode": 400, "body": "Invalid payload value"}
+
+    # MCP 서버 호출 (MCP URL이 환경변수로 있다면)
+    MCP_APPROVE_URL = os.environ.get("MCP_APPROVE_URL")
+    if MCP_APPROVE_URL:
+        # MCP가 response_url로 결과 메시지를 보내므로 Lambda에서는 200만 반환
+        requests.post(MCP_APPROVE_URL, json={"payload": slack_payload})
+        return {"statusCode": 200, "body": "OK"}
+
+    # Lambda에서 직접 Runtime 호출하는 경우: 실행 후 Slack 업데이트
+    from dispatcher_module import lambda_handler as runtime_handler
+    runtime_handler(runtime_event, None)
+    status_text = f"✅ *{user_name}* 님에 의해 승인되어 조치가 완료되었습니다."
+    incident_id = runtime_event.get("incident_id", "unknown")
     update_message = {
         "replace_original": "true",
         "blocks": [
@@ -45,7 +69,6 @@ def lambda_handler(event, context):
             }
         ]
     }
-    
     requests.post(response_url, json=update_message)
     
     return {

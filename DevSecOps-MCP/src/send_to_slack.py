@@ -1,11 +1,13 @@
 import json
 import requests
+import os
 
-# ⚠️ 본인의 토큰과 채널 ID를 꼭 유지해주세요!
-SLACK_BOT_TOKEN = "***"
-SLACK_CHANNEL = "***"
+SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN", "")
+SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL", "")
 
 def send_approval_message(mock_json):
+    if not SLACK_BOT_TOKEN or not SLACK_CHANNEL:
+        raise ValueError("SLACK_BOT_TOKEN, SLACK_CHANNEL 환경변수가 필요합니다.")
     incident_id = mock_json["incident_id"]
     summary = mock_json["incident_summary"]
     playbooks = mock_json["recommended_actions"]
