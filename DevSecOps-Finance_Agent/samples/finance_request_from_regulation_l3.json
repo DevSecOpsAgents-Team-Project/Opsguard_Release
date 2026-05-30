@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "incident_id": "gd-finding-123",
+  "policy_version": "v1.0.0",
+  "assumptions": {
+    "duration_hours": 720,
+    "traffic_multiplier": 1.0,
+    "region": "ap-northeast-2",
+    "service_tier": "S1",
+    "org_profile": "Standard"
+  },
+  "resource_change": {
+    "cloudwatch_log_gb_per_day": 8,
+    "s3_storage_gb": 25,
+    "nat_egress_gb": 6,
+    "snapshot_gb": 40
+  }
+}

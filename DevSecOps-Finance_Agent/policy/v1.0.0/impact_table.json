@@ -1,0 +1,6 @@
+{
+  "description": "Scenario class (S1/S2/S3) to impact score. Used for expected loss = likelihood * impact.",
+  "S1": 10.0,
+  "S2": 50.0,
+  "S3": 200.0
+}

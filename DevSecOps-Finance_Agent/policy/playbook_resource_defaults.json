@@ -1,0 +1,57 @@
+{
+  "description": "Runtime Agent 플레이북별 기본 resource_change. 비용은 이 값으로 finance_run 호출 시 계산됨. 미리 계산해 두거나 그때마다 호출 시 이 값을 사용.",
+  "default_assumptions": {
+    "duration_hours": 720,
+    "traffic_multiplier": 1.0,
+    "region": "ap-northeast-2",
+    "service_tier": "S1",
+    "org_profile": "Standard"
+  },
+  "playbooks": {
+    "playbook_ec2_isolate": {
+      "resource_change": {
+        "cloudwatch_log_gb_per_day": 2,
+        "s3_storage_gb": 10,
+        "nat_egress_gb": 5,
+        "snapshot_gb": 30
+      },
+      "note": "격리 + 스냅샷. 스냅샷 용량은 인스턴스 규모에 따라 조정 가능."
+    },
+    "playbook_s3_public_access": {
+      "resource_change": {
+        "cloudwatch_log_gb_per_day": 1,
+        "s3_storage_gb": 5,
+        "nat_egress_gb": 0,
+        "snapshot_gb": 0
+      },
+      "note": "퍼블릭 차단·정책 변경. 로그/스토리지 소량."
+    },
+    "playbook_iam_abuse_response": {
+      "resource_change": {
+        "cloudwatch_log_gb_per_day": 0.5,
+        "s3_storage_gb": 0,
+        "nat_egress_gb": 0,
+        "snapshot_gb": 0
+      },
+      "note": "IAM 권한 회수. 리소스 증분 거의 없음."
+    },
+    "playbook_ec2_investigation_logging": {
+      "resource_change": {
+        "cloudwatch_log_gb_per_day": 3,
+        "s3_storage_gb": 15,
+        "nat_egress_gb": 2,
+        "snapshot_gb": 30
+      },
+      "note": "스냅샷 + 태그. 조사용 로그·스토리지."
+    },
+    "playbook_integrated_base_mitigation": {
+      "resource_change": {
+        "cloudwatch_log_gb_per_day": 2,
+        "s3_storage_gb": 20,
+        "nat_egress_gb": 3,
+        "snapshot_gb": 25
+      },
+      "note": "리소스 타입별 분기. S3/EC2/IAM 혼합 시 평균치."
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Simulation User Response",
+  "description": "MCP가 Slack 사용자 선택 결과를 Finance Agent에 전달하는 형식. 추천 알고리즘 입력값.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["environment", "data_sensitivity", "downtime_tolerance", "priority"],
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": ["production", "staging", "dev_test"]
+    },
+    "data_sensitivity": {
+      "type": "string",
+      "enum": ["pii", "internal", "public"]
+    },
+    "downtime_tolerance": {
+      "type": "string",
+      "enum": ["allowed", "approval_required", "not_allowed"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["security", "balanced", "cost"]
+    }
+  }
+}
