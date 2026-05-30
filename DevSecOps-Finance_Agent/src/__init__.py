@@ -3,6 +3,7 @@
 from .engine import finance_run
 from .errors import ContractViolation, contract_error_response
 from .simulation_questions import (
+    extract_recommended_playbook_from_mcp_payload,
     get_simulation_questions,
     validate_user_response,
     recommend_level_from_user_response,
@@ -15,6 +16,7 @@ __all__ = [
     "finance_run",
     "ContractViolation",
     "contract_error_response",
+    "extract_recommended_playbook_from_mcp_payload",
     "get_simulation_questions",
     "validate_user_response",
     "recommend_level_from_user_response",

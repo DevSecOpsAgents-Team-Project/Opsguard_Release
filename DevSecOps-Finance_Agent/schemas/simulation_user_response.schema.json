@@ -8,7 +8,7 @@
   "properties": {
     "environment": {
       "type": "string",
-      "enum": ["production", "internal", "dev_test"]
+      "enum": ["production", "staging", "dev_test"]
     },
     "data_sensitivity": {
       "type": "string",

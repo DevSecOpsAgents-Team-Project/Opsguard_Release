@@ -26,7 +26,7 @@ except ImportError:
     pass
 
 from src.engine import finance_run
-from src.simulation_questions import get_simulation_recommendation_for_mcp
+from src.simulation_questions import extract_recommended_playbook_from_mcp_payload, get_simulation_recommendation_for_mcp
 
 
 # ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ USER_RESPONSE_1 = {
     "priority": "security",
 }
 USER_RESPONSE_2 = {
-    "environment": "internal",
+    "environment": "staging",
     "data_sensitivity": "internal",
     "downtime_tolerance": "approval_required",
     "priority": "balanced",
@@ -74,7 +74,7 @@ USER_RESPONSE_3 = {
 
 USER_RESPONSES = [
     ("사용자 1: 보안 우선 (production, pii, 중단 허용, security)", USER_RESPONSE_1),
-    ("사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)", USER_RESPONSE_2),
+    ("사용자 2: 균형 (staging, internal, 승인 시 중단, balanced)", USER_RESPONSE_2),
     ("사용자 3: 비용 우선 (dev_test, public, 중단 불가, cost)", USER_RESPONSE_3),
 ]
 
@@ -170,8 +170,8 @@ def run_llm_playbook_tests():
         print("---", label, "---")
         print("user_response:", json.dumps(user_response, ensure_ascii=False))
         result = get_simulation_recommendation_for_mcp(comparison, user_response)
-        print("source:", result.get("source"))
-        rec = result.get("recommended_playbook") or {}
+        print("source:", (result.get("result") or {}).get("source"))
+        rec = extract_recommended_playbook_from_mcp_payload(result)
         print("recommended_level:", rec.get("recommended_level"))
         print("playbook_name:", rec.get("playbook_name"))
         print("reason:", rec.get("reason", ""))
