@@ -4,7 +4,7 @@
       "id": "environment",
       "question": "이 시스템의 운영 환경은 무엇입니까?",
       "type": "choice",
-      "options": ["production", "internal", "dev_test"]
+      "options": ["production", "staging", "dev_test"]
     },
     {
       "id": "data_sensitivity",

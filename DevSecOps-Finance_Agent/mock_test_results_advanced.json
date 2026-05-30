@@ -90,9 +90,9 @@
     },
     {
       "playbook_scenario": "예시 1: L2 저비용 vs L3 고비용",
-      "user_profile": "사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)",
+      "user_profile": "사용자 2: 균형 (staging, internal, 승인 시 중단, balanced)",
       "user_response": {
-        "environment": "internal",
+        "environment": "staging",
         "data_sensitivity": "internal",
         "downtime_tolerance": "approval_required",
         "priority": "balanced"
@@ -101,12 +101,12 @@
         "source": "llm",
         "recommended_level": 2,
         "playbook_name": "계정 권한 제한 및 관찰",
-        "reason": "① 이번 시나리오는 internal 운영 환경에서 발생한 보안 사건으로, 데이터 민감도 또한 internal입니다. 추천 플레이북인 '계정 권한 제한 및 관찰'의 예상 영향도가 LOW인 점에서 시나리오의 심각성은 상대적으로 낮다고 볼 수 있습니다. ② 'L2 계정 권한 제한 및 관찰'은 계정의 접근 권한을 제한하고, 의심스러운 활동을 관찰하는 조치를 포함합니다. 사용자의 우선순위가 balanced이고 서비스 중단이 승인 필요하다는 점을 고려할 때, 예상 월 비용이 2.5 USD로 저렴하면서도 효과적인 대응이 가능하므로 이번 선택에 적합합니다."
+        "reason": "① 이번 시나리오는 staging 운영 환경에서 발생한 보안 사건으로, 데이터 민감도 또한 internal입니다. 추천 플레이북인 '계정 권한 제한 및 관찰'의 예상 영향도가 LOW인 점에서 시나리오의 심각성은 상대적으로 낮다고 볼 수 있습니다. ② 'L2 계정 권한 제한 및 관찰'은 계정의 접근 권한을 제한하고, 의심스러운 활동을 관찰하는 조치를 포함합니다. 사용자의 우선순위가 balanced이고 서비스 중단이 승인 필요하다는 점을 고려할 때, 예상 월 비용이 2.5 USD로 저렴하면서도 효과적인 대응이 가능하므로 이번 선택에 적합합니다."
       },
       "xai": {
         "decision_trace": [
           "Input priority is balanced",
-          "Environment is internal",
+          "Environment is staging",
           "Data sensitivity is internal",
           "Downtime tolerance is approval_required",
           "Candidate L2 계정 권한 제한 및 관찰 cost = 2.5 USD, impact = LOW",
@@ -114,7 +114,7 @@
           "Selected L2 playbook: 계정 권한 제한 및 관찰"
         ],
         "decision_factors": {
-          "environment": "internal",
+          "environment": "staging",
           "data_sensitivity": "internal",
           "downtime_tolerance": "approval_required",
           "priority": "balanced",
@@ -328,9 +328,9 @@
     },
     {
       "playbook_scenario": "예시 2: L2/L3 비용 비슷",
-      "user_profile": "사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)",
+      "user_profile": "사용자 2: 균형 (staging, internal, 승인 시 중단, balanced)",
       "user_response": {
-        "environment": "internal",
+        "environment": "staging",
         "data_sensitivity": "internal",
         "downtime_tolerance": "approval_required",
         "priority": "balanced"
@@ -339,12 +339,12 @@
         "source": "llm",
         "recommended_level": 2,
         "playbook_name": "로그 보존 및 접근 제한",
-        "reason": "① 이번 시나리오는 internal 운영 환경과 internal 데이터 민감도에서 발생한 보안 사건입니다. 추천 플레이북인 '로그 보존 및 접근 제한'의 예상 영향도가 MEDIUM인 점에서 시나리오의 심각성을 나타냅니다. ② 'L2 로그 보존 및 접근 제한'은 로그 데이터를 보존하고 접근을 제한하는 조치를 통해 사건의 증거를 확보하고, 불필요한 접근을 차단합니다. 사용자께서 비용과 보안의 균형을 고려하고, 서비스 중단에 대한 승인이 필요한 상황에서 예상 월 비용이 5.0 USD인 이 플레이북은 적절한 선택입니다."
+        "reason": "① 이번 시나리오는 staging 운영 환경과 internal 데이터 민감도에서 발생한 보안 사건입니다. 추천 플레이북인 '로그 보존 및 접근 제한'의 예상 영향도가 MEDIUM인 점에서 시나리오의 심각성을 나타냅니다. ② 'L2 로그 보존 및 접근 제한'은 로그 데이터를 보존하고 접근을 제한하는 조치를 통해 사건의 증거를 확보하고, 불필요한 접근을 차단합니다. 사용자께서 비용과 보안의 균형을 고려하고, 서비스 중단에 대한 승인이 필요한 상황에서 예상 월 비용이 5.0 USD인 이 플레이북은 적절한 선택입니다."
       },
       "xai": {
         "decision_trace": [
           "Input priority is balanced",
-          "Environment is internal",
+          "Environment is staging",
           "Data sensitivity is internal",
           "Downtime tolerance is approval_required",
           "Candidate L2 로그 보존 및 접근 제한 cost = 5.0 USD, impact = MEDIUM",
@@ -352,7 +352,7 @@
           "Selected L2 playbook: 로그 보존 및 접근 제한"
         ],
         "decision_factors": {
-          "environment": "internal",
+          "environment": "staging",
           "data_sensitivity": "internal",
           "downtime_tolerance": "approval_required",
           "priority": "balanced",
@@ -559,9 +559,9 @@
     },
     {
       "playbook_scenario": "예시 3: L3이 더 저렴",
-      "user_profile": "사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)",
+      "user_profile": "사용자 2: 균형 (staging, internal, 승인 시 중단, balanced)",
       "user_response": {
-        "environment": "internal",
+        "environment": "staging",
         "data_sensitivity": "internal",
         "downtime_tolerance": "approval_required",
         "priority": "balanced"
@@ -570,12 +570,12 @@
         "source": "llm",
         "recommended_level": 3,
         "playbook_name": "즉시 격리 및 증거 확보",
-        "reason": "① 이번 시나리오는 internal 운영 환경과 internal 데이터 민감도에서 발생한 보안 사건으로, 추천 플레이북인 '즉시 격리 및 증거 확보'의 예상 영향도가 HIGH인 점에서 시나리오의 심각성을 나타냅니다. ② '즉시 격리 및 증거 확보'는 보안 위협을 즉각적으로 격리하고, 관련 증거를 확보하여 추가 피해를 방지하는 조치를 취합니다. 사용자의 우선순위가 balanced이고 서비스 중단이 승인 필요하다는 점을 고려할 때, 예상 비용이 7.0 USD로 상대적으로 낮으면서도 높은 영향도를 가진 이 플레이북이 이번 선택에 적합합니다."
+        "reason": "① 이번 시나리오는 staging 운영 환경과 internal 데이터 민감도에서 발생한 보안 사건으로, 추천 플레이북인 '즉시 격리 및 증거 확보'의 예상 영향도가 HIGH인 점에서 시나리오의 심각성을 나타냅니다. ② '즉시 격리 및 증거 확보'는 보안 위협을 즉각적으로 격리하고, 관련 증거를 확보하여 추가 피해를 방지하는 조치를 취합니다. 사용자의 우선순위가 balanced이고 서비스 중단이 승인 필요하다는 점을 고려할 때, 예상 비용이 7.0 USD로 상대적으로 낮으면서도 높은 영향도를 가진 이 플레이북이 이번 선택에 적합합니다."
       },
       "xai": {
         "decision_trace": [
           "Input priority is balanced",
-          "Environment is internal",
+          "Environment is staging",
           "Data sensitivity is internal",
           "Downtime tolerance is approval_required",
           "Candidate L2 장기 모니터링 및 단계적 제한 cost = 12.0 USD, impact = LOW",
@@ -583,7 +583,7 @@
           "Selected L3 playbook: 즉시 격리 및 증거 확보"
         ],
         "decision_factors": {
-          "environment": "internal",
+          "environment": "staging",
           "data_sensitivity": "internal",
           "downtime_tolerance": "approval_required",
           "priority": "balanced",

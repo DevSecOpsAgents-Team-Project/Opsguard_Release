@@ -6,6 +6,7 @@ OpenAI 직접 호출로 추천 결과 + XAI를 JSON으로 반환 (MCP 전달용)
 import json
 import logging
 import os
+import re
 
 import jsonschema
 
@@ -13,6 +14,16 @@ from .recommendation_xai import build_mcp_simulation_response
 from .schema_io import get_simulation_user_response_schema
 
 logger = logging.getLogger(__name__)
+
+
+def _format_reason_sections(reason: str) -> str:
+    """①·② 구간 reason: 두 섹션 사이에 빈 줄(\\n\\n)을 보장."""
+    if not reason or "②" not in reason:
+        return reason
+    text = reason.strip()
+    if re.search(r"\n\s*\n\s*②", text):
+        return text
+    return re.sub(r"\s*②", "\n\n②", text, count=1)
 
 
 def _load_dotenv_if_present() -> None:
@@ -33,7 +44,7 @@ SIMULATION_QUESTIONS_PAYLOAD = {
             "id": "environment",
             "question": "이 시스템의 운영 환경은 무엇입니까?",
             "type": "choice",
-            "options": ["production", "internal", "dev_test"],
+            "options": ["production", "staging", "dev_test"],
         },
         {
             "id": "data_sensitivity",
@@ -96,7 +107,7 @@ def recommend_level_from_user_response(
             "reason": "플레이북 후보가 부족하여 비교 추천을 할 수 없습니다.",
         }
 
-    env = user_response.get("environment", "internal")
+    env = user_response.get("environment", "staging")
     data_sens = user_response.get("data_sensitivity", "internal")
     downtime = user_response.get("downtime_tolerance", "approval_required")
     priority = user_response.get("priority", "balanced")
@@ -105,7 +116,7 @@ def recommend_level_from_user_response(
     score_l3_bias = 0
     if env == "production":
         score_l3_bias += 2
-    elif env == "internal":
+    elif env == "staging":
         score_l3_bias += 1
     if data_sens == "pii":
         score_l3_bias += 2
@@ -273,13 +284,15 @@ def _build_llm_prompt(
 - 사용자 선택(우선순위={priority}, 중단 허용={downtime})과 예상 비용({chosen_cost} USD)을 언급하며, **왜 이 플레이북이 이번 선택에 적합한지** 한 문장으로 판단 근거 제시.
 - 필요 시 "비용을 더 들이더라도" 또는 "비용을 절감하면서" 등 트레이드오프를 한 줄로 언급해도 됨.
 
+**필수:** ① 부분과 ② 부분 사이에는 반드시 빈 줄을 넣으세요 (reason 문자열 안에 줄바꿈 두 번, JSON에서는 \\n\\n).
+
 **금지:** 다른 플레이북을 추천하거나, recommended_level/playbook_name을 위 확정 결과와 다르게 작성하는 것.
 **필수:** 플레이북 이름은 반드시 "{playbook_name}"(위 확정 결과와 동일)을 사용할 것.
 
 ---
 아래 JSON만 한 줄로 출력하세요 (다른 텍스트 없이). recommended_level과 playbook_name은 반드시 위 [확정된 추천 결과]와 동일하게 넣으세요.
 사용자에게 반환하는 reason에는 반드시 L2, L3 말고 Level2, Level3로 표기해주세요.
-{{"recommended_level": {recommended_level}, "playbook_name": "{playbook_name}", "reason": "① 이벤트·시나리오 맥락 ② L{recommended_level} {playbook_name} 구체적 조치 + 사용자 선택 반영 추천 근거 (한글)"}}
+{{"recommended_level": {recommended_level}, "playbook_name": "{playbook_name}", "reason": "① 이벤트·시나리오 맥락 (1~2문장)\\n\\n② Level{recommended_level} {playbook_name} 구체적 조치 + 사용자 선택 반영 추천 근거 (한글)"}}
 """
 
 
@@ -323,7 +336,7 @@ def _call_openai_recommendation(
             if line.startswith("{"):
                 try:
                     data = json.loads(line)
-                    r = (data.get("reason") or "").strip()
+                    r = _format_reason_sections((data.get("reason") or "").strip())
                     if r and len(r) <= 1000:  # 이벤트 분석+플레이북 설명 포함 시 3~5문장 허용
                         reason = r
                 except (json.JSONDecodeError, TypeError):

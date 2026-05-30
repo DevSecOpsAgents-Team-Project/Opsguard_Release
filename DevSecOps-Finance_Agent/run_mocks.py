@@ -60,7 +60,7 @@ USER_RESPONSE_1 = {
     "priority": "security",
 }
 USER_RESPONSE_2 = {
-    "environment": "internal",
+    "environment": "staging",
     "data_sensitivity": "internal",
     "downtime_tolerance": "approval_required",
     "priority": "balanced",
@@ -74,7 +74,7 @@ USER_RESPONSE_3 = {
 
 USER_RESPONSES = [
     ("사용자 1: 보안 우선 (production, pii, 중단 허용, security)", USER_RESPONSE_1),
-    ("사용자 2: 균형 (internal, internal, 승인 시 중단, balanced)", USER_RESPONSE_2),
+    ("사용자 2: 균형 (staging, internal, 승인 시 중단, balanced)", USER_RESPONSE_2),
     ("사용자 3: 비용 우선 (dev_test, public, 중단 불가, cost)", USER_RESPONSE_3),
 ]
 
