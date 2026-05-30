@@ -2,7 +2,7 @@
 import uuid
 import logging
 import traceback
-from .actions_module import Actions, build_response
+from .actions_module import Actions, build_response, notify_mitigation_outcome
 from . import db_logger_module
 
 logger = logging.getLogger()
@@ -342,55 +342,74 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
     actions.notify_to_slack(slack_msg, finding_id)
 
     # [Step 2] 사고 유형별 맞춤 대응
+    step_results = []
 
     # CASE A: IAM 권한 남용 (타입이 IAM이거나, 사용자가 식별된 경우)
     if resource_type == "IAM" or "IAM" in finding_type:
         if user_name != "Unknown-User":
             print(f"⚙️ [IAM-ACTION] 사용자 '{user_name}' 격리 로직 실행")
-            
-            # 1. 태깅 (resource_type="IAM" 명시 필수)
+
             tag_res = actions.tag_resource_with_incident(user_name, finding_id, resource_type="IAM")
             db_logger_module.log_action(finding_id, tag_res, "BASE_MITIGATION")
+            step_results.append(("IAM 태깅", tag_res))
 
-            # 2. 권한 분리
             result = actions.detach_admin_policies(user_name, finding_id)
             db_logger_module.log_action(finding_id, result, "BASE_MITIGATION")
+            step_results.append(("IAM 관리자 정책 분리", result))
         else:
             print(f"⚠️ [IAM-SKIP] 사용자 이름을 식별할 수 없어 대응 중단.")
+            step_results.append(
+                ("IAM 사용자 식별", {"status": "SKIPPED", "details": {"reason": "사용자 이름을 식별할 수 없음"}})
+            )
 
     # CASE B: S3 버킷 보안 설정 위반
     elif resource_type == "S3" or "S3" in finding_type:
         if resource_id != "UNKNOWN-RES":
             print(f"⚙️ [S3-ACTION] 버킷 '{resource_id}' 보안 로깅 활성화")
-            
-            # 1. 태깅 (resource_type="S3" 명시 필수)
+
             tag_res = actions.tag_resource_with_incident(resource_id, finding_id, resource_type="S3")
             db_logger_module.log_action(finding_id, tag_res, "BASE_MITIGATION")
+            step_results.append(("S3 태깅", tag_res))
 
-            # 2. 로깅 활성화
             result = actions.enable_s3_bucket_logging(resource_id, "agentb-logging-bucket", finding_id)
             db_logger_module.log_action(finding_id, result, "BASE_MITIGATION")
+            step_results.append(("S3 접근 로깅 활성화", result))
         else:
-             print(f"⚠️ [S3-SKIP] 버킷 이름을 식별할 수 없어 대응 중단.")
+            print(f"⚠️ [S3-SKIP] 버킷 이름을 식별할 수 없어 대응 중단.")
+            step_results.append(
+                ("S3 버킷 식별", {"status": "SKIPPED", "details": {"reason": "버킷 이름을 식별할 수 없음"}})
+            )
 
     # CASE C: EC2 런타임 위협
     elif resource_type == "EC2" or (resource_id.startswith("i-") and resource_id != "i-99999999"):
         print(f"⚙️ [EC2-ACTION] 인스턴스 '{resource_id}' 증거 보존 및 태깅")
-        
-        # 1. 태깅
+
         tag_result = actions.tag_resource_with_incident(resource_id, finding_id, resource_type="EC2")
         db_logger_module.log_action(finding_id, tag_result, "BASE_MITIGATION")
-        
-        # 2. 스냅샷
+        step_results.append(("EC2 태깅", tag_result))
+
         snap_result = actions.create_snapshot(resource_id, finding_id)
         db_logger_module.log_action(finding_id, snap_result, "BASE_MITIGATION")
-        
+        step_results.append(("EC2 스냅샷 생성", snap_result))
+
     else:
         print(f"ℹ️ [SKIP] 정의되지 않은 리소스 타입이거나 테스트 샘플입니다. (Type: {resource_type})")
+        step_results.append(
+            ("리소스 타입 매칭", {"status": "SKIPPED", "details": {"reason": f"미지원 리소스 타입: {resource_type}"}})
+        )
+
+    # [Step 3] 조치 성공/실패 Slack 알림
+    overall_status = notify_mitigation_outcome(
+        finding_id, finding_type, resource_id, step_results
+    )
 
     return {
-        "status": "COMPLETED",
+        "status": overall_status,
         "finding_id": finding_id,
         "extracted_resource": resource_id,
-        "extracted_user": user_name
+        "extracted_user": user_name,
+        "mitigation_steps": [
+            {"label": label, "status": (res or {}).get("status", "UNKNOWN")}
+            for label, res in step_results
+        ],
     }
