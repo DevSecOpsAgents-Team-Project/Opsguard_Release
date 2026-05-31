@@ -119,13 +119,24 @@ def assert_korean_xai(xai_text: str) -> List[str]:
         "This regulation is relevant",
         "This regulation is crucial",
     ]
+    generic_ko = [
+        "규제·위협 맥락",
+        "규제 근거에 따른 대응",
+        "무단 접근 가능성을 줄이기 위해 제안된 조치",
+    ]
     for marker in english_markers:
         if marker in xai_text:
             errors.append(f"영어 잔존: {marker!r}")
-    if "본 조치는 승인이 필요합니다" not in xai_text:
-        errors.append("한국어 에스컬레이션 근거 없음")
-    if "규제 근거에 따른 대응" not in xai_text:
-        errors.append("한국어 추론 요약 없음")
+    for marker in generic_ko:
+        if marker in xai_text:
+            errors.append(f"뻔한 한국어 문구: {marker!r}")
+    if "사건 요약" not in xai_text:
+        errors.append("사건 요약 섹션 없음")
+    if "규제·조치 연결" not in xai_text:
+        errors.append("규제·조치 연결 섹션 없음")
+    for removed in ("에스컬레이션 판단", "제안 플레이북", "추론 요약"):
+        if removed in xai_text:
+            errors.append(f"제거해야 할 섹션 포함: {removed}")
     if not any("\uac00" <= c <= "\ud7a3" for c in xai_text):
         errors.append("한글이 전혀 없음")
     return errors

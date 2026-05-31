@@ -75,32 +75,51 @@ def test_format_execution_failure() -> None:
 
 def test_format_regulation_xai_english_to_korean() -> None:
     regulation = {
+        "scenario": "CredentialCompromise",
+        "incident_summary": {
+            "title": "Access Key suspicious usage",
+            "severity": "9",
+            "resource": {"type": "AccessKey", "id": "AKIA-FAKE123"},
+        },
         "escalation_assessment": {
             "recommended_level": 2,
-            "confidence": 0.8,
-            "approval_notes": "This action requires approval.",
+            "confidence": 0.9,
+            "approval_notes": "Proposed measures are needed to reduce the possibility of unauthorized access.",
         },
         "reasoning_bullets": ["Regulatory basis for action"],
+        "recommended_actions": [
+            {
+                "level": 2,
+                "playbook_name": "Credential Containment",
+                "actions": [
+                    {"action_id": "disable_access_key", "targets": [{"id": "AKIA-FAKE123"}]},
+                    {"action_id": "block_ip", "targets": [{"ip": "198.51.100.0"}]},
+                ],
+            }
+        ],
         "regulations": [
             {
                 "framework": "CSA_CCM",
-                "clause_id": "DSP-17",
-                "clause_title": "Sensitive Data Protection",
-                "why_relevant": (
-                    "This regulation emphasizes the need to protect sensitive data, "
-                    "relevant due to the public access granted to the S3 bucket."
-                ),
-                "excerpt": "민감 데이터는 암호화 및 접근 통제로 보호해야 한다.",
-            }
+                "clause_id": "IAM-05",
+                "clause_title": "Least Privilege",
+                "why_relevant": "Disabling excessive permissions aligns with least privilege for compromised credentials.",
+                "excerpt": "접근 권한은 업무상 필요한 최소한으로 부여해야 한다.",
+            },
+            {
+                "framework": "CSA_CCM",
+                "clause_id": "IAM-13",
+                "clause_title": "Uniquely Identifiable Users",
+                "why_relevant": "Shared or root credentials increase accountability risk after console login anomaly.",
+            },
         ],
     }
     xai = format_regulation_xai_explanation(regulation)
-    assert "본 조치는 승인이 필요합니다" in xai
-    assert "규제 근거에 따른 대응입니다" in xai
-    assert "민감 데이터는 암호화" in xai
-    assert "This action requires approval" not in xai
-    assert "Regulatory basis for action" not in xai
-    _ok("format_regulation_xai_explanation (English → Korean)")
+    assert "사건 요약" in xai
+    assert "규제·조치 연결" in xai
+    assert "에스컬레이션 판단" not in xai
+    assert "제안 플레이북" not in xai
+    assert "추론 요약" not in xai
+    _ok("format_regulation_xai_explanation (contextual Korean)")
 
 
 def test_format_regulation_xai() -> None:
@@ -121,9 +140,8 @@ def test_format_regulation_xai() -> None:
     ]
 
     xai = format_regulation_xai_explanation(regulation)
-    assert "권장 대응 레벨" in xai
-    assert "XAI 종합 설명" in xai
-    assert "추론 요약" in xai
+    assert "사건 요약" in xai
+    assert "규제·조치 연결" in xai
     assert "2.4.1" in xai
     _ok("format_regulation_xai_explanation")
 

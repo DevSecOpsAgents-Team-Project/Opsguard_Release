@@ -421,6 +421,8 @@ def _call_llm_json(payload: Dict[str, Any], model: str) -> str:
         "- each playbook must include multiple actions where applicable.\n"
         "- playbook_name: short English Title Case phrase (e.g. Credential Containment, Access Review and Remediation); "
         "never generic names like Containment Playbook or Isolation Playbook.\n"
+        "- approval_notes, reasoning_bullets, regulations[].why_relevant, justification: write in Korean; "
+        "each bullet must mention incident resource/behavior and proposed actions.\n"
     )
 
     resp = client.chat.completions.create(
@@ -623,6 +625,22 @@ def _build_rule_based_playbooks(
     return playbooks
 
 
+def _rule_based_why_relevant_ko(
+    clause_id: str,
+    clause_title: str,
+    incident_summary: Dict[str, Any],
+    action_ids: List[str],
+) -> str:
+    resource = incident_summary.get("resource") or {}
+    rid = resource.get("id") or resource.get("type") or "해당 리소스"
+    actions = ", ".join(action_ids[:3]) if action_ids else "제안 조치"
+    title = clause_title or clause_id
+    return (
+        f"탐지된 {rid} 이(가) `{clause_id}` {title} 통제와 연관되어 "
+        f"{actions} 등의 후속 조치가 필요합니다."
+    )
+
+
 def _build_rule_based_output(
     incident_input: Dict[str, Any],
     severity_result: Dict[str, Any],
@@ -632,18 +650,24 @@ def _build_rule_based_output(
 ) -> RegulationAgentIntermediate:
     finding = incident_input.get("_finding_raw", {})
     scenario = incident_input["scenario"]
+    incident_summary = incident_input["incident_summary"]
+    resource = incident_summary.get("resource") or {}
+    rid = resource.get("id") or "해당 리소스"
+    action_ids = candidate_actions[:5]
 
     regulations = []
     for row in retrieved[:RERANK_OUTPUT_TOP_K]:
         meta = row.get("metadata") or {}
+        cid = row.get("id", "N/A")
+        title = meta.get("title", "")
         regulations.append(
             {
                 "framework": meta.get("doc_type", "CSA_CCM"),
-                "clause_id": row.get("id", "N/A"),
-                "clause_title": meta.get("title", ""),
+                "clause_id": cid,
+                "clause_title": title,
                 "relevance": 0.8,
                 "excerpt": (row.get("document", "") or "")[:220],
-                "why_relevant": "Retrieved regulation supports containment and controlled escalation.",
+                "why_relevant": _rule_based_why_relevant_ko(cid, title, incident_summary, action_ids),
             }
         )
 
@@ -664,11 +688,14 @@ def _build_rule_based_output(
             "decision_questions": [
                 "Do you approve escalation actions (Level 2/3) for this multi-surface incident?"
             ],
-            "approval_notes": "Recommended actions are grouped by playbook and require approval.",
+            "approval_notes": (
+                f"Level 1 완료 후 {rid} 관련 추가 피해 확산 방지를 위해 "
+                f"Level {rec_level} 플레이북 승인이 필요합니다."
+            ),
         },
         "reasoning_bullets": [
-            "The incident indicates potential credential misuse and infrastructure impact.",
-            "Regulatory context supports least privilege and evidence-preserving containment.",
+            f"GuardDuty가 {rid}에 대한 {scenario} 유형 이벤트를 탐지했습니다.",
+            f"규제 검색 결과와 후보 조치({', '.join(action_ids[:4])})를 반영해 Level 2/3 플레이북을 구성했습니다.",
         ],
         "regulations": regulations,
         "recommended_actions": playbooks,
@@ -705,14 +732,26 @@ def _align_regulations_to_chunks(
             out.append(by_clause_id[cid])
         else:
             fw = ch.get("doc_type") or "CSA CCM"
+            cid = str(ch.get("clause_id") or "")
+            title = str(ch.get("title") or "")
+            incident_summary = parsed.get("incident_summary") or {}
+            action_ids = []
+            for pb in parsed.get("recommended_actions") or []:
+                if not isinstance(pb, dict):
+                    continue
+                for act in pb.get("actions") or []:
+                    if isinstance(act, dict) and act.get("action_id"):
+                        action_ids.append(str(act["action_id"]))
             out.append(
                 {
                     "framework": str(fw),
                     "clause_id": cid,
-                    "clause_title": str(ch.get("title") or ""),
+                    "clause_title": title,
                     "relevance": 0.65,
                     "excerpt": (str(ch.get("content") or ""))[:220],
-                    "why_relevant": "Listed as retrieved regulation context for this incident.",
+                    "why_relevant": _rule_based_why_relevant_ko(
+                        cid, title, incident_summary, action_ids
+                    ),
                 }
             )
     parsed["regulations"] = out
