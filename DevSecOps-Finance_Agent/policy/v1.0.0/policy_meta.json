@@ -1,0 +1,14 @@
+{
+  "policy_version": "v1.0.0",
+  "approved_by": "SecurityCommittee",
+  "approved_at": "2026-02-15",
+  "currency": "USD",
+  "combine_mode": "weighted_sum",
+  "score_cap": null,
+  "pricing_table": {
+    "cloudwatch_per_gb": 0.50,
+    "s3_per_gb": 0.023,
+    "nat_egress_per_gb": 0.045,
+    "snapshot_per_gb": 0.05
+  }
+}
