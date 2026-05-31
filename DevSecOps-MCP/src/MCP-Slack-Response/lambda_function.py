@@ -9,6 +9,7 @@ import boto3
 
 from finance_bridge import (
     build_comparison_with_costs,
+    extract_recommended_from_finance_response,
     format_execution_result_slack_message,
     format_regulation_xai_explanation,
     invoke_simulation_recommendation,
@@ -149,11 +150,11 @@ def lambda_handler(event, context):
             playbooks = playbooks_for_slack_ui(comparison)
             regs = regulation_data.get("regulations", [])
 
-            rec = fin_data.get("recommended_playbook") or {}
+            rec = extract_recommended_from_finance_response(fin_data)
             fin_result = {
                 "recommended_level": rec.get("recommended_level"),
                 "playbook_name": rec.get("playbook_name"),
-                "reason": rec.get("reason", "비용 분석 및 우선순위 검토 완료"),
+                "reason": rec.get("reason") or "비용 분석 및 우선순위 검토 완료",
             }
             fin_reason = fin_result.get("reason", "비용 분석 및 우선순위 검토 완료")
             recommended_level = norm_level(fin_result.get("recommended_level"))

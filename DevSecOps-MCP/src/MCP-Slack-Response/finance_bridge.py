@@ -269,6 +269,22 @@ def build_comparison_with_costs(
     }
 
 
+def extract_recommended_from_finance_response(fin_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Finance Agent 신규 응답(result.*) 또는 구형 recommended_playbook에서 추천 dict 추출."""
+    if isinstance(fin_data.get("result"), dict) and fin_data["result"].get("recommended_level") is not None:
+        r = fin_data["result"]
+        return {
+            "recommended_level": r.get("recommended_level"),
+            "playbook_name": r.get("playbook_name", ""),
+            "reason": r.get("reason", ""),
+            "source": r.get("source", ""),
+        }
+    rp = fin_data.get("recommended_playbook")
+    if isinstance(rp, dict):
+        return rp
+    return {}
+
+
 def invoke_simulation_recommendation(
     lambda_client: Any,
     finance_arn: str,
