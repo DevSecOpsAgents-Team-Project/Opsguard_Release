@@ -389,7 +389,13 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
     # --- 대응 단계 (Actions) ---
 
     # [Step 1] Slack 알림
-    slack_msg = f"🚨 *GuardDuty 위협 감지*\n- 유형: `{finding_type}`\n- 대상: `{resource_id}`\n- 사용자: `{user_name}`"
+    slack_msg = (
+        f"🚨 *GuardDuty 위협 감지*\n"
+        f"- 유형: `{finding_type}`\n"
+        f"- 심각도(Severity): `{severity}`\n"
+        f"- 대상: `{resource_id}`\n"
+        f"- 사용자: `{user_name}`"
+    )
     actions.notify_to_slack(slack_msg, finding_id)
 
     # [Step 2] 사고 유형별 맞춤 대응

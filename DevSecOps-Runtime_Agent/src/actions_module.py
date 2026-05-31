@@ -560,6 +560,80 @@ def notify_to_slack(message: str, incident_id: str = "UNKNOWN", dry_run: bool = 
         return build_response("notify_to_slack", incident_id, "FAILED", details={"error": str(e)})
 
 
+def notify_execution_result_to_slack(
+    incident_id: str,
+    success: bool,
+    detail_message: str,
+    dry_run: bool = False,
+):
+    """
+    L2/L3 승인 조치 실행 직후 성공/실패 결과를 Slack Webhook으로 전송합니다.
+    """
+    import requests
+
+    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+
+    if dry_run:
+        logger.info("[DRY-RUN] 조치 결과 Slack 스킵: success=%s %s", success, detail_message)
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "SKIPPED",
+            details={"success": success, "message": detail_message},
+        )
+
+    if not slack_webhook_url:
+        logger.error("[ACTIONS] SLACK_WEBHOOK_URL 환경 변수가 설정되지 않았습니다.")
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "FAILED",
+            details={"error": "Webhook URL missing"},
+        )
+
+    if success:
+        title = "✅ *[Agent B] 조치 실행 성공*"
+        color = "#36a64f"
+    else:
+        title = "❌ *[Agent B] 조치 실행 실패*"
+        color = "#ff0000"
+
+    payload = {
+        "text": title,
+        "attachments": [
+            {
+                "color": color,
+                "fields": [
+                    {"title": "Incident ID", "value": incident_id, "short": True},
+                    {"title": "결과", "value": "성공" if success else "실패", "short": True},
+                    {"title": "상세", "value": detail_message, "short": False},
+                ],
+                "footer": "Agent B Runtime Security",
+                "ts": int(datetime.datetime.utcnow().timestamp()),
+            }
+        ],
+    }
+
+    try:
+        response = requests.post(slack_webhook_url, json=payload, timeout=5)
+        response.raise_for_status()
+        logger.info("[ACTIONS] 조치 결과 Slack 전송 성공: %s success=%s", incident_id, success)
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "SUCCESS",
+            details={"success": success, "message": detail_message},
+        )
+    except Exception as e:
+        logger.error("[ACTIONS] 조치 결과 Slack 전송 실패: %s", e)
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "FAILED",
+            details={"error": str(e)},
+        )
+
+
 # ======================================================
 # 5. 인시던트 태그 부착 (조사용) 
 # ======================================================
@@ -1156,6 +1230,11 @@ class Actions:
     # --- Notification ---
     def notify_to_slack(self, message: str, incident_id: str):
         return notify_to_slack(message, incident_id, dry_run=self.dry_run)
+
+    def notify_execution_result_to_slack(self, incident_id: str, success: bool, detail_message: str):
+        return notify_execution_result_to_slack(
+            incident_id, success, detail_message, dry_run=self.dry_run
+        )
 
     # --- [New] Decision Support Functions ---
     def get_resource_tags(self, resource_id: str):
