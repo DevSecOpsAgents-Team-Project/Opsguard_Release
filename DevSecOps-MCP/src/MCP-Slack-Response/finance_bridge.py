@@ -615,47 +615,13 @@ def _explain_regulation_mapping_ko(reg: Dict[str, Any], regulation: Dict[str, An
 def format_regulation_xai_explanation(regulation: Dict[str, Any]) -> str:
     """
     Regulation Agent JSON에서 Slack XAI 본문을 생성합니다.
-    고정 문구 치환이 아니라 사건·플레이북·규제 데이터를 조합해 한국어로 설명합니다.
+    Slack에는 사건 요약 + 규제·조치 연결만 표시합니다.
     """
     parts: List[str] = []
-
-    esc = regulation.get("escalation_assessment") or {}
-    if isinstance(esc, dict):
-        lvl = esc.get("recommended_level")
-        conf = esc.get("confidence")
-        if lvl is not None:
-            parts.append(f"• *권장 대응 레벨:* Level {lvl}")
-        if conf is not None:
-            parts.append(f"• *판단 신뢰도:* {conf}")
 
     incident = _summarize_incident_ko(regulation)
     if incident:
         parts.append(f"*사건 요약:*\n{incident}")
-
-    escalation = _explain_escalation_ko(regulation)
-    if escalation:
-        parts.append(f"*에스컬레이션 판단:*\n{escalation}")
-
-    justification = regulation.get("justification")
-    if (
-        isinstance(justification, str)
-        and justification.strip()
-        and _has_hangul(justification)
-        and not _is_generic_xai_text(justification)
-    ):
-        parts.append(f"*종합 판단:*\n{justification.strip()[:1200]}")
-
-    playbooks = collect_playbook_candidates(regulation)
-    if playbooks:
-        parts.append("*제안 플레이북:*")
-        for pb in playbooks[:3]:
-            parts.append(f"  - {_format_playbook_line_ko(pb)}")
-
-    bullets = _collect_reasoning_bullets_ko(regulation)
-    if bullets:
-        parts.append("*추론 요약:*")
-        for bullet in bullets:
-            parts.append(f"  - {bullet}")
 
     regs = regulation.get("regulations") or []
     if isinstance(regs, list) and regs:

@@ -115,16 +115,10 @@ def test_format_regulation_xai_english_to_korean() -> None:
     }
     xai = format_regulation_xai_explanation(regulation)
     assert "사건 요약" in xai
-    assert "AKIA-FAKE123" in xai
-    assert "액세스 키 비활성화" in xai
-    assert "최소 권한" in xai or "IAM-05" in xai
-    assert "IAM-13" in xai
-    assert "규제·위협 맥락" not in xai
-    assert "규제 근거에 따른 대응" not in xai
-    assert "무단 접근 가능성을 줄이기 위해 제안된 조치" not in xai
-    assert "Disabling excessive" not in xai
-    assert "Shared or root" not in xai
-    assert "Regulatory basis" not in xai
+    assert "규제·조치 연결" in xai
+    assert "에스컬레이션 판단" not in xai
+    assert "제안 플레이북" not in xai
+    assert "추론 요약" not in xai
     _ok("format_regulation_xai_explanation (contextual Korean)")
 
 
@@ -146,8 +140,8 @@ def test_format_regulation_xai() -> None:
     ]
 
     xai = format_regulation_xai_explanation(regulation)
-    assert "권장 대응 레벨" in xai
-    assert "사건 요약" in xai or "제안 플레이북" in xai
+    assert "사건 요약" in xai
+    assert "규제·조치 연결" in xai
     assert "2.4.1" in xai
     _ok("format_regulation_xai_explanation")
 

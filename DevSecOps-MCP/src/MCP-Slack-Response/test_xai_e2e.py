@@ -130,11 +130,13 @@ def assert_korean_xai(xai_text: str) -> List[str]:
     for marker in generic_ko:
         if marker in xai_text:
             errors.append(f"뻔한 한국어 문구: {marker!r}")
-    if "사건 요약" not in xai_text and "제안 플레이북" not in xai_text:
-        errors.append("사건/플레이북 설명 섹션 없음")
-    if "S3" not in xai_text and "공개" not in xai_text and "block_s3" not in xai_text.lower():
-        if "액세스" not in xai_text and "버킷" not in xai_text:
-            errors.append("구체적 대응 설명 부족")
+    if "사건 요약" not in xai_text:
+        errors.append("사건 요약 섹션 없음")
+    if "규제·조치 연결" not in xai_text:
+        errors.append("규제·조치 연결 섹션 없음")
+    for removed in ("에스컬레이션 판단", "제안 플레이북", "추론 요약"):
+        if removed in xai_text:
+            errors.append(f"제거해야 할 섹션 포함: {removed}")
     if not any("\uac00" <= c <= "\ud7a3" for c in xai_text):
         errors.append("한글이 전혀 없음")
     return errors
