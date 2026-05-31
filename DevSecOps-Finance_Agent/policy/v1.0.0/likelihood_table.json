@@ -1,6 +1,0 @@
-{
-  "description": "Severity to likelihood (probability). Used for expected loss = likelihood * impact.",
-  "Low": 0.05,
-  "Medium": 0.15,
-  "High": 0.35
-}
