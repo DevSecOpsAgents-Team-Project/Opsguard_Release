@@ -1,0 +1,13 @@
+{
+  "policy_version": "v1.0.0",
+  "description": "SHA256 of each policy file. Run scripts/build_manifest.py to update.",
+  "files": {
+    "v1.0.0/impact_table.json": "a6243677c0fa8bbbdcb0966df6e4bda7fe93113b3ac421d3183ea7027b984d6c",
+    "v1.0.0/likelihood_table.json": "adaa330af55098434ae3f1d763d3c51c819f7b3411342015b11deb2ebc8bd28a",
+    "v1.0.0/regulation_weights.json": "f7492706e2eeab83b2b673caf049b01a636e452e4bcc86fb24c0a663d1fddb6c",
+    "v1.0.0/profile_weights.json": "b27f40ddc30924e386c255e3b7c0d36abf1f8f05a786d726907e39ee8f20fc91",
+    "v1.0.0/action_catalog.json": "79eb1101f9070d85cb18beac41e53a3172c5ea821ee7ecff1574ddcd8f004e02",
+    "v1.0.0/recommendation_constraints.json": "bb3509f365bc32bfdfe0f708aecf5da8a1c70faadd43b0bcbbb6e04c5ab99da2",
+    "v1.0.0/policy_meta.json": "356d5cb5f7c671c219f3307667a307affca83b6bd230d6135950e8378cd8f3e5"
+  }
+}
