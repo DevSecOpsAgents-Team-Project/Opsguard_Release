@@ -314,6 +314,34 @@ def _apply_finding_targets_to_playbooks(result: Dict[str, Any], finding: Dict[st
                     if target.get("type") in ("AccessKey", "IAMUser") and not target.get("user_name"):
                         target["user_name"] = iam_user
 
+        for action in playbook.get("actions", []) or []:
+            aid = action.get("action_id")
+            if aid == "disable_access_key" and access_key_id and iam_user:
+                targets = action.get("targets") or []
+                if not targets:
+                    action["targets"] = [
+                        {"type": "AccessKey", "id": access_key_id, "user_name": iam_user}
+                    ]
+                for target in targets:
+                    if not target.get("id"):
+                        target["id"] = access_key_id
+                    if not target.get("user_name"):
+                        target["user_name"] = iam_user
+            elif aid in ("disable_iam_entity", "detach_admin_policies") and iam_user:
+                targets = action.get("targets") or []
+                if not targets:
+                    action["targets"] = [
+                        {"type": "IAMUser", "id": iam_user, "user_name": iam_user}
+                    ]
+                for target in targets:
+                    if not target.get("user_name"):
+                        target["user_name"] = iam_user
+                    tid = target.get("id")
+                    if not tid or str(tid).startswith(("AKIA", "ASIA", "AROA", "AIDA")):
+                        target["id"] = iam_user
+                    elif not target.get("user_name"):
+                        target["user_name"] = str(tid).strip()
+
 
 def _build_security_event(finding: Dict[str, Any]) -> Dict[str, Any]:
     finding_type = str(finding.get("type", "")).lower()

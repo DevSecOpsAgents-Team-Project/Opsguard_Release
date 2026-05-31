@@ -1,7 +1,7 @@
 import logging
 import os
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 # 우리가 만든 모듈들 임포트
 from . import actions_module as actions
@@ -9,6 +9,36 @@ from . import db_logger_module as db_logger
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+_IAM_CREDENTIAL_PREFIXES = ("AKIA", "ASIA", "AROA", "AIDA")
+
+
+def _resolve_iam_user_name(target: Dict[str, Any]) -> Optional[str]:
+    """target.user_name 우선, 없으면 IAMUser id(액세스키 ID 제외) 사용."""
+    for key in ("user_name", "userName"):
+        val = target.get(key)
+        if val and str(val).strip():
+            return str(val).strip()
+    tid = target.get("id")
+    if tid and str(tid).strip():
+        tid_str = str(tid).strip()
+        if not tid_str.startswith(_IAM_CREDENTIAL_PREFIXES):
+            return tid_str
+    return None
+
+
+def _iam_target_missing_response(action_id: str, incident_id: str) -> Dict[str, Any]:
+    return {
+        "action_name": action_id,
+        "incident_id": incident_id,
+        "status": "FAILED",
+        "details": {
+            "error": (
+                "IAM user_name이 없어 실행할 수 없습니다. "
+                "GuardDuty finding의 accessKeyDetails.userName 또는 target.id(IAM 사용자명)가 필요합니다."
+            )
+        },
+    }
 
 CONFIG = {
     "WAF_IPSET_NAME": os.environ.get("WAF_IPSET_NAME"),
@@ -65,7 +95,8 @@ class ActionDispatcher:
                         "action_id": action_id,
                         "target_id": target.get("id"),
                         "status": result.get("status"),
-                        "log_status": log_res.get("status")
+                        "log_status": log_res.get("status"),
+                        "error": (result.get("details") or {}).get("error"),
                     })
 
                 except Exception as e:
@@ -87,26 +118,33 @@ class ActionDispatcher:
         # 1. [IAM] 자격 증명 관련 액션
         # -------------------------------------------------------
         if action_id == "disable_access_key":
-            # 필요 인자: user_name, access_key_id
+            user_name = _resolve_iam_user_name(target)
+            access_key_id = target.get("id")
+            if not user_name or not access_key_id:
+                return _iam_target_missing_response(action_id, incident_id)
             return actions.disable_access_key(
-                user_name=target.get("user_name"),  # JSON 필드 매핑
-                access_key_id=target.get("id"),     # JSON 필드 매핑
+                user_name=user_name,
+                access_key_id=access_key_id,
                 incident_id=incident_id,
                 dry_run=self.dry_run
             )
 
         elif action_id == "disable_iam_entity":
-            # 필요 인자: user_name
+            user_name = _resolve_iam_user_name(target)
+            if not user_name:
+                return _iam_target_missing_response(action_id, incident_id)
             return actions.disable_iam_entity(
-                user_name=target.get("user_name"),
+                user_name=user_name,
                 incident_id=incident_id,
                 dry_run=self.dry_run
             )
 
         elif action_id == "detach_admin_policies":
-            # 필요 인자: user_name
+            user_name = _resolve_iam_user_name(target)
+            if not user_name:
+                return _iam_target_missing_response(action_id, incident_id)
             return actions.detach_admin_policies(
-                user_name=target.get("user_name"),
+                user_name=user_name,
                 incident_id=incident_id,
                 dry_run=self.dry_run
             )

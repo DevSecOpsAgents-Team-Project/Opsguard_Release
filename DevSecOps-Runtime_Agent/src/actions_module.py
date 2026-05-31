@@ -438,6 +438,15 @@ def disable_iam_entity(user_name: str, incident_id: str, dry_run: bool = False):
     1. 모든 Access Key를 'Inactive'로 변경 (기존 상태 저장)
     2. 'DenyAll' 인라인 정책 부착
     """
+    if not user_name or not str(user_name).strip():
+        return build_response(
+            "disable_iam_entity",
+            incident_id,
+            "FAILED",
+            details={"error": "user_name is required"},
+        )
+
+    user_name = str(user_name).strip()
     iam = boto3.client("iam") 
 
     try:
@@ -846,6 +855,15 @@ def disable_access_key(user_name: str, access_key_id: str, incident_id: str, dry
     """
     특정 IAM User의 Access Key를 Inactive로 비활성화합니다.
     """
+    if not user_name or not str(user_name).strip() or not access_key_id:
+        return build_response(
+            "disable_access_key",
+            incident_id,
+            "FAILED",
+            details={"error": "user_name and access_key_id are required"},
+        )
+
+    user_name = str(user_name).strip()
     iam = boto3.client("iam")
 
     try:
@@ -893,6 +911,15 @@ def detach_admin_policies(user_name: str, incident_id: str, dry_run=False):
     주어진 IAM User에 붙어있는 관리자 권한 정책(예: AdministratorAccess)을 Detach합니다.
     (간단하게: 모든 attached managed policy를 떼는 방식으로 구현 가능)
     """
+    if not user_name or not str(user_name).strip():
+        return build_response(
+            "detach_admin_policies",
+            incident_id,
+            "FAILED",
+            details={"error": "user_name is required"},
+        )
+
+    user_name = str(user_name).strip()
     iam = boto3.client("iam")
 
     try:
