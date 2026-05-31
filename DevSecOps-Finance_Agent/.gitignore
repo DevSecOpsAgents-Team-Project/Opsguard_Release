@@ -1,0 +1,14 @@
+# Lambda 배포 산출물 (build_lambda_zip.* 실행 시 생성)
+package/
+finance-agent.zip
+
+# 로컬 secrets / env (.env는 repo 루트 .gitignore에도 있음)
+.env
+.env.*
+
+# 로컬 audit 로그
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
