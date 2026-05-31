@@ -73,6 +73,36 @@ def test_format_execution_failure() -> None:
     _ok("format_execution_result_slack_message (failure)")
 
 
+def test_format_regulation_xai_english_to_korean() -> None:
+    regulation = {
+        "escalation_assessment": {
+            "recommended_level": 2,
+            "confidence": 0.8,
+            "approval_notes": "This action requires approval.",
+        },
+        "reasoning_bullets": ["Regulatory basis for action"],
+        "regulations": [
+            {
+                "framework": "CSA_CCM",
+                "clause_id": "DSP-17",
+                "clause_title": "Sensitive Data Protection",
+                "why_relevant": (
+                    "This regulation emphasizes the need to protect sensitive data, "
+                    "relevant due to the public access granted to the S3 bucket."
+                ),
+                "excerpt": "민감 데이터는 암호화 및 접근 통제로 보호해야 한다.",
+            }
+        ],
+    }
+    xai = format_regulation_xai_explanation(regulation)
+    assert "본 조치는 승인이 필요합니다" in xai
+    assert "규제 근거에 따른 대응입니다" in xai
+    assert "민감 데이터는 암호화" in xai
+    assert "This action requires approval" not in xai
+    assert "Regulatory basis for action" not in xai
+    _ok("format_regulation_xai_explanation (English → Korean)")
+
+
 def test_format_regulation_xai() -> None:
     sample_path = HERE.parents[2] / "DevSecOps-Finance_Agent" / "samples" / "regulation_output_example.json"
     if not sample_path.exists():
@@ -220,6 +250,7 @@ def run_all() -> None:
         test_parse_runtime_lambda_response,
         test_format_execution_success,
         test_format_execution_failure,
+        test_format_regulation_xai_english_to_korean,
         test_format_regulation_xai,
         test_dispatcher_empty_targets,
         test_engine_handler_execute_approved_actions,

@@ -365,10 +365,77 @@ def format_execution_result_slack_message(incident_id: str, runtime_result: Dict
     return f"{header}\n{detail}"
 
 
+def _has_hangul(text: str) -> bool:
+    return any("\uac00" <= ch <= "\ud7a3" for ch in text)
+
+
+def _is_mostly_english(text: str) -> bool:
+    stripped = (text or "").strip()
+    if not stripped:
+        return False
+    if _has_hangul(stripped):
+        return False
+    alpha = sum(1 for ch in stripped if ch.isalpha())
+    return alpha >= 8
+
+
+_XAI_PHRASE_KO: Dict[str, str] = {
+    "This action requires approval.": "본 조치는 승인이 필요합니다.",
+    "Regulatory basis for action": "규제 근거에 따른 대응입니다.",
+    "Explain assumptions and approval considerations.": "가정 사항 및 승인 시 고려할 사항을 검토하세요.",
+    "Recommended actions are necessary to mitigate potential unauthorized access.": (
+        "무단 접근 가능성을 줄이기 위해 제안된 조치가 필요합니다."
+    ),
+}
+
+
+def _localize_xai_text(text: str) -> str:
+    """XAI 본문: 이미 한국어면 그대로, 짧은 영어 관용구는 매핑, 긴 영어는 한국어 요약."""
+    raw = (text or "").strip()
+    if not raw:
+        return ""
+    if _has_hangul(raw):
+        return raw
+    if raw in _XAI_PHRASE_KO:
+        return _XAI_PHRASE_KO[raw]
+    for en, ko in _XAI_PHRASE_KO.items():
+        if en.lower() in raw.lower():
+            return ko
+    if _is_mostly_english(raw):
+        return "규제·위협 맥락을 분석한 결과, 해당 대응 조치가 필요하다고 판단했습니다."
+    return raw
+
+
+def _localize_regulation_why(reg: Dict[str, Any]) -> str:
+    """규제 매핑 한 줄: why_relevant가 영어면 한국어 excerpt 또는 한국어 요약 사용."""
+    why = (reg.get("why_relevant") or "").strip()
+    excerpt = (reg.get("excerpt") or "").strip()
+    cid = reg.get("clause_id", "")
+    title = reg.get("clause_title", "")
+
+    if why and _has_hangul(why):
+        text = why
+    elif excerpt and _has_hangul(excerpt):
+        text = excerpt
+    elif why:
+        text = _localize_xai_text(why)
+        if _is_mostly_english(text):
+            text = f"`{cid}` {title} 규정상 본 위협에 대한 대응 근거로 판단했습니다."
+    elif excerpt:
+        text = _localize_xai_text(excerpt)
+    else:
+        text = f"`{cid}` {title} 규정과 관련된 조치입니다."
+
+    if len(text) > 160:
+        return text[:160] + "…"
+    return text
+
+
 def format_regulation_xai_explanation(regulation: Dict[str, Any]) -> str:
     """
     Regulation Agent 결과에서 Slack에 표시할 XAI(설명 가능한 AI) 요약을 만듭니다.
     reasoning_bullets, escalation_assessment, justification, regulations 필드를 활용합니다.
+    Slack XAI 섹션 본문은 한국어로 표시합니다.
     """
     parts: List[str] = []
 
@@ -382,18 +449,18 @@ def format_regulation_xai_explanation(regulation: Dict[str, Any]) -> str:
         if conf is not None:
             parts.append(f"• *판단 신뢰도:* {conf}")
         if notes:
-            parts.append(f"• *에스컬레이션 근거:* {notes}")
+            parts.append(f"• *에스컬레이션 근거:* {_localize_xai_text(str(notes))}")
 
     justification = regulation.get("justification")
     if isinstance(justification, str) and justification.strip():
-        parts.append(f"*XAI 종합 설명:*\n{justification.strip()[:1800]}")
+        parts.append(f"*XAI 종합 설명:*\n{_localize_xai_text(justification)[:1800]}")
 
     bullets = regulation.get("reasoning_bullets") or []
     if isinstance(bullets, list) and bullets:
         parts.append("*추론 요약:*")
         for bullet in bullets[:5]:
             if bullet:
-                parts.append(f"  - {bullet}")
+                parts.append(f"  - {_localize_xai_text(str(bullet))}")
 
     regs = regulation.get("regulations") or []
     if isinstance(regs, list) and regs:
@@ -403,9 +470,7 @@ def format_regulation_xai_explanation(regulation: Dict[str, Any]) -> str:
                 continue
             cid = reg.get("clause_id", "")
             title = reg.get("clause_title", "")
-            why = reg.get("why_relevant") or reg.get("excerpt") or ""
-            if len(str(why)) > 160:
-                why = str(why)[:160] + "…"
+            why = _localize_regulation_why(reg)
             parts.append(f"  - `{cid}` {title}: {why}")
 
     return "\n".join(parts)
