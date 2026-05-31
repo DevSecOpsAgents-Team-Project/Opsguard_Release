@@ -81,13 +81,6 @@ def lambda_handler(event: Any, context: Any = None) -> Dict[str, Any]:
         except Exception as e:
             logger.error(f"❌ [Base Mitigation] 실패 (계속 진행함): {e}")
             base_result = {"status": "error", "error": str(e)}
-            try:
-                actions.notify_to_slack(
-                    f"❌ *L1 Base Mitigation 실패*\n- Incident: `{incident_id}`\n- 오류: {e}",
-                    incident_id,
-                )
-            except Exception as slack_err:
-                logger.error(f"Base Mitigation 실패 알림 전송 오류: {slack_err}")
         # ==================================================================
 
         
@@ -140,19 +133,6 @@ def lambda_handler(event: Any, context: Any = None) -> Dict[str, Any]:
             playbook_result = playbook_func(event=event, actions=actions)
 
         # ------------------------------------------------------------------
-        playbook_status = (
-            playbook_result.get("status", "UNKNOWN") if isinstance(playbook_result, dict) else "UNKNOWN"
-        )
-        if isinstance(playbook_result, dict) and playbook_status in ("FAILED", "error"):
-            try:
-                err = playbook_result.get("error") or playbook_result.get("reason") or playbook_status
-                actions.notify_to_slack(
-                    f"❌ *시나리오 플레이북 실패* (`{scenario_key}`)\n"
-                    f"- Incident: `{incident_id}`\n- 사유: {err}",
-                    incident_id,
-                )
-            except Exception as slack_err:
-                logger.error(f"플레이북 실패 알림 전송 오류: {slack_err}")
 
         return {
             "status": "ok",

@@ -1,6 +1,0 @@
-{
-  "environment": "production",
-  "data_sensitivity": "pii",
-  "downtime_tolerance": "allowed",
-  "priority": "security"
-}

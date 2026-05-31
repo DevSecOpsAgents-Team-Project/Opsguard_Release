@@ -220,25 +220,6 @@ class RecommendedAction(BaseModel):
     expected_impact: Literal["LOW", "MEDIUM", "HIGH"]
 
 
-class RegulatorySignal(BaseModel):
-    clause_id: str = ""
-    doc_type: str = ""
-    intent: str = ""
-    title: str = ""
-
-
-class SeverityTriggers(BaseModel):
-    event_factors: List[str] = []
-    regulatory_signals: List[RegulatorySignal] = []
-    fallback: bool = False
-
-
-class SeverityDecisionResult(BaseModel):
-    assigned_level: int
-    justification: str
-    triggers: SeverityTriggers
-
-
 class RegulationAgentOutput(BaseModel):
     schema_version: Literal["1.1"]
     generated_at: str
@@ -255,8 +236,6 @@ class RegulationAgentOutput(BaseModel):
 
     insufficient_context: bool
     missing_context_requests: List[str]
-
-    severity_decision_result: Optional[SeverityDecisionResult] = None
 
 
 _IMPACT_SYNONYM_MAP = {"MODERATE": "MEDIUM", "MID": "MEDIUM", "MIDDLE": "MEDIUM"}
@@ -333,8 +312,6 @@ You are the “Regulation Agent”, a compliance-first decision-support agent fo
 - Level 1 actions are already executed by Runtime Agent.
 - You must recommend ONLY Level 2 or Level 3 (approval-based).
 - You MUST ONLY cite clauses present in context_chunks (NO hallucination).
-- If severity_decision_result is present in INPUT_JSON, use its assigned_level, justification,
-  and regulatory_signals when writing reasoning_bullets and escalation_assessment.
 - If regulatory context is insufficient:
   - insufficient_context=true
   - missing_context_requests non-empty
@@ -489,96 +466,6 @@ def build_rag_query(incident_input: Dict[str, Any]) -> str:
     return " | ".join(p for p in parts if p)
 
 
-def build_security_event_from_incident(incident_input: Dict[str, Any]) -> Dict[str, Any]:
-    """GuardDuty/MCP incident 입력 → Severity Decision Engine용 SecurityEvent dict."""
-    summary = incident_input.get("incident_summary") or {}
-    title = (summary.get("title") or "unknown").lower()
-    resource = summary.get("resource") or {}
-    resource_type = resource.get("type") or "Unknown"
-    try:
-        severity_score = float(summary.get("severity") or 0)
-    except (TypeError, ValueError):
-        severity_score = 0.0
-
-    privilege_impact = any(
-        kw in title for kw in ("privilege", "escalation", "admin", "root", "credential", "iam")
-    )
-    if severity_score >= 7.0:
-        data_sensitivity = "high"
-    elif severity_score >= 4.0:
-        data_sensitivity = "medium"
-    else:
-        data_sensitivity = "low"
-
-    exposure = "public"
-    if resource_type.lower() in ("accesskey", "iamuser", "iam"):
-        exposure = "public"
-    elif "internal" in title or "private" in title:
-        exposure = "internal"
-
-    return {
-        "event_type": title or "unknown",
-        "resource_type": resource_type,
-        "exposure": exposure,
-        "privilege_impact": privilege_impact,
-        "data_sensitivity": data_sensitivity,
-    }
-
-
-def run_severity_xai(
-    incident_input: Dict[str, Any],
-    retrieved: List[Dict[str, Any]],
-) -> Dict[str, Any]:
-    from severity_decision import decide_severity_level_with_xai
-
-    security_event = build_security_event_from_incident(incident_input)
-    return decide_severity_level_with_xai(security_event, retrieved)
-
-
-def attach_severity_to_incident(
-    incident_input: Dict[str, Any],
-    severity_result: Dict[str, Any],
-) -> Dict[str, Any]:
-    payload = dict(incident_input)
-    payload["severity_decision_result"] = {
-        "assigned_level": severity_result.get("assigned_level"),
-        "justification": severity_result.get("justification", ""),
-        "triggers": severity_result.get("triggers") or {},
-    }
-    return payload
-
-
-def enrich_output_with_xai(
-    output: RegulationAgentOutput,
-    severity_result: Dict[str, Any],
-) -> RegulationAgentOutput:
-    """LLM 출력에 XAI(Severity Decision) 결과를 병합."""
-    triggers_raw = severity_result.get("triggers") or {}
-    signals = []
-    for sig in triggers_raw.get("regulatory_signals") or []:
-        if isinstance(sig, dict):
-            signals.append(RegulatorySignal(**sig))
-
-    xai = SeverityDecisionResult(
-        assigned_level=int(severity_result.get("assigned_level") or 2),
-        justification=str(severity_result.get("justification") or ""),
-        triggers=SeverityTriggers(
-            event_factors=list(triggers_raw.get("event_factors") or []),
-            regulatory_signals=signals,
-            fallback=bool(triggers_raw.get("fallback")),
-        ),
-    )
-
-    data = output.model_dump()
-    bullets = list(data.get("reasoning_bullets") or [])
-    justification = xai.justification.strip()
-    if justification and justification not in bullets:
-        bullets.insert(0, justification)
-    data["reasoning_bullets"] = bullets
-    data["severity_decision_result"] = xai.model_dump()
-    return RegulationAgentOutput.model_validate(data)
-
-
 # =========================================================
 # 6) Export (Runtime 팀에 넘길 JSON)
 # =========================================================
@@ -611,20 +498,12 @@ def main():
 
     context_chunks = build_context_chunks(retrieved)
 
-    print("\n== Severity Decision + XAI ==")
-    severity_result = run_severity_xai(incident_input, retrieved)
-    print(f"assigned_level: {severity_result.get('assigned_level')}")
-    print(f"justification: {(severity_result.get('justification') or '')[:120]}...")
-
-    incident_input = attach_severity_to_incident(incident_input, severity_result)
-
     print("\n== Call Regulation Agent ==")
     output = call_regulation_agent_with_validation(
         incident_input=incident_input,
         context_chunks=context_chunks,
         model=OPENAI_MODEL,
     )
-    output = enrich_output_with_xai(output, severity_result)
 
     print("\n== Validated Output ==")
     print(json.dumps(output.model_dump(), ensure_ascii=False, indent=2))

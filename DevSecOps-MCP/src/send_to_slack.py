@@ -18,15 +18,6 @@ def send_approval_message(mock_json):
     if not reg_text:
         reg_text = "매핑된 규제 근거 없음"
 
-    # XAI(Severity Decision) 설명
-    xai = mock_json.get("severity_decision_result") or {}
-    xai_text = xai.get("justification") or ""
-    if not xai_text and mock_json.get("reasoning_bullets"):
-        xai_text = mock_json["reasoning_bullets"][0]
-    xai_factors = (xai.get("triggers") or {}).get("event_factors") or []
-    if xai_factors:
-        xai_text += "\n\n*이벤트 요인:* " + ", ".join(xai_factors[:5])
-
     # 1. 상단: 1.png 스타일의 상세한 컨텍스트 정보
     blocks = [
         {
@@ -46,13 +37,6 @@ def send_approval_message(mock_json):
             ]
         },
         {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*🧠 XAI 심각도 설명 (Severity Decision):*\n{xai_text or '설명 없음'}"
-            }
-        },
         {
             "type": "section",
             "text": {
@@ -161,17 +145,6 @@ full_mock_data = {
   "reasoning_bullets": [
     "The incident involves suspicious usage of an access key, indicating potential unauthorized access."
   ],
-  "severity_decision_result": {
-    "assigned_level": 2,
-    "justification": "심각도 Level 2 (High) — Access Key 이상 사용과 IAM 관련 규제 신호가 감지되었습니다.",
-    "triggers": {
-      "event_factors": ["권한 영향 (Privilege Impact)", "자격 증명 접근 (Credential Access)"],
-      "regulatory_signals": [
-        {"clause_id": "IAM-05", "doc_type": "CSA_CCM", "intent": "최소 권한 원칙", "title": "Least Privilege"}
-      ],
-      "fallback": false
-    }
-  },
   "regulations": [
     {
       "framework": "CSA_CCM",
