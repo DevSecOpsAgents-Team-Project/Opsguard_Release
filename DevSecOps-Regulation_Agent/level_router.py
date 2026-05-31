@@ -87,6 +87,11 @@ def decide_response_level(
             any(k in signals for k in ["unusual api calls", "external ip", "anomalous behavior"]):
             reasons.append("Signals/tags suggest anomalous credential usage → containment needed.")
             return LevelDecision(2, reasons)
+        
+    if "s3" in str(resource_type).lower() or "s3bucket" in gd_type:
+        if sev >= 5.0:
+            reasons.append("S3 bucket exposure/policy finding with medium+ severity → containment needed.")
+            return LevelDecision(2, reasons)
 
     if any(k in gd_type for k in ["privilegeescalation", "excessive", "unauthorizedadminaccess"]):
         reasons.append("Privilege-impacting finding type → containment/mitigation needed.")

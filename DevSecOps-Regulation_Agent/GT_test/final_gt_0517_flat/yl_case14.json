@@ -1,0 +1,43 @@
+{
+    "sample_id": "gd-ec2-rdpbf-001-nat",
+    "query_type": "nat",
+    "queries": {
+        "nat": "EC2 인스턴스에 대한 RDP 브루트포스 공격 발생 시 접근 차단과 인증 강화 기반 침입 대응 통제",
+        "kwd": "rdp brute force | ec2 instance | unauthorized access | login attempt | authentication control | incident response"
+    },
+    "finding_type": "UnauthorizedAccess:EC2/RDPBruteForce",
+    "relevant_docs": [
+        {
+            "doc_id": "IVS-06",
+            "relevance": 2
+        },
+        {
+            "doc_id": "IAM-14",
+            "relevance": 2
+        },
+        {
+            "doc_id": "SEF-03",
+            "relevance": 2
+        }
+    ],
+    "hard_negatives": [
+        "CEK-06",
+        "DSP-02"
+    ],
+    "expected": {
+        "selected_level": 3
+    },
+    "meta": {
+        "label_basis": "control_id",
+        "top_k": 6
+    },
+    "grading": {
+        "relevance": {
+            "IVS-06": 2,
+            "IAM-14": 2,
+            "SEF-03": 2,
+            "CEK-06": 0,
+            "DSP-02": 0
+        }
+    }
+}

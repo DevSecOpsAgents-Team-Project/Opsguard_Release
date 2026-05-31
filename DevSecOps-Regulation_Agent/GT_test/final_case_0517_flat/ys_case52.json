@@ -1,0 +1,49 @@
+{
+  "incident_id": "08e0d48a34b948c3b3ca6633c95cc55b",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS",
+    "severity": "8",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-southeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "entity_context": {
+    "iam_user_name": "GeneratedFindingUserName",
+    "access_key_id": "GeneratedFindingAccessKeyId",
+    "remote_ip": "198.51.100.0"
+  },
+  "runtime_result": {},
+  "raw_event": {
+    "id": "08e0d48a34b948c3b3ca6633c95cc55b",
+    "region": "ap-southeast-2",
+    "account": "836347236184",
+    "detail": {
+      "type": "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS",
+      "severity": 8,
+      "resource": {
+        "resourceType": "AccessKey",
+        "accessKeyDetails": {
+          "accessKeyId": "GeneratedFindingAccessKeyId",
+          "userName": "GeneratedFindingUserName"
+        }
+      },
+      "service": {
+        "action": {
+          "awsApiCallAction": {
+            "api": "GeneratedFindingAPIName",
+            "remoteIpDetails": {
+              "ipAddressV4": "198.51.100.0"
+            }
+          }
+        }
+      }
+    }
+  }
+}

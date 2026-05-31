@@ -1,0 +1,34 @@
+{
+  "sample_id": "gd-s3-impact-delete-001",
+  "query": "Impact:S3/AnomalousBehavior.Delete | s3 data deletion anomalous | delete object bucket unusual location | ML detection s3 behavior | resource:S3Bucket | iam user | access key | api:GeneratedFindingAPIName | api:AccessDenied | remote ip | unusual bucket access | unusual user account profiling | unusual ASN | severity:8 | s3 encryption SSEAlgorithm | block public access disabled | candidate_actions: 삭제된 S3 객체 버전 복원 가능 여부 즉시 확인 | candidate_actions: 해당 IAM 사용자 S3 삭제 권한 즉시 회수 | candidate_actions: 영향받은 버킷 4개 전체 객체 무결성 감사",
+  "finding_type": "Impact:S3/AnomalousBehavior.Delete",
+  "relevant_docs": [
+    {"doc_id": "DSP-02", "relevance": 2},
+    {"doc_id": "ISMSP-3.1.2", "relevance": 2},
+    {"doc_id": "DSP-16", "relevance": 2},
+    {"doc_id": "IAM-05", "relevance": 1}
+  ],
+  "hard_negatives": [
+    "IVS-04",
+    "CEK-06",
+    "DSP-10"
+  ],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 6
+  },
+  "grading": {
+    "relevance": {
+      "DSP-02": 1,
+      "ISMSP-3.1.2": 2,
+      "DSP-16": 2,
+      "IAM-05": 1,
+      "IVS-04": 0,
+      "CEK-06": 0,
+      "DSP-10": 0
+    }
+  }
+}

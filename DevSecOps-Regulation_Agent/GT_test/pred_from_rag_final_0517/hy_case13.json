@@ -1,0 +1,142 @@
+{
+  "sample_id": "hy_case13.json",
+  "finding_type": "Exfiltration:S3/MaliciousIPCaller",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "LOG-03"
+    },
+    {
+      "clause_id": "LOG-05"
+    },
+    {
+      "clause_id": "SEF-06"
+    },
+    {
+      "clause_id": "DSP-10"
+    },
+    {
+      "clause_id": "DSP-17"
+    }
+  ],
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "S3 bucket exposure/policy finding with medium+ severity → containment needed."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Exfiltration:S3/MaliciousIPCaller The S3 API GeneratedFindingAPIName was invoked from known malicious IP address 198.51.100.0. The S3 API GeneratedFindingAPIName was invoked from known malicious IP address 198.51.100.0. This can indicate an attempt by an adversary to collect data from your AWS environment. S3Bucket GeneratedFindingAPIName severity 8 | runtime signals: aws_api_call, api_generatedfindingapiname, exfiltration, maliciousipcaller | runtime tags: s3bucket, storage, s3 | security meaning: suspicious remote access activity, incident triage required, security event investigation, credential misuse should be assessed | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: DSP, LOG, SEF, IncidentResponse | downweight categories: CEK, IAM",
+    "where_filter_used": {
+      "primary_query": "event summary: Exfiltration:S3/MaliciousIPCaller The S3 API GeneratedFindingAPIName was invoked from known malicious IP address 198.51.100.0. The S3 API GeneratedFindingAPIName was invoked from known malicious IP address 198.51.100.0. This can indicate an attempt by an adversary to collect data from your AWS environment. S3Bucket GeneratedFindingAPIName severity 8 | runtime signals: aws_api_call, api_generatedfindingapiname, exfiltration, maliciousipcaller | runtime tags: s3bucket, storage, s3 | security meaning: suspicious remote access activity, incident triage required, security event investigation, credential misuse should be assessed | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: DSP, LOG, SEF, IncidentResponse | downweight categories: CEK, IAM",
+      "category_queries": {
+        "DSP": "Data Security and Privacy | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | Exfiltration:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName",
+        "LOG": "Security Logging and Monitoring | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | Exfiltration:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName",
+        "SEF": "Security Event and Incident Response | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | Exfiltration:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName",
+        "IncidentResponse": "ISMS-P 3.1 Incident Response | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | Exfiltration:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK",
+        "IAM"
+      ],
+      "downweight_hints": [
+        "CEK",
+        "IAM"
+      ],
+      "expected_categories": [
+        "DSP",
+        "LOG",
+        "SEF",
+        "IncidentResponse"
+      ],
+      "category_weights": {
+        "CEK": -8,
+        "DSP": 23,
+        "GRC": 3,
+        "IAM": -3,
+        "AccessControl": 2,
+        "IncidentResponse": 14,
+        "IVS": 9,
+        "LOG": 22,
+        "SEF": 20
+      },
+      "security_meanings": [
+        "suspicious remote access activity",
+        "incident triage required",
+        "security event investigation",
+        "credential misuse should be assessed",
+        "sensitive data exposure risk",
+        "data deletion or disclosure activity",
+        "data protection control failure",
+        "investigation and notification workflow may be required",
+        "s3 access from malicious infrastructure",
+        "network-based attack and data exposure risk"
+      ],
+      "regulatory_phrases": [
+        "data protection",
+        "sensitive data",
+        "data retention",
+        "data deletion",
+        "data disclosure",
+        "secure disposal",
+        "data classification",
+        "privacy compliance",
+        "event triage",
+        "alerting and monitoring",
+        "incident response procedure",
+        "credential review",
+        "sensitive data handling",
+        "sensitive data protection"
+      ],
+      "source_summary": "Exfiltration:S3/MaliciousIPCaller The S3 API GeneratedFindingAPIName was invoked from known malicious IP address 198.51.100.0. The S3 API GeneratedFindingAPIName was invoked from known malicious IP address 198.51.100.0. This can indicate an attempt by an adversary to collect data from your AWS environment. S3Bucket GeneratedFindingAPIName severity 8",
+      "matched_rules": [
+        "malicious_ip_caller",
+        "s3_exfiltration_delete",
+        "s3_malicious_ip_access"
+      ],
+      "preferred_doc_ids": [
+        "SEF-06",
+        "LOG-03",
+        "LOG-05",
+        "ISMSP-3.1.2",
+        "DSP-17",
+        "DSP-10",
+        "IVS-09",
+        "LOG-13"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "LOG-03",
+        "title": "Security Monitoring and Alerting",
+        "category": "LOG"
+      },
+      {
+        "rank": 2,
+        "clause_id": "LOG-05",
+        "title": "Audit Logs Monitoring and Response",
+        "category": "LOG"
+      },
+      {
+        "rank": 3,
+        "clause_id": "SEF-06",
+        "title": "Event Triage Processes",
+        "category": "SEF"
+      },
+      {
+        "rank": 4,
+        "clause_id": "DSP-10",
+        "title": "Sensitive Data Transfer",
+        "category": "DSP"
+      },
+      {
+        "rank": 5,
+        "clause_id": "DSP-17",
+        "title": "Sensitive Data Protection",
+        "category": "DSP"
+      }
+    ]
+  }
+}

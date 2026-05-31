@@ -1,0 +1,38 @@
+{
+  "sample_id": "gd-ismsp242-iam-002-nat",
+  "finding_type": "CredentialAccess:IAMUser/AnomalousBehavior",
+  "relevant_docs": [
+    {
+      "doc_id": "ISMSP-2.4.2",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IAM-16",
+      "relevance": 2
+    },
+    {
+      "doc_id": "SEF-06",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": [
+    "CEK-17",
+    "DSP-16"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "ISMSP-2.4.2": 2,
+      "IAM-16": 2,
+      "SEF-06": 1,
+      "CEK-17": 0,
+      "DSP-16": 0
+    }
+  }
+}

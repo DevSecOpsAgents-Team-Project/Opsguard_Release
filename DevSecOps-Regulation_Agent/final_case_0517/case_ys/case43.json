@@ -1,0 +1,71 @@
+{
+  "incident_id": "204bce393197413e9a40af0aaaa7c510",
+
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Exfiltration:S3/MaliciousIPCaller",
+    "severity": "8",
+    "resource": {
+      "type": "S3Bucket",
+      "id": "example-bucket1",
+      "region": "ap-southeast-2",
+      "account_id": "836347236184"
+    }
+  },
+
+  "executed_level1_actions": ["base_mitigation"],
+
+  "entity_context": {
+    "iam_user_name": "GeneratedFindingUserName",
+    "access_key_id": "GeneratedFindingAccessKeyId",
+    "remote_ip": "198.51.100.0"
+  },
+
+  "runtime_result": {
+    "base_result": {
+      "extracted_user": "GeneratedFindingUserName",
+      "extracted_resource": "example-bucket1"
+    },
+    "key_signals": [
+      "data_exfiltration",
+      "malicious_ip",
+      "s3_access",
+      "data_access_attempt",
+      "high_risk_behavior"
+    ],
+    "tags": [
+      "guardduty",
+      "exfiltration",
+      "high_severity",
+      "malicious_ip",
+      "data_breach_risk"
+    ]
+  },
+
+  "raw_event": {
+    "id": "204bce393197413e9a40af0aaaa7c510",
+    "region": "ap-southeast-2",
+    "account": "836347236184",
+    "detail": {
+      "type": "Exfiltration:S3/MaliciousIPCaller",
+      "severity": 8,
+      "resource": {
+        "resourceType": "S3Bucket",
+        "accessKeyDetails": {
+          "accessKeyId": "GeneratedFindingAccessKeyId",
+          "userName": "GeneratedFindingUserName"
+        }
+      },
+      "service": {
+        "action": {
+          "awsApiCallAction": {
+            "api": "GeneratedFindingAPIName",
+            "remoteIpDetails": {
+              "ipAddressV4": "198.51.100.0"
+            }
+          }
+        }
+      }
+    }
+  }
+}

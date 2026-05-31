@@ -1,0 +1,34 @@
+{
+  "sample_id": "gd-s3-public-access-granted-001",
+  "query": "Policy:S3/BucketPublicAccessGranted | s3 bucket public access granted | authenticated public access enabled | ACL public read write | resource:AccessKey | resource:S3Bucket | iam user | access key | api:GeneratedFindingAPIName | remote ip | affected resource S3Bucket | effective permission PUBLIC | AllowsPublicReadAccess | AllowsPublicWriteAccess | severity:8 | candidate_actions: 4개 버킷 공개 접근 즉시 차단 및 ACL·버킷 정책 복구 | candidate_actions: 공개 노출 기간 동안 접근된 객체 및 데이터 유출 여부 조사 | candidate_actions: 공개 접근 허용 API 호출 IAM 사용자 권한 감사 및 최소화",
+  "finding_type": "Policy:S3/BucketPublicAccessGranted",
+  "relevant_docs": [
+    {"doc_id": "DSP-18", "relevance": 2},
+    {"doc_id": "DSP-17", "relevance": 2},
+    {"doc_id": "ISMSP-3.1.2", "relevance": 2},
+    {"doc_id": "IAM-05", "relevance": 1}
+  ],
+  "hard_negatives": [
+    "DSP-02",
+    "CEK-06",
+    "IVS-04"
+  ],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 6
+  },
+  "grading": {
+    "relevance": {
+      "DSP-18": 2,
+      "DSP-17": 2,
+      "ISMSP-3.1.2": 2,
+      "IAM-05": 1,
+      "DSP-02": 0,
+      "CEK-06": 0,
+      "IVS-04": 0
+    }
+  }
+}

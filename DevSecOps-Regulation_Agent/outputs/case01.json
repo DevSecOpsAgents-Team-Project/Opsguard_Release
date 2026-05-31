@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.3",
+  "generated_at": "2026-05-17T00:46:52.614161+00:00",
+  "incident_id": "8e941f0bc6c64292aaf6a533dc970c4c",
+  "scenario": "CredentialCompromise",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "The user GeneratedFindingUserType : GeneratedFindingUserName is anomalously invoking APIs commonly used in PrivilegeEscalation tactics.",
+    "severity": "8",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-northeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "escalation_assessment": {
+    "escalation_needed": true,
+    "recommended_level": 2,
+    "confidence": 0.89,
+    "decision_questions": [
+      "해당 액세스 키 GeneratedFindingAccessKeyId 가 현재 운영 자동화나 서비스 연동에 사용 중인지 확인했습니까?",
+      "사용자 GeneratedFindingUserName 에 관리자급 정책 또는 과도한 권한이 실제로 연결되어 있는지 검토했습니까?",
+      "원격 IP 198.51.100.0 의 접근을 즉시 차단할 경우 정상 업무 영향이 허용 가능한지 확인했습니까?"
+    ],
+    "approval_notes": "Level 1 기본 완화는 이미 수행되었습니다. 본 단계에서는 AccessKey 리소스에 대해 승인형 Level 2 및 Level 3 후보 조치를 제시합니다. EC2 전용 조치는 incident resource type이 AccessKey 이므로 제외했습니다."
+  },
+  "reasoning_bullets": [
+    "GuardDuty finding indicates anomalous privilege-escalation-related API activity by access key GeneratedFindingAccessKeyId.",
+    "Incident resource type is AccessKey, so IAM credential containment and privilege reduction are appropriate Level 2 and Level 3 candidates.",
+    "Provided regulation context emphasizes privileged access control, strong authentication, authorization verification, segregation of duties, and least privilege.",
+    "Because Level 1 has already executed, the next recommended primary path is Level 2 containment with a Level 3 stronger fallback candidate."
+  ],
+  "regulations": [
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IAM-10",
+      "clause_title": "Management of Privileged Access Roles",
+      "relevance": 0.95,
+      "excerpt": "Define and implement an access process to ensure privileged access roles and rights are granted for a time limited period, and implement procedures to prevent the culmination of segregated privileged access.",
+      "why_relevant": "The finding involves anomalous privilege-escalation-related API use, so temporary or excessive privileged rights tied to the affected identity should be reduced or removed."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IAM-14",
+      "clause_title": "Strong Authentication",
+      "relevance": 0.72,
+      "excerpt": "Define, implement and evaluate processes, procedures and technical measures for authenticating access to systems, application and data assets, including multifactor authentication for at least privileged user and sensitive data access.",
+      "why_relevant": "The suspicious activity originates from an IAM access key and supports stronger identity assurance and follow-up authentication hardening for the affected principal."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IAM-09",
+      "clause_title": "Segregation of Privileged Access Roles",
+      "relevance": 0.83,
+      "excerpt": "Define, implement and evaluate processes, procedures and technical measures for the segregation of privileged access roles such that administrative access to data, encryption and key management capabilities and logging capabilities are distinct and separated.",
+      "why_relevant": "Anomalous privilege-escalation behavior raises concern that the affected identity may hold combined or overly broad privileged roles that should be separated."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IAM-16",
+      "clause_title": "Authorization Mechanisms",
+      "relevance": 0.9,
+      "excerpt": "Define, implement and evaluate processes, procedures and technical measures to verify access to data and system functions is authorized.",
+      "why_relevant": "The finding specifically concerns potentially unauthorized attempts to invoke privileged APIs, making permission verification and access restriction directly relevant."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IAM-05",
+      "clause_title": "Least Privilege",
+      "relevance": 0.96,
+      "excerpt": "Employ the least privilege principle when implementing information system access.",
+      "why_relevant": "The affected access key should be reviewed for excessive permissions and reduced or revoked to the minimum necessary scope."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "level": 2,
+      "playbook_name": "Credential Containment",
+      "description": "Lower-impact IAM containment for the suspicious access key and associated identity, focused on disabling the exposed credential and reducing excessive privilege while preserving options for recovery.",
+      "actions": [
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "detach_admin_policies",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "MEDIUM"
+    }
+  ],
+  "selected_playbook": {
+    "level": 2,
+    "playbook_name": "Credential Containment",
+    "description": "Lower-impact IAM containment for the suspicious access key and associated identity, focused on disabling the exposed credential and reducing excessive privilege while preserving options for recovery.",
+    "actions": [
+      {
+        "action_id": "disable_access_key",
+        "targets": [
+          {
+            "type": "AccessKey",
+            "id": "GeneratedFindingAccessKeyId",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "detach_admin_policies",
+        "targets": [
+          {
+            "type": "IAMUser",
+            "id": "GeneratedFindingUserName",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      }
+    ],
+    "requires_approval": true,
+    "expected_impact": "MEDIUM"
+  },
+  "alternative_playbooks": [
+    {
+      "level": 3,
+      "playbook_name": "Access Review and Remediation",
+      "description": "Higher-impact containment for suspected credential compromise and privilege escalation, combining identity disablement with network-origin blocking to stop continued misuse.",
+      "actions": [
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "detach_admin_policies",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "disable_iam_entity",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_ip",
+          "targets": [
+            {
+              "type": "IPAddress",
+              "id": "198.51.100.0",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "HIGH",
+      "why_not_selected": "Not selected as primary response; router committed to L2. (AccessKey related event → credential misuse risk.)"
+    }
+  ],
+  "insufficient_context": false,
+  "missing_context_requests": [],
+  "status": "ok",
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "Privilege-impacting finding type → containment/mitigation needed."
+  ],
+  "retrieved_count": 5,
+  "retrieved_clause_ids": [
+    "IAM-10",
+    "IAM-14",
+    "IAM-09",
+    "IAM-16",
+    "IAM-05"
+  ]
+}

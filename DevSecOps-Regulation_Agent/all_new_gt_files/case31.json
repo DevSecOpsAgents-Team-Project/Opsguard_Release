@@ -1,0 +1,59 @@
+{
+  "sample_id": "gd-case31-defenseevasion-iamuser-anomalous",
+  "finding_type": "DefenseEvasion:IAMUser/AnomalousBehavior",
+  "relevant_docs": [
+    {
+      "doc_id": "LOG-09",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IAM-12",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-4.2.3",
+      "relevance": 2
+    },
+    {
+      "doc_id": "LOG-03",
+      "relevance": 1
+    },
+    {
+      "doc_id": "LOG-05",
+      "relevance": 1
+    },
+    {
+      "doc_id": "IAM-09",
+      "relevance": 1
+    },
+    {
+      "doc_id": "IAM-14",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": ["LOG-11", "IAM-10", "IAM-16", "ISMSP-4.2.4", "IAM-13", "IAM-05"],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "LOG-09": 2,
+      "IAM-12": 2,
+      "ISMSP-4.2.3": 2,
+      "LOG-03": 1,
+      "LOG-05": 1,
+      "IAM-09": 1,
+      "IAM-14": 1,
+      "LOG-11": 0,
+      "IAM-10": 0,
+      "IAM-16": 0,
+      "ISMSP-4.2.4": 0,
+      "IAM-13": 0,
+      "IAM-05": 0
+    }
+  }
+}

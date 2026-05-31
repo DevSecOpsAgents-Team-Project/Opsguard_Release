@@ -1,0 +1,123 @@
+{
+  "sample_id": "yl_case02.json",
+  "finding_type": "UnauthorizedAccess:IAMUser/MaliciousIPCaller",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "SEF-06"
+    },
+    {
+      "clause_id": "LOG-03"
+    },
+    {
+      "clause_id": "LOG-05"
+    },
+    {
+      "clause_id": "SEF-03"
+    },
+    {
+      "clause_id": "IAM-14"
+    }
+  ],
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "High severity (8.0) but no L3 triggers → prefer L2."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: UnauthorizedAccess:IAMUser/MaliciousIPCaller The API GeneratedFindingAPIName was invoked from a known malicious IP address. The API GeneratedFindingAPIName was invoked from a malicious IP address 198.51.100.0. AccessKey GeneratedFindingAPIName severity 8 | runtime signals: iamuser, maliciousipcaller, api_generatedfindingapiname, aws_api_call | runtime tags: identity, credential, accesskey, iam | security meaning: suspicious remote access activity, incident triage required, security event investigation, credential misuse should be assessed | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: SEF, LOG, IAM, IncidentResponse | downweight categories: CEK",
+    "where_filter_used": {
+      "primary_query": "event summary: UnauthorizedAccess:IAMUser/MaliciousIPCaller The API GeneratedFindingAPIName was invoked from a known malicious IP address. The API GeneratedFindingAPIName was invoked from a malicious IP address 198.51.100.0. AccessKey GeneratedFindingAPIName severity 8 | runtime signals: iamuser, maliciousipcaller, api_generatedfindingapiname, aws_api_call | runtime tags: identity, credential, accesskey, iam | security meaning: suspicious remote access activity, incident triage required, security event investigation, credential misuse should be assessed | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: SEF, LOG, IAM, IncidentResponse | downweight categories: CEK",
+      "category_queries": {
+        "SEF": "Security Event and Incident Response | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | UnauthorizedAccess:IAMUser/MaliciousIPCaller | AccessKey | GeneratedFindingAPIName",
+        "LOG": "Security Logging and Monitoring | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | UnauthorizedAccess:IAMUser/MaliciousIPCaller | AccessKey | GeneratedFindingAPIName",
+        "IAM": "Identity and Access Management | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | UnauthorizedAccess:IAMUser/MaliciousIPCaller | AccessKey | GeneratedFindingAPIName",
+        "IncidentResponse": "ISMS-P 3.1 Incident Response | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | UnauthorizedAccess:IAMUser/MaliciousIPCaller | AccessKey | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK"
+      ],
+      "downweight_hints": [
+        "CEK"
+      ],
+      "expected_categories": [
+        "SEF",
+        "LOG",
+        "IAM",
+        "IncidentResponse"
+      ],
+      "category_weights": {
+        "CEK": -6,
+        "IAM": 7,
+        "AccessControl": 3,
+        "IncidentResponse": 6,
+        "LOG": 9,
+        "SEF": 10
+      },
+      "security_meanings": [
+        "suspicious remote access activity",
+        "incident triage required",
+        "security event investigation",
+        "credential misuse should be assessed"
+      ],
+      "regulatory_phrases": [
+        "least privilege",
+        "privileged access",
+        "credential",
+        "user account",
+        "authentication",
+        "identity",
+        "segregation of privileged access roles",
+        "uniquely identifiable users",
+        "event triage",
+        "alerting and monitoring",
+        "incident response procedure",
+        "credential review"
+      ],
+      "source_summary": "UnauthorizedAccess:IAMUser/MaliciousIPCaller The API GeneratedFindingAPIName was invoked from a known malicious IP address. The API GeneratedFindingAPIName was invoked from a malicious IP address 198.51.100.0. AccessKey GeneratedFindingAPIName severity 8",
+      "matched_rules": [
+        "malicious_ip_caller"
+      ],
+      "preferred_doc_ids": [
+        "SEF-06",
+        "LOG-03",
+        "LOG-05",
+        "ISMSP-3.1.2"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "SEF-06",
+        "title": "Event Triage Processes",
+        "category": "SEF"
+      },
+      {
+        "rank": 2,
+        "clause_id": "LOG-03",
+        "title": "Security Monitoring and Alerting",
+        "category": "LOG"
+      },
+      {
+        "rank": 3,
+        "clause_id": "LOG-05",
+        "title": "Audit Logs Monitoring and Response",
+        "category": "LOG"
+      },
+      {
+        "rank": 4,
+        "clause_id": "SEF-03",
+        "title": "Incident Response Plans",
+        "category": "SEF"
+      },
+      {
+        "rank": 5,
+        "clause_id": "IAM-14",
+        "title": "Strong Authentication",
+        "category": "IAM"
+      }
+    ]
+  }
+}

@@ -46,10 +46,10 @@ def step1_checklist_validation(doc_path: str) -> List[Dict[str, Any]]:
             content = f.read()
     except FileNotFoundError:
         print(f"[오류] 파일을 찾을 수 없습니다: {doc_path}")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"[오류] 파일 읽기 실패: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"파일 읽기 실패: {e}") from e
     
     # TODO: 실제 체크리스트 검증 로직 구현
     # 현재는 예시로 문서 내용을 기반으로 간단한 검증 수행

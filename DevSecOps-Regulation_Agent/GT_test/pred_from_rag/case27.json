@@ -1,0 +1,64 @@
+{
+  "sample_id": "case27.json",
+  "finding_type": "Trojan:EC2/DropPoint",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IAM-14"
+    },
+    {
+      "clause_id": "IAM-05"
+    },
+    {
+      "clause_id": "IAM-09"
+    },
+    {
+      "clause_id": "IVS-09"
+    },
+    {
+      "clause_id": "ISMSP-3.1.2"
+    }
+  ],
+  "debug_info": {
+    "query_text_used": "trojan | disable_iam_entity | suspicious_ip | compute | droppoint | unusual_port | identity | stop_instance | Trojan:EC2/DropPoint | IAM | instance | network_connection | isolate_instance | access control | ec2 | authentication | disable_access_key | detach_admin_policies | network | Instance | credential",
+    "where_filter_used": null,
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IAM-14",
+        "title": "Strong Authentication",
+        "category": "IAM"
+      },
+      {
+        "rank": 2,
+        "clause_id": "IAM-05",
+        "title": "Least Privilege",
+        "category": "IAM"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IAM-09",
+        "title": "Segregation of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IVS-09",
+        "title": "Network Defense",
+        "category": "IVS"
+      },
+      {
+        "rank": 5,
+        "clause_id": "ISMSP-3.1.2",
+        "title": "침해사고 대응 및 조치",
+        "category": "IncidentResponse"
+      }
+    ]
+  },
+  "selected_level": 3,
+  "route_reasons": [
+    "Finding type suggests active compromise/malware."
+  ]
+}

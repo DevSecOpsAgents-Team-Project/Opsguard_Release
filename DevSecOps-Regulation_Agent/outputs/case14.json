@@ -1,0 +1,246 @@
+{
+  "schema_version": "1.3",
+  "generated_at": "2026-05-17T00:50:50.693759+00:00",
+  "incident_id": "28dfe6cd168e48c7b543d0fba2fede4b",
+  "scenario": "MalwareOutbreak",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "The EC2 instance i-99999999 queried a known Command & Control server domain name.",
+    "severity": "8",
+    "resource": {
+      "type": "Instance",
+      "id": "i-99999999",
+      "region": "ap-northeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "escalation_assessment": {
+    "escalation_needed": true,
+    "recommended_level": 3,
+    "confidence": 0.93,
+    "decision_questions": [
+      "해당 EC2 인스턴스 i-99999999가 현재 비즈니스 크리티컬 서비스 경로에 포함되어 즉시 격리 시 운영 중단이 발생합니까?",
+      "인스턴스 i-99999999에 대해 네트워크 격리 후 포렌식 보존을 위해 스냅샷 생성이 필요한 승인 범위가 확인되었습니까?",
+      "VPC Flow Logs를 활성화할 대상 VPC로 vpc-generatedvpcid1를 사용할지 확인되었습니까?"
+    ],
+    "approval_notes": "Level 1 기본 완화는 이미 수행되었습니다. 본 단계에서는 EC2 C2 통신 의심에 대해 승인형 Level 2 및 Level 3 후보 플레이북을 함께 제시합니다. EC2 리소스이므로 인스턴스 격리, 중지, 스냅샷 조치가 허용됩니다."
+  },
+  "reasoning_bullets": [
+    "GuardDuty finding indicates suspected command-and-control DNS activity from EC2 instance i-99999999, which raises risk of ongoing compromise and lateral movement.",
+    "CSA CCM IVS-03 and IVS-06 support tighter network restriction, segmentation, and traffic monitoring for suspected malicious communications.",
+    "CSA CCM SEF-03 and SEF-06 support formal triage, stakeholder notification, and execution of documented incident response procedures.",
+    "Because the affected resource type is EC2 Instance, higher-impact containment such as isolate_instance, stop_instance, and create_snapshot can be considered for Level 3."
+  ],
+  "regulations": [
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IVS-03",
+      "clause_title": "Network Security",
+      "relevance": 0.95,
+      "excerpt": "Monitor, encrypt and restrict communications between environments to only authenticated and authorized connections, as justified by the business.",
+      "why_relevant": "The finding shows suspicious outbound DNS communication from EC2 instance i-99999999 to known C2 infrastructure, so restricting communications and increasing monitoring directly applies."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "SEF-06",
+      "clause_title": "Event Triage Processes",
+      "relevance": 0.84,
+      "excerpt": "Define, implement and evaluate processes, procedures and technical measures supporting business processes to triage security-related events.",
+      "why_relevant": "The incident requires rapid triage, prioritization, and coordination before applying disruptive containment to the affected instance."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IVS-06",
+      "clause_title": "Segmentation and Segregation",
+      "relevance": 0.93,
+      "excerpt": "Design, develop, deploy and configure applications and infrastructures such that CSP and CSC (tenant) user access and intra-tenant access is appropriately segmented and segregated, monitored and restricted from other tenants.",
+      "why_relevant": "Suspected malware beaconing on i-99999999 creates lateral movement risk, making segmentation and restrictive network isolation relevant."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "SEF-03",
+      "clause_title": "Incident Response Plans",
+      "relevance": 0.82,
+      "excerpt": "Establish, document, approve, communicate, apply, evaluate and maintain a security incident response plan.",
+      "why_relevant": "A malware-related GuardDuty alert should be handled through an approved incident response playbook with stakeholder communication and assigned responsibilities."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IVS-04",
+      "clause_title": "OS Hardening and Base Controls",
+      "relevance": 0.76,
+      "excerpt": "Harden host and guest OS, hypervisor or infrastructure control plane according to their respective best practices, and supported by technical controls, as part of a security baseline.",
+      "why_relevant": "After containment, the affected EC2 workload should be assessed against baseline hardening and security controls because malware activity may indicate host control weaknesses."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "level": 3,
+      "playbook_name": "Network Isolation and Mitigation",
+      "description": "Higher-impact containment for suspected malware and command-and-control activity on EC2 instance i-99999999, combining isolation and evidence preservation.",
+      "actions": [
+        {
+          "action_id": "isolate_instance",
+          "targets": [
+            {
+              "type": "Instance",
+              "id": "i-99999999",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "create_snapshot",
+          "targets": [
+            {
+              "type": "Instance",
+              "id": "i-99999999",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "stop_instance",
+          "targets": [
+            {
+              "type": "Instance",
+              "id": "i-99999999",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "HIGH"
+    }
+  ],
+  "selected_playbook": {
+    "level": 3,
+    "playbook_name": "Network Isolation and Mitigation",
+    "description": "Higher-impact containment for suspected malware and command-and-control activity on EC2 instance i-99999999, combining isolation and evidence preservation.",
+    "actions": [
+      {
+        "action_id": "isolate_instance",
+        "targets": [
+          {
+            "type": "Instance",
+            "id": "i-99999999",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "create_snapshot",
+        "targets": [
+          {
+            "type": "Instance",
+            "id": "i-99999999",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "stop_instance",
+        "targets": [
+          {
+            "type": "Instance",
+            "id": "i-99999999",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "enable_vpc_flow_logs",
+        "targets": [
+          {
+            "type": "VPC",
+            "id": "vpc-generatedvpcid1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      }
+    ],
+    "requires_approval": true,
+    "expected_impact": "HIGH"
+  },
+  "alternative_playbooks": [
+    {
+      "level": 2,
+      "playbook_name": "Enhanced Monitoring Setup",
+      "description": "Lower-impact response to increase visibility and apply limited network containment for EC2 instance i-99999999 while preserving service continuity where possible.",
+      "actions": [
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_ip",
+          "targets": [
+            {
+              "type": "IP",
+              "id": "198.51.100.1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "MEDIUM",
+      "why_not_selected": "Deferred in favor of L3 execution path. (Finding type suggests active compromise/malware.)"
+    }
+  ],
+  "insufficient_context": false,
+  "missing_context_requests": [],
+  "status": "ok",
+  "selected_level": 3,
+  "route_reasons": [
+    "Finding type suggests active compromise/malware."
+  ],
+  "retrieved_count": 5,
+  "retrieved_clause_ids": [
+    "IVS-03",
+    "SEF-06",
+    "IVS-06",
+    "SEF-03",
+    "IVS-04"
+  ]
+}

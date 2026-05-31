@@ -1,0 +1,414 @@
+{
+  "schema_version": "1.3",
+  "generated_at": "2026-05-17T00:51:29.810593+00:00",
+  "incident_id": "745d3794539548f4b5ee38a25d36ef02",
+  "scenario": "CredentialCompromise",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Amazon S3 Server Access Logging was disabled for the S3 bucket GeneratedFindingS3Bucket.",
+    "severity": "9",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-northeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "escalation_assessment": {
+    "escalation_needed": true,
+    "recommended_level": 2,
+    "confidence": 0.87,
+    "decision_questions": [
+      "문제가 된 액세스 키 GeneratedFindingAccessKeyId 를 즉시 비활성화해도 현재 운영 서비스 영향이 허용됩니까?",
+      "영향 대상 버킷 GeneratedFindingS3Bucket 및 관련 버킷(example-bucket1, example-bucket2, example-bucket3, example-bucket4)에 대해 로깅 복구와 공개 접근 차단을 함께 진행할 승인이 있습니까?"
+    ],
+    "approval_notes": "Level 1 기본 대응은 이미 수행되었습니다. 추가 조치는 모두 승인형이며, Level 2는 자격증명 및 S3 로깅 복구 중심의 중간 영향 대응, Level 3는 IAM 엔터티 비활성화까지 포함한 고영향 봉쇄 대응입니다."
+  },
+  "reasoning_bullets": [
+    "GuardDuty finding indicates S3 server access logging was disabled, reducing audit visibility and requiring restoration of logging controls.",
+    "Incident resource type is AccessKey, so credential-focused containment is appropriate; EC2 containment actions are excluded.",
+    "Candidate actions and incident context support access key disablement, IAM policy restriction, S3 public access blocking, S3 logging enablement, and VPC flow log enablement where VPC IDs are present in the finding context.",
+    "Regulatory context emphasizes monitoring, alerting, log integrity, and preservation of auditability, supporting escalation beyond Level 1."
+  ],
+  "regulations": [
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-05",
+      "clause_title": "Audit Logs Monitoring and Response",
+      "relevance": 0.95,
+      "excerpt": "Rule: Monitor security audit logs to detect activity outside of typical or expected patterns. Establish and follow a defined process to review and take appropriate and timely actions on detected anomalies.",
+      "why_relevant": "S3 server access logging was disabled, which directly impairs audit log monitoring and requires timely review and response to the anomalous configuration change."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-03",
+      "clause_title": "Security Monitoring and Alerting",
+      "relevance": 0.91,
+      "excerpt": "Rule: Identify and monitor security-related events within applications and the underlying infrastructure. Define and implement a system to generate alerts to responsible stakeholders based on such events and corresponding metrics.",
+      "why_relevant": "The finding is a security-relevant infrastructure event and supports alerting, stakeholder notification, and monitored follow-up after the logging configuration change."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-11",
+      "clause_title": "Transaction/Activity Logging",
+      "relevance": 0.62,
+      "excerpt": "Rule: Log and monitor key lifecycle management events to enable auditing and reporting on usage of cryptographic keys.",
+      "why_relevant": "Although focused on cryptographic key lifecycle events, this clause still reinforces the broader need for auditable logging and evidence preservation when investigating credential-related misuse."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-09",
+      "clause_title": "Log Protection",
+      "relevance": 0.94,
+      "excerpt": "Rule: The information system protects audit records from unauthorized access, modification, and deletion.",
+      "why_relevant": "Disabling S3 server access logging undermines protection and availability of audit records, so restoring logging and restricting risky access are relevant containment measures."
+    },
+    {
+      "framework": "ISMS_P",
+      "clause_id": "ISMSP-4.2.3",
+      "clause_title": "로그 생성 및 보관",
+      "relevance": 0.96,
+      "excerpt": "Rule: 시스템 접근 및 보안 이벤트에 대한 로그를 생성하고, 일정 기간 동안 안전하게 보관해야 한다.",
+      "why_relevant": "The incident directly concerns loss of logging for security-relevant S3 activity, making log generation, retention, and integrity restoration highly relevant."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "level": 2,
+      "playbook_name": "Credential Containment",
+      "description": "Moderate-impact containment for the compromised credential and restoration of S3 logging visibility using allowed candidate actions.",
+      "actions": [
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "detach_admin_policies",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_s3_bucket_logging",
+          "targets": [
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_s3_public_access",
+          "targets": [
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "MEDIUM"
+    }
+  ],
+  "selected_playbook": {
+    "level": 2,
+    "playbook_name": "Credential Containment",
+    "description": "Moderate-impact containment for the compromised credential and restoration of S3 logging visibility using allowed candidate actions.",
+    "actions": [
+      {
+        "action_id": "disable_access_key",
+        "targets": [
+          {
+            "type": "AccessKey",
+            "id": "GeneratedFindingAccessKeyId",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "detach_admin_policies",
+        "targets": [
+          {
+            "type": "IAMUser",
+            "id": "GeneratedFindingUserName",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "enable_s3_bucket_logging",
+        "targets": [
+          {
+            "type": "S3Bucket",
+            "id": "example-bucket1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "block_s3_public_access",
+        "targets": [
+          {
+            "type": "S3Bucket",
+            "id": "example-bucket1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          },
+          {
+            "type": "S3Bucket",
+            "id": "example-bucket1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          },
+          {
+            "type": "S3Bucket",
+            "id": "example-bucket1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          },
+          {
+            "type": "S3Bucket",
+            "id": "example-bucket1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "enable_vpc_flow_logs",
+        "targets": [
+          {
+            "type": "VPC",
+            "id": "vpc-generatedvpcid1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      }
+    ],
+    "requires_approval": true,
+    "expected_impact": "MEDIUM"
+  },
+  "alternative_playbooks": [
+    {
+      "level": 3,
+      "playbook_name": "Network Isolation",
+      "description": "Higher-impact containment for suspected credential misuse with stronger IAM restriction and expanded monitoring restoration.",
+      "actions": [
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "disable_iam_entity",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "detach_admin_policies",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_ip",
+          "targets": [
+            {
+              "type": "IPAddress",
+              "id": "198.51.100.0",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_s3_bucket_logging",
+          "targets": [
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_s3_public_access",
+          "targets": [
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "S3Bucket",
+              "id": "example-bucket1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid2",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid3",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            },
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid4",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "HIGH",
+      "why_not_selected": "Not selected as primary response; router committed to L2. (AccessKey related event → credential misuse risk.)"
+    }
+  ],
+  "insufficient_context": false,
+  "missing_context_requests": [],
+  "status": "ok",
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "High severity (9.0) but no L3 triggers → prefer L2."
+  ],
+  "retrieved_count": 5,
+  "retrieved_clause_ids": [
+    "LOG-05",
+    "LOG-03",
+    "LOG-11",
+    "LOG-09",
+    "ISMSP-4.2.3"
+  ]
+}

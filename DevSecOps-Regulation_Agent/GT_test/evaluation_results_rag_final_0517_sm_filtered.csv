@@ -1,0 +1,15 @@
+sample_id,event_file,group,finding_type,gt_docs,pred_docs,gt_level,pred_level,recall@2,recall@5,MRR,nDCG@2,HN_Error@2,level_correct,excluded_from_sm_eval
+gd-ismsp241-iam-001-nat,sm_case01_2.4.1_1.json,sm,PrivilegeEscalation:IAMUser/AnomalousBehavior,"ISMSP-2.4.1,IAM-05,GRC-06","IAM-10,IAM-05,ISMSP-2.4.1,IAM-14,IAM-09",2,2,1.0,1.0,0.5,0.3869,0.0,1,False
+gd-ismsp242-iam-002-nat,sm_case02_2.4.2_2.json,sm,CredentialAccess:IAMUser/AnomalousBehavior,"ISMSP-2.4.2,IAM-16,SEF-06","IAM-14,IAM-09,IAM-16,ISMSP-2.4.2,IAM-05",2,1,0.0,1.0,0.3333,0.0,0.0,0,False
+gd-ismsp312-ec2-002-nat,sm_case03_3.1.1_1.json,sm,Execution:Runtime/SuspiciousCommand,"ISMSP-3.1.2,SEF-07,IVS-04","IVS-04,SEF-07,ISMSP-3.1.2,IVS-03,SEF-06",3,1,1.0,1.0,1.0,1.0,0.0,0,False
+gd-ismsp311-ec2-001-nat,sm_case04_3.1.1_2.json,sm,Behavior:EC2/NetworkPortUnusual,"ISMSP-3.1.1,SEF-06,GRC-06","SEF-06,ISMSP-3.1.1,IVS-03,IVS-09,ISMSP-3.1.2",2,2,1.0,1.0,1.0,1.0,0.0,1,False
+gd-ismsp312-ec2-002-nat,sm_case05_3.1.2_1.json,sm,Execution:Runtime/SuspiciousCommand,"ISMSP-3.1.2,SEF-07,IVS-04","IVS-04,SEF-07,ISMSP-3.1.2,IVS-03,SEF-03",3,2,1.0,1.0,1.0,1.0,0.0,0,False
+gd-ismsp423-s3-002-nat,sm_case06_4.2.3_1.json,sm,Stealth:S3/ServerAccessLoggingDisabled,"ISMSP-4.2.3,LOG-09,GRC-07","LOG-11,LOG-09,LOG-05,LOG-03,ISMSP-4.2.3",2,2,1.0,1.0,0.5,0.3869,0.0,1,False
+gd-ismsp423-log-001-nat,sm_case07_4.2.3_2.json,sm,Stealth:IAMUser/CloudTrailLoggingDisabled,"ISMSP-4.2.3,LOG-09,GRC-07","LOG-11,LOG-05,LOG-09,LOG-03,ISMSP-4.2.3",2,2,0.0,1.0,0.3333,0.0,0.0,1,False
+gd-ismsp424-iam-001-nat,sm_case09_4.2.4_2.json,sm,Discovery:IAMUser/AnomalousBehavior,"ISMSP-4.2.4,LOG-11,GRC-02","IVS-03,LOG-05,IAM-13,IVS-06,IAM-09",2,1,0.0,0.0,0.0,0.0,0.0,0,False
+gd-grc02-discovery-002-nat,sm_case11_grc02_2.json,sm,Discovery:IAMUser/AnomalousBehavior,"GRC-02,ISMSP-4.2.4,SEF-06","IVS-03,LOG-05,IAM-13,IVS-06,IAM-09",2,2,0.0,0.0,0.0,0.0,0.0,1,False
+gd-grc05-ec2-002-nat,sm_case12_grc05_1.json,sm,Behavior:EC2/TrafficVolumeUnusual,"GRC-05,SEF-06,IVS-09","IVS-03,SEF-06,IVS-09,IVS-06,SEF-03",2,2,1.0,1.0,0.5,0.3869,0.0,1,False
+gd-grc06-ec2-002-nat,sm_case14_grc06_1.json,sm,Backdoor:EC2/C&CActivity.B!DNS,"GRC-06,SEF-07,ISMSP-3.1.2","SEF-07,IVS-03,IVS-04,SEF-06,IVS-09",3,3,1.0,1.0,1.0,0.6131,0.0,1,False
+gd-grc06-ec2-001-nat,sm_case15_grc06_2.json,sm,Execution:Runtime/SuspiciousCommand,"GRC-06,SEF-07,ISMSP-3.1.2","IVS-04,SEF-07,ISMSP-3.1.2,IVS-03,SEF-03",3,2,1.0,1.0,0.5,0.3869,0.0,0,False
+gd-grc07-s3-002-nat,sm_case16_grc07_1.json,sm,Stealth:S3/ServerAccessLoggingDisabled,"GRC-07,ISMSP-4.2.3,LOG-11","LOG-11,LOG-09,LOG-05,LOG-03,ISMSP-4.2.3",2,2,1.0,1.0,1.0,0.6131,0.0,1,False
+gd-grc07-log-001-nat,sm_case17_grc07_2.json,sm,Stealth:IAMUser/CloudTrailLoggingDisabled,"GRC-07,ISMSP-4.2.3,LOG-09","LOG-11,LOG-05,LOG-09,LOG-03,ISMSP-4.2.3",2,2,0.0,1.0,0.3333,0.0,0.0,1,False

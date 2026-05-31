@@ -1,0 +1,26 @@
+[
+  {
+    "file": "951babc23a7e4bf79e5eb99b673c82c2.json",
+    "level": 2,
+    "regulations": [
+      "DSP-02",
+      "DSP-16",
+      "IAM-09",
+      "IVS-03",
+      "CEK-21"
+    ],
+    "playbook": "S3 Bucket Security Enhancement"
+  },
+  {
+    "file": "d1881b3da361450ba886f708b77a861b.json",
+    "level": 2,
+    "regulations": [
+      "DSP-02",
+      "DSP-16",
+      "IAM-09",
+      "IVS-03",
+      "CEK-21"
+    ],
+    "playbook": "S3 Bucket Security Enhancement"
+  }
+]

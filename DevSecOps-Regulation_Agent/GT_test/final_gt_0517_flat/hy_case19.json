@@ -1,0 +1,53 @@
+{
+  "sample_id": "gd-case19-backdoor-ec2-ccactivity-dns",
+  "finding_type": "Backdoor:EC2/C&CActivity.B!DNS",
+  "relevant_docs": [
+    {
+      "doc_id": "IVS-09",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-3.1.2",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IVS-03",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IVS-06",
+      "relevance": 1
+    },
+    {
+      "doc_id": "LOG-03",
+      "relevance": 1
+    },
+    {
+      "doc_id": "IVS-04",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": ["IAM-14", "IAM-05", "IAM-09", "IAM-12", "IAM-13"],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "IVS-09": 2,
+      "ISMSP-3.1.2": 2,
+      "IVS-03": 2,
+      "IVS-06": 1,
+      "LOG-03": 1,
+      "IVS-04": 1,
+      "IAM-14": 0,
+      "IAM-05": 0,
+      "IAM-09": 0,
+      "IAM-12": 0,
+      "IAM-13": 0
+    }
+  }
+}

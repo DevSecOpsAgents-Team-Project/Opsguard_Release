@@ -102,3 +102,4 @@ desktop.ini
 
 __pycache__/
 *.pyc
+DevSecOps-Regulation_Agent/test_*.py

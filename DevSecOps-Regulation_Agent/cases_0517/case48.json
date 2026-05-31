@@ -1,0 +1,49 @@
+{
+  "incident_id": "7a2c1efc6faf4e3e9122420cb8812375",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Discovery:S3/MaliciousIPCaller",
+    "severity": "8",
+    "resource": {
+      "type": "S3Bucket",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-southeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "entity_context": {
+    "iam_user_name": "GeneratedFindingUserName",
+    "access_key_id": "GeneratedFindingAccessKeyId",
+    "remote_ip": "198.51.100.0"
+  },
+  "runtime_result": {},
+  "raw_event": {
+    "id": "7a2c1efc6faf4e3e9122420cb8812375",
+    "region": "ap-southeast-2",
+    "account": "836347236184",
+    "detail": {
+      "type": "Discovery:S3/MaliciousIPCaller",
+      "severity": 8,
+      "resource": {
+        "resourceType": "S3Bucket",
+        "accessKeyDetails": {
+          "accessKeyId": "GeneratedFindingAccessKeyId",
+          "userName": "GeneratedFindingUserName"
+        }
+      },
+      "service": {
+        "action": {
+          "awsApiCallAction": {
+            "api": "GeneratedFindingAPIName",
+            "remoteIpDetails": {
+              "ipAddressV4": "198.51.100.0"
+            }
+          }
+        }
+      }
+    }
+  }
+}

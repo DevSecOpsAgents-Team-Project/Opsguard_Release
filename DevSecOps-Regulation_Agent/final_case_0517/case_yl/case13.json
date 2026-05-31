@@ -1,0 +1,389 @@
+{
+    "incident_id": "mock-eb-8a370454d6144251b21d2f37df0cc8e6",
+    "incident_summary": {
+        "source": "guardduty",
+        "title": "UnauthorizedAccess:EC2/SSHBruteForce",
+        "severity": "8",
+        "resource": {
+            "type": "Instance",
+            "id": "i-99999999",
+            "region": "ap-northeast-2",
+            "account_id": "836347236184"
+        }
+    },
+    "executed_level1_actions": [
+        "base_mitigation"
+    ],
+    "entity_context": {
+        "iam_user_name": "Unknown-User",
+        "access_key_id": "",
+        "remote_ip": "198.51.100.0"
+    },
+    "runtime_result": {
+        "status": "LEVEL1_ONLY",
+        "base_result": {
+            "status": "COMPLETED",
+            "finding_id": "mock-eb-8a370454d6144251b21d2f37df0cc8e6",
+            "extracted_resource": "i-99999999",
+            "extracted_user": "Unknown-User"
+        },
+        "key_signals": [
+            "ec2",
+            "unusual_port",
+            "suspicious_ip",
+            "network_connection",
+            "sshbruteforce",
+            "unauthorizedaccess"
+        ],
+        "tags": [
+            "network",
+            "instance",
+            "ec2",
+            "compute"
+        ],
+        "incident_id": "mock-eb-8a370454d6144251b21d2f37df0cc8e6"
+    },
+    "raw_event": {
+        "version": "0",
+        "id": "mock-eb-8a370454d6144251b21d2f37df0cc8e6",
+        "detail-type": "GuardDuty Finding",
+        "source": "aws.guardduty",
+        "account": "836347236184",
+        "time": "2026-03-07T12:18:47.920Z",
+        "region": "ap-northeast-2",
+        "resources": [],
+        "detail": {
+            "dry_run": true,
+            "accountId": "836347236184",
+            "arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/8a370454d6144251b21d2f37df0cc8e6",
+            "createdAt": "2026-03-07T12:18:47.920Z",
+            "id": "8a370454d6144251b21d2f37df0cc8e6",
+            "region": "ap-northeast-2",
+            "resource": {
+                "instanceDetails": {
+                    "availabilityZone": "generated-az-1a",
+                    "iamInstanceProfile": {
+                        "arn": "arn:aws:iam::836347236184:instance-profile/generated",
+                        "id": "GeneratedFindingInstanceProfileId"
+                    },
+                    "imageDescription": "GeneratedFindingInstanceImageDescription",
+                    "imageId": "ami-99999999",
+                    "instanceId": "i-99999999",
+                    "instanceState": "running",
+                    "instanceType": "m3.xlarge",
+                    "outpostArn": "arn:aws:outposts:us-west-2:123456789000:outpost/op-0fbc006e9abbc73c3",
+                    "launchTime": "2016-08-02T02:05:06.000Z",
+                    "networkInterfaces": [
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef00",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName1",
+                            "privateIpAddress": "10.0.0.1",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName1",
+                            "publicIp": "198.51.100.1",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId1",
+                            "vpcId": "vpc-generatedvpcid1"
+                        },
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef01",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName2",
+                            "privateIpAddress": "10.0.0.2",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName2",
+                            "publicIp": "198.51.100.2",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId2",
+                            "vpcId": "vpc-generatedvpcid2"
+                        },
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef02",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName3",
+                            "privateIpAddress": "10.0.0.3",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName3",
+                            "publicIp": "198.51.100.3",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId3",
+                            "vpcId": "vpc-generatedvpcid3"
+                        },
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef03",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName4",
+                            "privateIpAddress": "10.0.0.4",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName4",
+                            "publicIp": "198.51.100.4",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId4",
+                            "vpcId": "vpc-generatedvpcid4"
+                        }
+                    ],
+                    "productCodes": [
+                        {
+                            "code": "GeneratedFindingProductCodeId1",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId2",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId3",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId4",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId5",
+                            "productType": "marketplace"
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "key": "GeneratedFindingInstanceTag1",
+                            "value": "GeneratedFindingInstanceValue1"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag2",
+                            "value": "GeneratedFindingInstanceTagValue2"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag3",
+                            "value": "GeneratedFindingInstanceTagValue3"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag4",
+                            "value": "GeneratedFindingInstanceTagValue4"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag5",
+                            "value": "GeneratedFindingInstanceTagValue5"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag6",
+                            "value": "GeneratedFindingInstanceTagValue6"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag7",
+                            "value": "GeneratedFindingInstanceTagValue7"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag8",
+                            "value": "GeneratedFindingInstanceTagValue8"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag9",
+                            "value": "GeneratedFindingInstanceTagValue9"
+                        }
+                    ]
+                },
+                "resourceType": "Instance"
+            },
+            "schemaVersion": "2.0",
+            "severity": 8,
+            "type": "UnauthorizedAccess:EC2/SSHBruteForce",
+            "updatedAt": "2026-03-13T00:38:11.888Z",
+            "description": "198.51.100.0 is performing SSH brute force attacks against i-99999999. Brute force attacks are used to gain unauthorized access to your instance by guessing the SSH password.",
+            "partition": "aws",
+            "service": {
+                "action": {
+                    "actionType": "NETWORK_CONNECTION",
+                    "networkConnectionAction": {
+                        "blocked": false,
+                        "connectionDirection": "INBOUND",
+                        "localPortDetails": {
+                            "port": 22,
+                            "portName": "SSH"
+                        },
+                        "protocol": "TCP",
+                        "localIpDetails": {
+                            "ipAddressV4": "10.0.0.23",
+                            "ipAddressV6": "1234:5678:90ab:cdef:1234:5678:90ab:cde1"
+                        },
+                        "localNetworkInterface": "eni-abcdef00",
+                        "remoteIpDetails": {
+                            "city": {
+                                "cityName": "GeneratedFindingCityName"
+                            },
+                            "country": {
+                                "countryName": "GeneratedFindingCountryName"
+                            },
+                            "geoLocation": {
+                                "lat": 0,
+                                "lon": 0
+                            },
+                            "ipAddressV4": "198.51.100.0",
+                            "ipAddressV6": "1234:5678:90ab:cdef:1234:5678:90ab:cde0",
+                            "organization": {
+                                "asn": "-1",
+                                "asnOrg": "GeneratedFindingASNOrg",
+                                "isp": "GeneratedFindingISP",
+                                "org": "GeneratedFindingORG"
+                            }
+                        },
+                        "remotePortDetails": {
+                            "port": 32794,
+                            "portName": "Unknown"
+                        }
+                    }
+                },
+                "archived": false,
+                "count": 3,
+                "detectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+                "eventFirstSeen": "2026-03-07T12:18:47.000Z",
+                "eventLastSeen": "2026-03-13T00:38:11.000Z",
+                "resourceRole": "TARGET",
+                "serviceName": "guardduty",
+                "additionalInfo": {
+                    "value": "{\"sample\":true}",
+                    "type": "default"
+                }
+            },
+            "title": "198.51.100.0 is performing SSH brute force attacks against i-99999999."
+        },
+        "dry_run": true
+    }
+}

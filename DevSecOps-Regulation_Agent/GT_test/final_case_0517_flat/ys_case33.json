@@ -1,0 +1,69 @@
+{
+  "incident_id": "083125039b8a43c5937bd7685b6fd11d",
+
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Stealth:IAMUser/CloudTrailLoggingDisabled",
+    "severity": "2",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-southeast-2",
+      "account_id": "836347236184"
+    }
+  },
+
+  "executed_level1_actions": ["base_mitigation"],
+
+  "entity_context": {
+    "iam_user_name": "GeneratedFindingUserName",
+    "access_key_id": "GeneratedFindingAccessKeyId",
+    "remote_ip": "198.51.100.0"
+  },
+
+  "runtime_result": {
+    "base_result": {
+      "extracted_user": "GeneratedFindingUserName",
+      "extracted_resource": "GeneratedFindingAccessKeyId"
+    },
+    "key_signals": [
+      "cloudtrail disabled",
+      "logging disabled",
+      "audit logging failure",
+      "security monitoring gap"
+    ],
+    "tags": [
+      "guardduty",
+      "logging_failure",
+      "defense_evasion",
+      "audit_gap"
+    ]
+  },
+
+  "raw_event": {
+    "id": "083125039b8a43c5937bd7685b6fd11d",
+    "region": "ap-southeast-2",
+    "account": "836347236184",
+    "detail": {
+      "type": "Stealth:IAMUser/CloudTrailLoggingDisabled",
+      "severity": 2,
+      "resource": {
+        "resourceType": "AccessKey",
+        "accessKeyDetails": {
+          "accessKeyId": "GeneratedFindingAccessKeyId",
+          "userName": "GeneratedFindingUserName"
+        }
+      },
+      "service": {
+        "action": {
+          "awsApiCallAction": {
+            "api": "GeneratedFindingAPIName",
+            "remoteIpDetails": {
+              "ipAddressV4": "198.51.100.0"
+            }
+          }
+        }
+      }
+    }
+  }
+}

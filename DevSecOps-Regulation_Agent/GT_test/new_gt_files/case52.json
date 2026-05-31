@@ -1,0 +1,34 @@
+{
+  "sample_id": "gd-iam-instance-cred-exfil-inside-001",
+  "query": "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS | EC2 instance credential used from remote AWS account | cross-account credential misuse | unaffiliated account | resource:AccessKey | resource:EC2Instance | iam user | instance role | access key | api:GeneratedFindingAPIName | api:AccessDenied | remote ip | remote account unaffiliated | affected EC2 instance | multiple recent credentials | severity:8 | candidate_actions: 원본 EC2 인스턴스 격리 및 인스턴스 역할 임시 자격증명 즉시 무효화 | candidate_actions: 비계열 외부 계정(123456789012) 접근 경로 차단 및 SCP로 크로스 계정 제한 | candidate_actions: EC2 메타데이터 서버 IMDSv2 강제 적용 및 자격증명 탈취 경로 점검",
+  "finding_type": "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS",
+  "relevant_docs": [
+    {"doc_id": "ISMSP-3.1.2", "relevance": 2},
+    {"doc_id": "DSP-19", "relevance": 2},
+    {"doc_id": "IAM-10", "relevance": 2},
+    {"doc_id": "IVS-06", "relevance": 1}
+  ],
+  "hard_negatives": [
+    "DSP-02",
+    "CEK-06",
+    "GRC-07"
+  ],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 6
+  },
+  "grading": {
+    "relevance": {
+      "ISMSP-3.1.2": 2,
+      "DSP-19": 2,
+      "IAM-10": 2,
+      "IVS-06": 1,
+      "DSP-02": 0,
+      "CEK-06": 0,
+      "GRC-07": 0
+    }
+  }
+}

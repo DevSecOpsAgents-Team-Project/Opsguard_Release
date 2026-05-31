@@ -1,0 +1,34 @@
+{
+  "sample_id": "gd-iam-bedrock-logging-001",
+  "query": "DefenseEvasion:IAMUser/BedrockLoggingDisabled | bedrock logging disabled | model invocation log removed | cover tracks | resource:AccessKey | iam user | access key | api:GeneratedFindingAPIName | api:success | remote ip | severity:5 | candidate_actions: Bedrock 모델 호출 로깅 즉시 재활성화 | candidate_actions: 로깅 비활성화 시점 전후 모델 호출 이력 조사 | candidate_actions: 해당 IAM 사용자 Bedrock 관련 권한 검토 및 제한",
+  "finding_type": "DefenseEvasion:IAMUser/BedrockLoggingDisabled",
+  "relevant_docs": [
+    {"doc_id": "LOG-11", "relevance": 2},
+    {"doc_id": "LOG-09", "relevance": 2},
+    {"doc_id": "IAM-05", "relevance": 1},
+    {"doc_id": "ISMSP-4.2.3", "relevance": 1}
+  ],
+  "hard_negatives": [
+    "CEK-06",
+    "IVS-04",
+    "DSP-10"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 6
+  },
+  "grading": {
+    "relevance": {
+      "LOG-11": 2,
+      "LOG-09": 2,
+      "ISMSP-4.2.3": 2,
+      "IAM-05": 1,
+      "CEK-06": 0,
+      "IVS-04": 0,
+      "DSP-10": 0
+    }
+  }
+}

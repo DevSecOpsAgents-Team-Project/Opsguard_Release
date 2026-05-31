@@ -1,0 +1,38 @@
+{
+  "sample_id": "gd-grc02-discovery-002-nat",
+  "finding_type": "Discovery:IAMUser/AnomalousBehavior",
+  "relevant_docs": [
+    {
+      "doc_id": "GRC-02",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-4.2.4",
+      "relevance": 2
+    },
+    {
+      "doc_id": "SEF-06",
+      "relevance": 2
+    }
+  ],
+  "hard_negatives": [
+    "CEK-17",
+    "DSP-16"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "GRC-02": 2,
+      "ISMSP-4.2.4": 2,
+      "SEF-06": 2,
+      "CEK-17": 0,
+      "DSP-16": 0
+    }
+  }
+}

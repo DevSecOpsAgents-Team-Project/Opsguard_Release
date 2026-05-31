@@ -1,0 +1,43 @@
+{
+    "sample_id": "gd-iam-root-001-nat",
+    "query_type": "nat",
+    "queries": {
+        "nat": "Root 계정 자격증명 사용으로 API 호출이 발생한 경우 강력한 인증 적용과 특권 접근 제한을 통한 계정 보호 통제 대응",
+        "kwd": "root credential usage | privileged account | iam root | api call | authentication control | access restriction"
+    },
+    "finding_type": "Policy:IAMUser/RootCredentialUsage",
+    "relevant_docs": [
+        {
+            "doc_id": "IAM-14",
+            "relevance": 2
+        },
+        {
+            "doc_id": "IAM-10",
+            "relevance": 2
+        },
+        {
+            "doc_id": "ISMSP-2.4.2",
+            "relevance": 2
+        }
+    ],
+    "hard_negatives": [
+        "CEK-06",
+        "DSP-02"
+    ],
+    "expected": {
+        "selected_level": 2
+    },
+    "meta": {
+        "label_basis": "control_id",
+        "top_k": 6
+    },
+    "grading": {
+        "relevance": {
+            "IAM-14": 2,
+            "IAM-10": 2,
+            "ISMSP-2.4.2": 2,
+            "CEK-06": 0,
+            "DSP-02": 0
+        }
+    }
+}

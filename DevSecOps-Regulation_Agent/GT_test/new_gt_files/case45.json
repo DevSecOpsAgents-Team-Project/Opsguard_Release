@@ -1,0 +1,34 @@
+{
+  "sample_id": "gd-s3-bpa-disabled-001",
+  "query": "Policy:S3/BucketBlockPublicAccessDisabled | S3 block public access disabled bucket level | public exposure risk | configuration change | resource:AccessKey | resource:S3Bucket | iam user | access key | api:GeneratedFindingAPIName | remote ip | affected resource S3Bucket | severity:2 | block public access all false | s3 encryption SSEAlgorithm | candidate_actions: 비활성화된 버킷 수준 Block Public Access 즉시 재활성화 | candidate_actions: 버킷 ACL 및 버킷 정책 공개 허용 여부 점검 | candidate_actions: 해당 API 호출 IAM 사용자 설정 변경 권한 감사",
+  "finding_type": "Policy:S3/BucketBlockPublicAccessDisabled",
+  "relevant_docs": [
+    {"doc_id": "DSP-16", "relevance": 2},
+    {"doc_id": "DSP-17", "relevance": 2},
+    {"doc_id": "IAM-05", "relevance": 1},
+    {"doc_id": "LOG-11", "relevance": 1}
+  ],
+  "hard_negatives": [
+    "CEK-06",
+    "IVS-04",
+    "DSP-02"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 6
+  },
+  "grading": {
+    "relevance": {
+      "DSP-16": 2,
+      "DSP-17": 2,
+      "IAM-05": 1,
+      "LOG-11": 0,
+      "CEK-06": 0,
+      "IVS-04": 0,
+      "DSP-02": 0
+    }
+  }
+}

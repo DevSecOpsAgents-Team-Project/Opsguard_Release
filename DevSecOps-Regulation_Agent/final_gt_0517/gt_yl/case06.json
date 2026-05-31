@@ -1,0 +1,43 @@
+{
+    "sample_id": "gd-iam-cred-001-nat",
+    "query_type": "nat",
+    "queries": {
+        "nat": "IAM 자격증명 접근 이상행위로 비정상 API 호출 발생 시 강력한 인증 적용과 권한 검증을 통한 계정 보호 대응",
+        "kwd": "credential access | anomalous api call | iam user | credential misuse | authentication control | permission validation"
+    },
+    "finding_type": "CredentialAccess:IAMUser/AnomalousBehavior",
+    "relevant_docs": [
+        {
+            "doc_id": "IAM-14",
+            "relevance": 2
+        },
+        {
+            "doc_id": "IAM-16",
+            "relevance": 2
+        },
+        {
+            "doc_id": "ISMSP-2.4.2",
+            "relevance": 2
+        }
+    ],
+    "hard_negatives": [
+        "CEK-06",
+        "DSP-02"
+    ],
+    "expected": {
+        "selected_level": 2
+    },
+    "meta": {
+        "label_basis": "control_id",
+        "top_k": 6
+    },
+    "grading": {
+        "relevance": {
+            "IAM-14": 2,
+            "IAM-16": 2,
+            "ISMSP-2.4.2": 2,
+            "CEK-06": 0,
+            "DSP-02": 0
+        }
+    }
+}
