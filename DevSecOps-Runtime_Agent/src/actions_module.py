@@ -530,7 +530,7 @@ def notify_to_slack(message: str, incident_id: str = "UNKNOWN", dry_run: bool = 
 
     # Slack 메시지 구성 (Rich Format)
     payload = {
-        "text": f"🚨 *[Agent B] 보안 대응 알림*",
+        "text": f"🚨 *[OpsGuard AI Agent] 보안 사고 감지*",
         "attachments": [
             {
                 "color": "#ff0000",
@@ -538,7 +538,7 @@ def notify_to_slack(message: str, incident_id: str = "UNKNOWN", dry_run: bool = 
                     {"title": "Incident ID", "value": incident_id, "short": True},
                     {"title": "상세 내용", "value": message, "short": False}
                 ],
-                "footer": "Agent B Runtime Security",
+                "footer": "OpsGuard AI Security Agent",
                 "ts": int(datetime.datetime.utcnow().timestamp())
             }
         ]

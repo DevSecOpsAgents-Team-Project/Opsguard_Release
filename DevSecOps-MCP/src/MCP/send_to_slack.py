@@ -42,9 +42,9 @@ def send_finance_context_request(incident_id, summary_title, severity):
                 "action_id": "select_env",
                 "placeholder": {"type": "plain_text", "text": "선택하세요"},
                 "options": [
-                    {"text": {"type": "plain_text", "text": "Production"}, "value": "production"},
-                    {"text": {"type": "plain_text", "text": "Internal"}, "value": "internal"},
-                    {"text": {"type": "plain_text", "text": "Dev/Test"}, "value": "dev_test"}
+                    {"text": {"type": "plain_text", "text": "Production (운영)"}, "value": "production"},
+                    {"text": {"type": "plain_text", "text": "Staging (스테이징)"}, "value": "staging"},
+                    {"text": {"type": "plain_text", "text": "Dev/Test (개발/테스트)"}, "value": "dev_test"}
                 ]
             }
         },
