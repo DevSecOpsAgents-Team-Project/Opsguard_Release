@@ -41,6 +41,16 @@ class ActionDispatcher:
             action_id = action_plan.get("action_id")
             targets = action_plan.get("targets", [])
 
+            if not targets:
+                logger.warning("⚠️ targets 없음 — action_id=%s", action_id)
+                results.append({
+                    "action_id": action_id,
+                    "target_id": "N/A",
+                    "status": "FAILED",
+                    "error": "실행 대상(targets)이 없습니다.",
+                })
+                continue
+
             # 타겟이 여러 개일 수 있으므로 반복 처리
             for target in targets:
                 try:

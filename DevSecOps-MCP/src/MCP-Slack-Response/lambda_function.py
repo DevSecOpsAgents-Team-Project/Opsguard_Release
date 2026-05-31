@@ -9,8 +9,11 @@ import boto3
 
 from finance_bridge import (
     build_comparison_with_costs,
+    format_execution_result_slack_message,
+    format_regulation_xai_explanation,
     invoke_simulation_recommendation,
     norm_level,
+    parse_runtime_lambda_response,
     playbooks_for_slack_ui,
 )
 
@@ -163,6 +166,8 @@ def lambda_handler(event, context):
             if not reg_text:
                 reg_text = "매핑된 규제 근거 없음"
 
+            xai_text = format_regulation_xai_explanation(regulation_data)
+
             # Slack Block 조립
             blocks = [
                 {
@@ -192,11 +197,26 @@ def lambda_handler(event, context):
                     }
                 },
                 {"type": "divider"},
+            ]
+
+            if xai_text:
+                blocks.extend([
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*🧠 Regulation Agent (XAI) — 왜 L2/L3 플레이북을 제안했는가?*\n{xai_text}",
+                        },
+                    },
+                    {"type": "divider"},
+                ])
+
+            blocks.extend([
                 {
                     "type": "section",
                     "text": {"type": "mrkdwn", "text": "*🛠️ 추천 대응 방안 (실행할 조치를 선택하세요):*"}
                 }
-            ]
+            ])
 
             # Playbook 버튼 렌더링 (L2 + L3 후보)
             for pb in playbooks:
@@ -282,23 +302,45 @@ def lambda_handler(event, context):
 
             # 3. Runtime Lambda 호출 (엔진 핸들러)
             if not RUNTIME_ARN:
-                requests.post(response_url, json={"text": "⚠️ RUNTIME_ARN 환경변수가 설정되지 않아 조치를 실행할 수 없습니다."})
+                requests.post(response_url, json={
+                    "replace_original": True,
+                    "text": f"❌ *조치 실행 실패* (이벤트 ID: `{incident_id}`)\nRUNTIME_ARN 환경변수가 설정되지 않아 조치를 실행할 수 없습니다.",
+                })
                 return {"statusCode": 500, "body": "Missing RUNTIME_ARN"}
 
             try:
-                print(f"🚀 [Runtime Call] 조치 실행을 위해 Runtime 람다 호출 시작...")
-                # 💡 InvocationType="Event"를 사용하여 비동기로 호출합니다. (조치 실행이 3초 이상 걸릴 수 있으므로)
-                lambda_client.invoke(
+                print("🚀 [Runtime Call] 조치 실행을 위해 Runtime 람다 동기 호출 시작...")
+                runtime_resp = lambda_client.invoke(
                     FunctionName=RUNTIME_ARN,
-                    InvocationType="Event", 
-                    Payload=json.dumps(action_value).encode("utf-8")
+                    InvocationType="RequestResponse",
+                    Payload=json.dumps(action_value).encode("utf-8"),
                 )
+                if runtime_resp.get("FunctionError"):
+                    err_raw = runtime_resp["Payload"].read().decode("utf-8")
+                    print(f"Runtime Lambda FunctionError: {err_raw}")
+                    fail_msg = (
+                        f"❌ *조치 실행 실패* (이벤트 ID: `{incident_id}`)\n"
+                        f"Runtime Lambda 실행 중 오류가 발생했습니다.\n```{err_raw[:500]}```"
+                    )
+                    requests.post(response_url, json={"replace_original": True, "text": fail_msg})
+                    return {"statusCode": 500, "body": "Runtime FunctionError"}
+
+                runtime_result = parse_runtime_lambda_response(
+                    runtime_resp["Payload"].read().decode("utf-8")
+                )
+                print(f"📦 [Runtime] result: {json.dumps(runtime_result, ensure_ascii=False, default=str)}")
+                result_text = format_execution_result_slack_message(incident_id, runtime_result)
+                requests.post(response_url, json={"replace_original": True, "text": result_text})
             except Exception as e:
                 print(f"Runtime Lambda 호출 실패: {e}")
-                requests.post(response_url, json={"text": f"⚠️ Runtime 람다 호출 중 오류가 발생했습니다: {e}"})
+                fail_msg = (
+                    f"❌ *조치 실행 실패* (이벤트 ID: `{incident_id}`)\n"
+                    f"Runtime 람다 호출 중 오류가 발생했습니다: {e}"
+                )
+                requests.post(response_url, json={"replace_original": True, "text": fail_msg})
                 return {"statusCode": 500, "body": "Runtime Invoke Failed"}
 
-            return {"statusCode": 200, "body": "Action execution started"}
+            return {"statusCode": 200, "body": "Action execution complete"}
 
         # ==========================================
         # 3. 사용자가 전체 거절 버튼을 눌렀을 때

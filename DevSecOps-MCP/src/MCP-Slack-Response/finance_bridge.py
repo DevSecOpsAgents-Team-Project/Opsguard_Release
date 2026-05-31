@@ -324,3 +324,88 @@ def playbooks_for_slack_ui(comparison: Dict[str, Any]) -> List[Dict[str, Any]]:
         out.append(entry)
     out.sort(key=lambda x: norm_level(x.get("level")) or 99)
     return out
+
+
+def parse_runtime_lambda_response(raw: str) -> Dict[str, Any]:
+    """Runtime Lambda invoke Payload 파싱."""
+    parsed = json.loads(raw)
+    body = parsed.get("body", parsed)
+    if isinstance(body, str):
+        body = json.loads(body) if body.strip() else {}
+    if not isinstance(body, dict):
+        body = {"execution_success": False, "detail": raw}
+    return body
+
+
+def format_execution_result_slack_message(incident_id: str, runtime_result: Dict[str, Any]) -> str:
+    """Runtime 조치 결과를 Slack response_url용 텍스트로 변환."""
+    success = runtime_result.get("execution_success")
+    if success is None:
+        success = runtime_result.get("status") == "ACTION_EXECUTED"
+
+    detail = runtime_result.get("detail") or runtime_result.get("reason") or ""
+    if not detail and runtime_result.get("results"):
+        failed = [
+            r for r in runtime_result["results"]
+            if r.get("status") not in ("SUCCESS", "SKIPPED")
+        ]
+        if failed:
+            detail = "\n".join(
+                f"• `{r.get('action_id', '?')}` ({r.get('target_id', 'N/A')}): {r.get('status', 'UNKNOWN')}"
+                for r in failed
+            )
+    if not detail:
+        detail = "조치 실행 결과를 확인할 수 없습니다."
+
+    if success:
+        header = f"✅ *조치 실행 성공* (이벤트 ID: `{incident_id}`)"
+    else:
+        header = f"❌ *조치 실행 실패* (이벤트 ID: `{incident_id}`)"
+
+    return f"{header}\n{detail}"
+
+
+def format_regulation_xai_explanation(regulation: Dict[str, Any]) -> str:
+    """
+    Regulation Agent 결과에서 Slack에 표시할 XAI(설명 가능한 AI) 요약을 만듭니다.
+    reasoning_bullets, escalation_assessment, justification, regulations 필드를 활용합니다.
+    """
+    parts: List[str] = []
+
+    esc = regulation.get("escalation_assessment") or {}
+    if isinstance(esc, dict):
+        lvl = esc.get("recommended_level")
+        conf = esc.get("confidence")
+        notes = esc.get("approval_notes")
+        if lvl is not None:
+            parts.append(f"• *권장 대응 레벨:* Level {lvl}")
+        if conf is not None:
+            parts.append(f"• *판단 신뢰도:* {conf}")
+        if notes:
+            parts.append(f"• *에스컬레이션 근거:* {notes}")
+
+    justification = regulation.get("justification")
+    if isinstance(justification, str) and justification.strip():
+        parts.append(f"*XAI 종합 설명:*\n{justification.strip()[:1800]}")
+
+    bullets = regulation.get("reasoning_bullets") or []
+    if isinstance(bullets, list) and bullets:
+        parts.append("*추론 요약:*")
+        for bullet in bullets[:5]:
+            if bullet:
+                parts.append(f"  - {bullet}")
+
+    regs = regulation.get("regulations") or []
+    if isinstance(regs, list) and regs:
+        parts.append("*규제 매핑 (왜 이 조치인가):*")
+        for reg in regs[:4]:
+            if not isinstance(reg, dict):
+                continue
+            cid = reg.get("clause_id", "")
+            title = reg.get("clause_title", "")
+            why = reg.get("why_relevant") or reg.get("excerpt") or ""
+            if len(str(why)) > 160:
+                why = str(why)[:160] + "…"
+            parts.append(f"  - `{cid}` {title}: {why}")
+
+    return "\n".join(parts)

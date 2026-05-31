@@ -32,15 +32,36 @@ def _execute_approved_actions(event: Dict[str, Any]) -> Dict[str, Any]:
     """슬랙에서 승인된 L2/L3 액션들을 Dispatcher를 통해 동적으로 실행합니다."""
     incident_id = event.get("incident_id", "UNKNOWN")
     logger.info(f"🚀 [조치 실행] 슬랙 승인에 의한 L2/L3 조치 시작 (ID: {incident_id})")
-    
-    # 여기서 직접 실행하지 않고 dispatcher_module에 데이터(event)를 통째로 넘김
+
     dispatcher = ActionDispatcher(dry_run=False)
     execution_results = dispatcher.dispatch(event)
-        
+
+    ok_statuses = {"SUCCESS", "SKIPPED"}
+    failed = [r for r in execution_results if r.get("status") not in ok_statuses]
+    if not execution_results:
+        success = False
+        detail = "실행할 조치가 없거나 recommended_actions가 비어 있습니다."
+    elif failed:
+        success = False
+        detail_lines = [
+            f"• `{r.get('action_id', '?')}` ({r.get('target_id', 'N/A')}): {r.get('status', 'UNKNOWN')}"
+            + (f" — {r.get('error')}" if r.get("error") else "")
+            for r in failed
+        ]
+        detail = "다음 조치가 실패했습니다:\n" + "\n".join(detail_lines)
+    else:
+        success = True
+        detail = f"승인된 플레이북 조치 {len(execution_results)}건이 정상 처리되었습니다."
+
+    actions = Actions()
+    actions.notify_execution_result_to_slack(incident_id, success, detail)
+
     return {
-        "status": "ACTION_EXECUTED",
+        "status": "ACTION_EXECUTED" if success else "ACTION_PARTIAL_OR_FAILED",
         "incident_id": incident_id,
-        "results": execution_results
+        "execution_success": success,
+        "detail": detail,
+        "results": execution_results,
     }
 
 
@@ -90,8 +111,22 @@ def lambda_handler(event: Any, context: Any = None) -> Dict[str, Any]:
         # 🟢 [분기 1] 슬랙 버튼 승인을 통해 들어온 '조치 실행' 요청인지 확인
         # ==================================================================
         if "recommended_actions" in event:
-            # 슬랙에서 보낸 payload에는 'id'가 아니라 'incident_id'가 들어있음
-            return _execute_approved_actions(event) # (수정됨: actions 인자 제거)
+            try:
+                return _execute_approved_actions(event)
+            except Exception as e:
+                incident_id = event.get("incident_id", "UNKNOWN")
+                logger.exception("슬랙 승인 조치 실행 중 오류: %s", e)
+                actions = Actions()
+                actions.notify_execution_result_to_slack(
+                    incident_id, False, f"조치 실행 중 예외 발생: {e}"
+                )
+                return {
+                    "status": "error",
+                    "incident_id": incident_id,
+                    "execution_success": False,
+                    "detail": f"조치 실행 중 예외 발생: {e}",
+                    "reason": str(e),
+                }
 
         # ==================================================================
         # 🔵 [분기 2] GuardDuty에서 처음 들어온 이벤트 처리 (Level 1)
