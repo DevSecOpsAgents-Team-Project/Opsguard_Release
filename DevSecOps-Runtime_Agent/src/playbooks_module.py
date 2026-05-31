@@ -28,6 +28,57 @@ def find_key_recursive(data, target_key):
             if result: return result
     return None
 
+    # =========================================================
+# 🛠️ [Helper] GuardDuty 이벤트에서 자동으로 키워드 추출
+# =========================================================
+def extract_signals_and_tags_dynamically(detail: dict) -> tuple[list, list]:
+    key_signals = set()
+    tags = set()
+
+    # 1. Finding Type에서 추출 (예: "PrivilegeEscalation:IAMUser/AnomalousBehavior")
+    finding_type = detail.get("type") or detail.get("Type") or ""
+    if finding_type:
+        # ':' 와 '/' 로 문자열을 쪼개서 각각의 단어를 추출
+        parts = finding_type.replace(":", "/").split("/")
+        for part in parts:
+            if part.strip():
+                # 카멜케이스 단어를 그대로 소문자로 변환해 시그널로 추가
+                key_signals.add(part.strip().lower()) 
+
+    # 2. Resource Type에서 태그 추출 (예: "AccessKey", "Instance")
+    resource_type = find_key_recursive(detail, "resourceType")
+    if resource_type:
+        tags.add(str(resource_type).lower())
+
+    # 기본 카테고리 태그 자동 분류
+    finding_type_lower = finding_type.lower()
+    if "iam" in finding_type_lower or "accesskey" in str(resource_type).lower():
+        tags.update(["iam", "identity", "credential"])
+    elif "s3" in finding_type_lower or "bucket" in str(resource_type).lower():
+        tags.update(["s3", "storage"])
+    elif "ec2" in finding_type_lower or "instance" in str(resource_type).lower():
+        tags.update(["ec2", "compute", "network"])
+
+    # 3. Service/Action 에서 공격 상세 정보 추출
+    action_type = find_key_recursive(detail, "actionType")
+    if action_type:
+        key_signals.add(str(action_type).lower()) # 예: 'aws_api_call'
+
+    api_name = find_key_recursive(detail, "api")
+    if api_name:
+        key_signals.add(f"api_{str(api_name).lower()}") # 예: 'api_deleteaccountpasswordpolicy'
+
+    network_action = find_key_recursive(detail, "networkConnectionAction")
+    if network_action:
+        key_signals.update(["network_connection", "suspicious_ip"])
+        
+    port = find_key_recursive(detail, "localPortDetails")
+    if port:
+        key_signals.add("unusual_port")
+
+    # set을 list로 변환하여 반환
+    return list(key_signals), list(tags)
+
 # ==========================================
 # 🚨 시나리오 1: EC2 인스턴스 격리 플레이북
 # ==========================================
@@ -388,9 +439,17 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
     else:
         print(f"ℹ️ [SKIP] 정의되지 않은 리소스 타입이거나 테스트 샘플입니다. (Type: {resource_type})")
 
+    # =================================================================
+    # ★ 추가된 부분: GuardDuty 데이터에서 자동으로 힌트(키워드) 추출
+    # =================================================================
+    signals, generated_tags = extract_signals_and_tags_dynamically(detail)
+    # =================================================================
+
     return {
         "status": "COMPLETED",
         "finding_id": finding_id,
         "extracted_resource": resource_id,
-        "extracted_user": user_name
+        "extracted_user": user_name,
+        "key_signals": signals,         # 자동 추출된 시그널
+        "tags": generated_tags          # 자동 추출된 태그
     }

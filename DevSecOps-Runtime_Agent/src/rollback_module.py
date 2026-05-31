@@ -4,7 +4,7 @@ import boto3
 import json
 import os
 from typing import Dict, Any, Union
-import db_logger_module
+from . import db_logger_module
 
 # --- 1. 전역 설정 ---
 logger = logging.getLogger()

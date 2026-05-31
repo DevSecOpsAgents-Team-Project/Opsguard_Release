@@ -4,25 +4,21 @@ import json
 from typing import List, Dict, Any
 
 # 우리가 만든 모듈들 임포트
-import actions_module as actions
-import db_logger_module as db_logger
+from . import actions_module as actions
+from . import db_logger_module as db_logger
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# =========================================================
-# ⚙️ [설정] 인프라 관련 고정값 (환경변수 권장)
-# Regulation Agent가 몰라도 되는 인프라 ID들은 여기서 주입합니다.
-# =========================================================
 CONFIG = {
-    "WAF_IPSET_NAME": os.environ.get("WAF_IPSET_NAME", "OpsGuard-Block-IPSet"),
-    "WAF_IPSET_ID": os.environ.get("WAF_IPSET_ID", "657906ea-7bc5-4c48-b500-6b2686fdb9d2"),
-    "WAF_SCOPE": os.environ.get("WAF_SCOPE", "REGIONAL"),
+    "WAF_IPSET_NAME": os.environ.get("WAF_IPSET_NAME"),
+    "WAF_IPSET_ID": os.environ.get("WAF_IPSET_ID"),
+    "WAF_SCOPE": os.environ.get("WAF_SCOPE"),
     
-    "VPC_FLOW_LOG_GROUP": os.environ.get("VPC_FLOW_LOG_GROUP", "/aws/vpc/flowlogs"),
-    "VPC_FLOW_ROLE_ARN": os.environ.get("VPC_FLOW_ROLE_ARN", "arn:aws:iam::836347236184:role/AgentB-FlowLog-Role"),
+    "VPC_FLOW_LOG_GROUP": os.environ.get("VPC_FLOW_LOG_GROUP"),
+    "VPC_FLOW_ROLE_ARN": os.environ.get("VPC_FLOW_ROLE_ARN"),
     
-    "DEFAULT_S3_LOG_BUCKET": os.environ.get("DEFAULT_S3_LOG_BUCKET", "mcp-security-logs-bucket")
+    "DEFAULT_S3_LOG_BUCKET": os.environ.get("DEFAULT_S3_LOG_BUCKET")
 }
 
 class ActionDispatcher:

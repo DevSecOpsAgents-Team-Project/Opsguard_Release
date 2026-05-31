@@ -1,0 +1,326 @@
+"""
+Regulation Agent 1.3 JSON → 신 Finance Agent comparison + Lambda invoke helpers.
+"""
+
+from __future__ import annotations
+
+import json
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+# Finance policy/playbook_resource_defaults.json 과 동일한 resource_change (MCP 번들용)
+PLAYBOOK_RESOURCE_CHANGE: Dict[str, Dict[str, float]] = {
+    "playbook_ec2_isolate": {
+        "cloudwatch_log_gb_per_day": 2,
+        "s3_storage_gb": 10,
+        "nat_egress_gb": 5,
+        "snapshot_gb": 30,
+    },
+    "playbook_s3_public_access": {
+        "cloudwatch_log_gb_per_day": 1,
+        "s3_storage_gb": 5,
+        "nat_egress_gb": 0,
+        "snapshot_gb": 0,
+    },
+    "playbook_iam_abuse_response": {
+        "cloudwatch_log_gb_per_day": 0.5,
+        "s3_storage_gb": 0,
+        "nat_egress_gb": 0,
+        "snapshot_gb": 0,
+    },
+    "playbook_ec2_investigation_logging": {
+        "cloudwatch_log_gb_per_day": 3,
+        "s3_storage_gb": 15,
+        "nat_egress_gb": 2,
+        "snapshot_gb": 30,
+    },
+    "playbook_integrated_base_mitigation": {
+        "cloudwatch_log_gb_per_day": 2,
+        "s3_storage_gb": 20,
+        "nat_egress_gb": 3,
+        "snapshot_gb": 25,
+    },
+}
+
+PLAYBOOK_NAME_TO_DEFAULTS_KEY: Dict[str, str] = {
+    "Credential Containment": "playbook_iam_abuse_response",
+    "Access Review and Remediation": "playbook_integrated_base_mitigation",
+    "Network Isolation": "playbook_ec2_isolate",
+    "Network Isolation and Mitigation": "playbook_integrated_base_mitigation",
+    "S3 Bucket Security Enhancement": "playbook_s3_public_access",
+    "Data Compliance Review": "playbook_integrated_base_mitigation",
+    "Enhanced Monitoring Setup": "playbook_s3_public_access",
+    "Threat Containment and Eradication": "playbook_ec2_isolate",
+    "Data Flow Restrictions": "playbook_s3_public_access",
+    "Incident Isolation and Forensics": "playbook_ec2_investigation_logging",
+    "Targeted Containment": "playbook_iam_abuse_response",
+    "Expanded Isolation and Review": "playbook_integrated_base_mitigation",
+    "계정 권한 제한 및 관찰": "playbook_iam_abuse_response",
+    "강력한 격리 및 계정 삭제": "playbook_integrated_base_mitigation",
+    "로그 보존 및 접근 제한": "playbook_s3_public_access",
+    "리소스 격리 및 포렌식 수집": "playbook_ec2_investigation_logging",
+    "즉시 격리 및 증거 확보": "playbook_ec2_isolate",
+}
+
+ACTION_SIGNATURE_TO_DEFAULTS_KEY: List[Tuple[Set[str], str]] = [
+    ({"isolate_instance", "create_snapshot"}, "playbook_ec2_isolate"),
+    ({"block_s3_public_access", "enable_s3_bucket_logging"}, "playbook_s3_public_access"),
+    ({"disable_access_key", "block_ip"}, "playbook_iam_abuse_response"),
+    ({"disable_access_key", "disable_iam_entity", "detach_admin_policies"}, "playbook_iam_abuse_response"),
+    ({"create_snapshot", "tag_resource_with_incident"}, "playbook_ec2_investigation_logging"),
+    (
+        {"detach_admin_policies", "enable_s3_bucket_logging", "create_snapshot"},
+        "playbook_integrated_base_mitigation",
+    ),
+]
+
+
+def norm_level(lv: Any) -> Optional[int]:
+    if lv is None or isinstance(lv, bool):
+        return None
+    try:
+        n = int(float(lv))
+    except (TypeError, ValueError):
+        return None
+    return n if n in (2, 3) else None
+
+
+def _extract_action_ids(playbook: Dict[str, Any]) -> Set[str]:
+    ids: Set[str] = set()
+    actions = playbook.get("actions")
+    if isinstance(actions, list):
+        for a in actions:
+            if isinstance(a, dict):
+                aid = a.get("action_id")
+                if isinstance(aid, str) and aid.strip():
+                    ids.add(aid.strip())
+    elif isinstance(playbook.get("action_id"), str):
+        ids.add(playbook["action_id"].strip())
+    return ids
+
+
+def infer_defaults_key(playbook: Dict[str, Any]) -> Optional[str]:
+    name = str(playbook.get("playbook_name") or "").strip()
+    if name:
+        key = PLAYBOOK_NAME_TO_DEFAULTS_KEY.get(name)
+        if key:
+            return key
+    action_ids = _extract_action_ids(playbook)
+    if not action_ids:
+        return None
+    for signature, defaults_key in ACTION_SIGNATURE_TO_DEFAULTS_KEY:
+        if signature.issubset(action_ids):
+            return defaults_key
+    return None
+
+
+def collect_playbook_candidates(regulation: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Regulation 1.3: recommended_actions + alternative_playbooks + selected_playbook → L2/L3 후보."""
+    seen: Set[Tuple[int, str]] = set()
+    out: List[Dict[str, Any]] = []
+
+    def add(pb: Any) -> None:
+        if not isinstance(pb, dict):
+            return
+        lvl = norm_level(pb.get("level"))
+        if lvl not in (2, 3):
+            return
+        name = str(pb.get("playbook_name") or f"Level {lvl}")
+        key = (lvl, name)
+        if key in seen:
+            return
+        seen.add(key)
+        out.append(pb)
+
+    for pb in regulation.get("recommended_actions") or []:
+        add(pb)
+    for pb in regulation.get("alternative_playbooks") or []:
+        add(pb)
+    sp = regulation.get("selected_playbook")
+    if isinstance(sp, dict):
+        add(sp)
+
+    out.sort(key=lambda x: norm_level(x.get("level")) or 99)
+    return out
+
+
+def _region_from_regulation(regulation: Dict[str, Any]) -> str:
+    try:
+        resource = (regulation.get("incident_summary") or {}).get("resource") or {}
+        region = resource.get("region")
+        if isinstance(region, str) and region.strip():
+            return region.strip()
+    except Exception:
+        pass
+    return "ap-northeast-2"
+
+
+def parse_finance_lambda_response(raw: str) -> Tuple[int, Dict[str, Any]]:
+    parsed = json.loads(raw)
+    status = int(parsed.get("statusCode", 200))
+    body = parsed.get("body", parsed)
+    if isinstance(body, str):
+        body = json.loads(body) if body.strip() else {}
+    if not isinstance(body, dict):
+        body = {"error": raw}
+    return status, body
+
+
+def invoke_finance_run(
+    lambda_client: Any,
+    finance_arn: str,
+    *,
+    incident_id: str,
+    region: str,
+    resource_change: Dict[str, float],
+    policy_version: str = "v1.0.0",
+) -> Dict[str, Any]:
+    payload = {
+        "action": "finance_run",
+        "request": {
+            "schema_version": "1.0",
+            "incident_id": incident_id,
+            "policy_version": policy_version,
+            "assumptions": {
+                "duration_hours": 720,
+                "traffic_multiplier": 1.0,
+                "region": region,
+                "service_tier": "S1",
+                "org_profile": "Standard",
+            },
+            "resource_change": resource_change,
+        },
+    }
+    resp = lambda_client.invoke(
+        FunctionName=finance_arn,
+        InvocationType="RequestResponse",
+        Payload=json.dumps(payload).encode("utf-8"),
+    )
+    status, body = parse_finance_lambda_response(resp["Payload"].read().decode("utf-8"))
+    if status != 200 or body.get("error"):
+        err = body.get("error", body)
+        raise RuntimeError(f"finance_run failed: {err}")
+    return body
+
+
+def build_comparison_with_costs(
+    lambda_client: Any,
+    finance_arn: str,
+    regulation: Dict[str, Any],
+    incident_id: str,
+    *,
+    policy_version: str = "v1.0.0",
+) -> Dict[str, Any]:
+    """
+    Regulation 후보 플레이북마다 finance_run 호출 후 comparison.playbooks 구성.
+    """
+    candidates = collect_playbook_candidates(regulation)
+    levels = {norm_level(pb.get("level")) for pb in candidates}
+    if 2 not in levels or 3 not in levels:
+        raise ValueError(
+            "Regulation 결과에 Level 2·3 플레이북 후보가 모두 필요합니다. "
+            f"(현재 levels={sorted(x for x in levels if x is not None)}). "
+            "alternative_playbooks 와 recommended_actions 를 확인하세요."
+        )
+
+    region = _region_from_regulation(regulation)
+    summary = regulation.get("incident_summary") or {}
+    title = summary.get("title") or regulation.get("scenario") or "Unknown"
+
+    playbooks_out: List[Dict[str, Any]] = []
+    for pb in candidates:
+        lvl = norm_level(pb.get("level"))
+        if lvl is None:
+            continue
+        defaults_key = infer_defaults_key(pb)
+        if not defaults_key:
+            raise ValueError(
+                f"Level {lvl} 플레이북 '{pb.get('playbook_name')}' 의 비용 프로필을 추론할 수 없습니다. "
+                f"action_ids={sorted(_extract_action_ids(pb))}"
+            )
+        resource_change = PLAYBOOK_RESOURCE_CHANGE.get(defaults_key)
+        if not resource_change:
+            raise ValueError(f"Unknown defaults key: {defaults_key}")
+
+        fin_result = invoke_finance_run(
+            lambda_client,
+            finance_arn,
+            incident_id=incident_id,
+            region=region,
+            resource_change=resource_change,
+            policy_version=policy_version,
+        )
+        cost = (fin_result.get("cost_summary") or {}).get("estimated_monthly_cost")
+
+        playbooks_out.append(
+            {
+                "level": lvl,
+                "playbook_name": pb.get("playbook_name") or f"Level {lvl}",
+                "cost_summary": {"estimated_monthly_cost": cost},
+                "expected_impact": pb.get("expected_impact") or "MEDIUM",
+                "_regulation_playbook": pb,
+            }
+        )
+
+    return {
+        "incident_id": incident_id,
+        "event_summary": title,
+        "playbook_scenario": regulation.get("scenario", ""),
+        "playbooks": playbooks_out,
+    }
+
+
+def invoke_simulation_recommendation(
+    lambda_client: Any,
+    finance_arn: str,
+    comparison: Dict[str, Any],
+    user_response: Dict[str, str],
+) -> Dict[str, Any]:
+    payload = {
+        "action": "get_simulation_recommendation",
+        "comparison": {
+            "incident_id": comparison.get("incident_id"),
+            "event_summary": comparison.get("event_summary"),
+            "playbook_scenario": comparison.get("playbook_scenario"),
+            "playbooks": [
+                {
+                    "level": p["level"],
+                    "playbook_name": p["playbook_name"],
+                    "cost_summary": p.get("cost_summary"),
+                    "expected_impact": p.get("expected_impact"),
+                }
+                for p in comparison.get("playbooks") or []
+            ],
+        },
+        "user_response": user_response,
+    }
+    resp = lambda_client.invoke(
+        FunctionName=finance_arn,
+        InvocationType="RequestResponse",
+        Payload=json.dumps(payload).encode("utf-8"),
+    )
+    status, body = parse_finance_lambda_response(resp["Payload"].read().decode("utf-8"))
+    if status != 200 or body.get("error"):
+        err = body.get("error", body)
+        raise RuntimeError(f"get_simulation_recommendation failed: {err}")
+    return body
+
+
+def playbooks_for_slack_ui(comparison: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Slack 버튼용: regulation 원본 플레이북 + 비용."""
+    out = []
+    for p in comparison.get("playbooks") or []:
+        reg_pb = p.get("_regulation_playbook")
+        if isinstance(reg_pb, dict):
+            entry = dict(reg_pb)
+        else:
+            entry = {
+                "level": p.get("level"),
+                "playbook_name": p.get("playbook_name"),
+                "actions": [],
+                "expected_impact": p.get("expected_impact"),
+            }
+        cost = (p.get("cost_summary") or {}).get("estimated_monthly_cost")
+        entry["_estimated_monthly_cost"] = cost
+        out.append(entry)
+    out.sort(key=lambda x: norm_level(x.get("level")) or 99)
+    return out

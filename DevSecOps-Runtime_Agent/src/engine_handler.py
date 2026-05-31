@@ -2,6 +2,7 @@
 import json
 import logging
 from typing import Any, Dict
+from .dispatcher_module import ActionDispatcher
 
 # playbook 함수 직접 import (필수)
 from .playbooks_module import (
@@ -26,6 +27,21 @@ PLAYBOOK_MAP = {
     "IAM_PERMISSION_ABUSE": playbook_iam_abuse_response, # 새로운 IAM 플레이북 매핑
     "EC2_INVESTIGATION_LOGGING": playbook_ec2_investigation_logging,
 }
+
+def _execute_approved_actions(event: Dict[str, Any]) -> Dict[str, Any]:
+    """슬랙에서 승인된 L2/L3 액션들을 Dispatcher를 통해 동적으로 실행합니다."""
+    incident_id = event.get("incident_id", "UNKNOWN")
+    logger.info(f"🚀 [조치 실행] 슬랙 승인에 의한 L2/L3 조치 시작 (ID: {incident_id})")
+    
+    # 여기서 직접 실행하지 않고 dispatcher_module에 데이터(event)를 통째로 넘김
+    dispatcher = ActionDispatcher(dry_run=False)
+    execution_results = dispatcher.dispatch(event)
+        
+    return {
+        "status": "ACTION_EXECUTED",
+        "incident_id": incident_id,
+        "results": execution_results
+    }
 
 
 def _detect_scenario(event: Dict[str, Any]) -> str:
@@ -71,18 +87,44 @@ def lambda_handler(event: Any, context: Any = None) -> Dict[str, Any]:
         actions = Actions()
 
         # ==================================================================
-        # 🆕 [추가] Base Mitigation: 무조건 먼저 실행
+        # 🟢 [분기 1] 슬랙 버튼 승인을 통해 들어온 '조치 실행' 요청인지 확인
         # ==================================================================
+        if "recommended_actions" in event:
+            # 슬랙에서 보낸 payload에는 'id'가 아니라 'incident_id'가 들어있음
+            return _execute_approved_actions(event) # (수정됨: actions 인자 제거)
+
+        # ==================================================================
+        # 🔵 [분기 2] GuardDuty에서 처음 들어온 이벤트 처리 (Level 1)
+        # ==================================================================
+        incident_id = event.get("id", "UNKNOWN")
         base_result = None
+        key_signals = [] # 분리할 변수 미리 선언
+        tags = []        # 분리할 변수 미리 선언
+
         try:
             logger.info(f"🛡️ [Base Mitigation] 공통 대응 시작 (ID: {incident_id})")
             base_result = playbook_integrated_base_mitigation(event, actions=actions)
+
+            # --- 💡 핵심 수정 부분: base_result에서 데이터 분리하기 ---
+            if isinstance(base_result, dict):
+                # .pop()을 사용하면 base_result 안에서는 해당 키가 삭제되고 값만 빠져나옵니다.
+                key_signals = base_result.pop("key_signals", [])
+                tags = base_result.pop("tags", [])
+            # ----------------------------------------------------
+
             logger.info("✅ [Base Mitigation] 공통 대응 완료")
         except Exception as e:
             logger.error(f"❌ [Base Mitigation] 실패 (계속 진행함): {e}")
             base_result = {"status": "error", "error": str(e)}
-        # ==================================================================
-
+            
+        # 🎯 현재 모드: 처음 들어온 GuardDuty 로그는 여기서 Level 1만 실행하고 MCP로 넘김
+        return {
+            "status": "LEVEL1_ONLY",
+            "base_result": base_result,
+            "key_signals": key_signals,   # 팀원이 요청한 대로 1 Depth에 배치!
+            "tags": tags,                 # 팀원이 요청한 대로 1 Depth에 배치!
+            "incident_id": incident_id
+        }
         
         scenario_key = _detect_scenario(event)
 
