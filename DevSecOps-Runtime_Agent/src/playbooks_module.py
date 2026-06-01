@@ -2,8 +2,9 @@
 import uuid
 import logging
 import traceback
-from .actions_module import Actions, build_response, DEFAULT_S3_LOG_BUCKET
+from .actions_module import Actions, build_response
 from . import db_logger_module
+from .guardduty_context import is_instance_role_credential_finding
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -229,6 +230,22 @@ def playbook_iam_abuse_response(event: dict, actions=None):
             logger.warning(f"IAM User Name을 찾을 수 없어 대응을 건너뜁니다. ID: {incident_id}")
             return {"status": "SKIPPED", "reason": "User Name Not Found", "incident_id": incident_id}
 
+        finding_type = details.get("type") or details.get("Type") or ""
+        if is_instance_role_credential_finding(details, finding_type):
+            instance_id = find_key_recursive(details, "instanceId")
+            logger.warning(
+                "Instance role credential finding — IAM User 차단 스킵 (instance=%s, role=%s)",
+                instance_id,
+                user_name,
+            )
+            return {
+                "status": "SKIPPED",
+                "reason": "Instance role credential; use EC2 isolation playbook",
+                "incident_id": incident_id,
+                "role_name": user_name,
+                "instance_id": instance_id,
+            }
+
         iam_block_result = actions.disable_iam_entity(user_name, incident_id)
         db_logger_module.log_action(incident_id, iam_block_result, "IAM_PERMISSION_ABUSE")
 
@@ -370,9 +387,9 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
             resource_id = instance_id
             resource_type = "EC2"
 
-    # [D] IAM 리소스 보정 (중요!)
-    # IAM 관련 사고인데 resource_id를 못 찾았다면, 사용자 이름이 곧 대상 리소스임
-    if "IAM" in finding_type or "Backdoor" in finding_type: # Backdoor:IAMUser 등
+    # [D] IAM 리소스 보정 (Instance role credential 은 EC2 대상 유지)
+    instance_role_cred = is_instance_role_credential_finding(detail, finding_type)
+    if not instance_role_cred and ("IAM" in finding_type or "Backdoor" in finding_type):
         if not resource_id and user_name != "Unknown-User":
             resource_id = user_name
             resource_type = "IAM"
@@ -380,11 +397,15 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
     # 값 보정 (여전히 없으면)
     resource_id = resource_id if resource_id else "UNKNOWN-RES"
 
+    role_label = f"{user_name} (instance role)" if instance_role_cred and user_name != "Unknown-User" else user_name
+
     print(f"\n🔍 [SOC-REPORT]")
     print(f" - 사고 유형: {finding_type}")
     print(f" - 위험도: {severity}")
-    print(f" - 대상 사용자: {user_name}")
+    print(f" - 대상 사용자: {role_label}")
     print(f" - 대상 리소스: {resource_id} (타입: {resource_type})")
+    if instance_role_cred:
+        print(f" - 참고: InstanceCredentialExfiltration — IAM User API 대신 EC2 대응")
 
     # --- 대응 단계 (Actions) ---
 
@@ -394,14 +415,14 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
         f"- 유형: `{finding_type}`\n"
         f"- 심각도(Severity): `{severity}`\n"
         f"- 대상: `{resource_id}`\n"
-        f"- 사용자: `{user_name}`"
+        f"- 사용자/역할: `{role_label}`"
     )
     actions.notify_to_slack(slack_msg, finding_id)
 
     # [Step 2] 사고 유형별 맞춤 대응
 
-    # CASE A: IAM 권한 남용 (타입이 IAM이거나, 사용자가 식별된 경우)
-    if resource_type == "IAM" or "IAM" in finding_type:
+    # CASE A: IAM User 권한 남용 (Instance role credential 은 제외)
+    if not instance_role_cred and (resource_type == "IAM" or "IAM" in finding_type):
         if user_name != "Unknown-User":
             print(f"⚙️ [IAM-ACTION] 사용자 '{user_name}' 격리 로직 실행")
             
@@ -425,17 +446,15 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
             db_logger_module.log_action(finding_id, tag_res, "BASE_MITIGATION")
 
             # 2. 로깅 활성화
-            result = actions.enable_s3_bucket_logging(
-                resource_id,
-                DEFAULT_S3_LOG_BUCKET,
-                finding_id,
-            )
+            result = actions.enable_s3_bucket_logging(resource_id, "agentb-logging-bucket", finding_id)
             db_logger_module.log_action(finding_id, result, "BASE_MITIGATION")
         else:
              print(f"⚠️ [S3-SKIP] 버킷 이름을 식별할 수 없어 대응 중단.")
 
-    # CASE C: EC2 런타임 위협
-    elif resource_type == "EC2" or (resource_id.startswith("i-") and resource_id != "i-99999999"):
+    # CASE C: EC2 런타임 / Instance role credential 유출
+    elif instance_role_cred or resource_type == "EC2" or (
+        resource_id.startswith("i-") and resource_id != "i-99999999"
+    ):
         print(f"⚙️ [EC2-ACTION] 인스턴스 '{resource_id}' 증거 보존 및 태깅")
         
         # 1. 태깅

@@ -713,6 +713,18 @@ def tag_resource_with_incident(resource_id: str, incident_id: str, resource_type
             return build_response("tag_resource_with_incident", incident_id, "RETRY",
                                 details={"error": code})
 
+        if code == "NoSuchEntity" and resource_type in ["IAM", "IAMUser", "AccessKey", "User"]:
+            return build_response(
+                action_name,
+                incident_id,
+                "SKIPPED",
+                details={
+                    "error": str(e),
+                    "reason": "IAM User not found — use EC2 tagging for instance role credential findings",
+                    "resource_id": resource_id,
+                },
+            )
+
         logger.error(f"tag_resource_with_incident 오류: {e}")
         return build_response("tag_resource_with_incident", incident_id, "FAILED",
                             details={"error": str(e)})
@@ -850,7 +862,19 @@ def enable_bucket_logging(
 def disable_access_key(user_name: str, access_key_id: str, incident_id: str, dry_run=False):
     """
     특정 IAM User의 Access Key를 Inactive로 비활성화합니다.
+    (ASIA/AROA 임시 키·Instance role credential 은 대상 아님)
     """
+    if access_key_id and str(access_key_id).startswith(("ASIA", "AROA")):
+        return build_response(
+            "disable_access_key",
+            incident_id,
+            "SKIPPED",
+            details={
+                "reason": "Temporary/session access keys cannot be disabled via IAM User API",
+                "access_key_id": access_key_id,
+            },
+        )
+
     iam = boto3.client("iam")
 
     try:
@@ -882,6 +906,18 @@ def disable_access_key(user_name: str, access_key_id: str, incident_id: str, dry
         if code in ("Throttling", "RequestLimitExceeded"):
             return build_response("disable_access_key", incident_id, "RETRY",
                                 details={"error": code})
+
+        if code == "NoSuchEntity":
+            return build_response(
+                "disable_access_key",
+                incident_id,
+                "SKIPPED",
+                details={
+                    "error": str(e),
+                    "reason": "IAM User not found — target may be an instance role or invalid user_name",
+                    "user_name": user_name,
+                },
+            )
 
         logger.error(f"disable_access_key 오류: {e}")
         return build_response("disable_access_key", incident_id, "FAILED",
@@ -935,6 +971,18 @@ def detach_admin_policies(user_name: str, incident_id: str, dry_run=False):
         if code in ("Throttling", "RequestLimitExceeded"):
             return build_response("detach_admin_policies", incident_id, "RETRY",
                                 details={"error": code})
+
+        if code == "NoSuchEntity":
+            return build_response(
+                "detach_admin_policies",
+                incident_id,
+                "SKIPPED",
+                details={
+                    "error": str(e),
+                    "reason": "IAM User not found — target may be an instance role",
+                    "user_name": user_name,
+                },
+            )
 
         logger.error(f"detach_admin_policies 오류: {e}")
         return build_response("detach_admin_policies", incident_id, "FAILED",
