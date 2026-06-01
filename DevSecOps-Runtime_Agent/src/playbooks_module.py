@@ -2,7 +2,7 @@
 import uuid
 import logging
 import traceback
-from .actions_module import Actions, build_response
+from .actions_module import Actions, build_response, DEFAULT_S3_LOG_BUCKET
 from . import db_logger_module
 
 logger = logging.getLogger()
@@ -425,7 +425,11 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
             db_logger_module.log_action(finding_id, tag_res, "BASE_MITIGATION")
 
             # 2. 로깅 활성화
-            result = actions.enable_s3_bucket_logging(resource_id, "agentb-logging-bucket", finding_id)
+            result = actions.enable_s3_bucket_logging(
+                resource_id,
+                DEFAULT_S3_LOG_BUCKET,
+                finding_id,
+            )
             db_logger_module.log_action(finding_id, result, "BASE_MITIGATION")
         else:
              print(f"⚠️ [S3-SKIP] 버킷 이름을 식별할 수 없어 대응 중단.")

@@ -1,7 +1,7 @@
 import logging
 import os
 import json
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 # 우리가 만든 모듈들 임포트
 from . import actions_module as actions
@@ -9,36 +9,6 @@ from . import db_logger_module as db_logger
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-_IAM_CREDENTIAL_PREFIXES = ("AKIA", "ASIA", "AROA", "AIDA")
-
-
-def _resolve_iam_user_name(target: Dict[str, Any]) -> Optional[str]:
-    """target.user_name 우선, 없으면 IAMUser id(액세스키 ID 제외) 사용."""
-    for key in ("user_name", "userName"):
-        val = target.get(key)
-        if val and str(val).strip():
-            return str(val).strip()
-    tid = target.get("id")
-    if tid and str(tid).strip():
-        tid_str = str(tid).strip()
-        if not tid_str.startswith(_IAM_CREDENTIAL_PREFIXES):
-            return tid_str
-    return None
-
-
-def _iam_target_missing_response(action_id: str, incident_id: str) -> Dict[str, Any]:
-    return {
-        "action_name": action_id,
-        "incident_id": incident_id,
-        "status": "FAILED",
-        "details": {
-            "error": (
-                "IAM user_name이 없어 실행할 수 없습니다. "
-                "GuardDuty finding의 accessKeyDetails.userName 또는 target.id(IAM 사용자명)가 필요합니다."
-            )
-        },
-    }
 
 CONFIG = {
     "WAF_IPSET_NAME": os.environ.get("WAF_IPSET_NAME"),
@@ -50,6 +20,99 @@ CONFIG = {
     
     "DEFAULT_S3_LOG_BUCKET": os.environ.get("DEFAULT_S3_LOG_BUCKET")
 }
+
+IAM_ACTIONS = {
+    "disable_access_key",
+    "disable_iam_entity",
+    "detach_admin_policies"
+}
+
+INVALID_IAM_USERS = {
+    None,
+    "",
+    "Root",
+    "root",
+    "Unknown",
+    "Unknown-User",
+    "UNKNOWN",
+}
+
+INVALID_RESOURCE_IDS = {
+    None,
+    "",
+    "UNKNOWN-RES",
+    "Unknown-Resource",
+    "unknown-resource",
+    "N/A",
+    "UNKNOWN",
+}
+
+# STS 임시 키(Role/연동 세션). iam:UpdateAccessKey 대상이 아님.
+ASIA_ACCESS_KEY_SKIP_REASON = (
+    "STS 임시 자격 증명(ASIA 접두사)은 iam:UpdateAccessKey로 비활성화할 수 없습니다. "
+    "EC2 Role 세션 등 임시 credentials이므로 EC2 격리, IP 차단 등 다른 조치를 사용하세요."
+)
+
+# GuardDuty 샘플·Regulation LLM 플레이스홀더 버킷명
+PLACEHOLDER_S3_BUCKET_PREFIXES = (
+    "example-bucket",
+    "example_bucket",
+    "generatedfinding",
+)
+
+PLACEHOLDER_S3_BUCKET_SKIP_REASON = (
+    "버킷 이름이 GuardDuty 샘플/플레이스홀더(example-bucket*, GeneratedFinding* 등)입니다. "
+    "finding에 실제 S3 리소스가 없으면 이 조치를 건너뜁니다."
+)
+
+
+def _is_blank(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str) and not value.strip():
+        return True
+    return False
+
+
+def build_skipped(action_id: str, incident_id: str, reason: str):
+    logger.warning("[SKIP] %s: %s", action_id, reason)
+    return actions.build_response(
+        action_id,
+        incident_id,
+        "SKIPPED",
+        details={"reason": reason},
+    )
+
+
+def _skip_if_blank(
+    action_id: str,
+    incident_id: str,
+    value: Any,
+    field_label: str,
+):
+    if _is_blank(value):
+        return build_skipped(action_id, incident_id, f"{field_label}이(가) 없습니다.")
+    return None
+
+
+def _is_placeholder_s3_bucket(bucket_name: Any) -> bool:
+    if _is_blank(bucket_name):
+        return False
+    normalized = str(bucket_name).strip().lower()
+    if normalized in INVALID_RESOURCE_IDS:
+        return True
+    return any(normalized.startswith(prefix) for prefix in PLACEHOLDER_S3_BUCKET_PREFIXES)
+
+
+def _skip_if_placeholder_s3_bucket(
+    action_id: str,
+    incident_id: str,
+    bucket_name: Any,
+):
+    if _is_placeholder_s3_bucket(bucket_name):
+        return build_skipped(action_id, incident_id, PLACEHOLDER_S3_BUCKET_SKIP_REASON)
+    return None
+
 
 class ActionDispatcher:
     def __init__(self, dry_run=False):
@@ -91,13 +154,19 @@ class ActionDispatcher:
                     log_res = db_logger.log_action(incident_id, result, scenario)
                     
                     # 결과 수집 (API 응답용)
-                    results.append({
+                    result_entry = {
                         "action_id": action_id,
-                        "target_id": target.get("id"),
+                        "target_id": target.get("id") or target.get("access_key_id"),
                         "status": result.get("status"),
                         "log_status": log_res.get("status"),
-                        "error": (result.get("details") or {}).get("error"),
-                    })
+                    }
+                    if result.get("status") == "SKIPPED":
+                        result_entry["skip_reason"] = (result.get("details") or {}).get("reason")
+                    elif result.get("status") not in ("SUCCESS",):
+                        result_entry["error"] = (result.get("details") or {}).get(
+                            "error"
+                        ) or (result.get("details") or {}).get("reason")
+                    results.append(result_entry)
 
                 except Exception as e:
                     logger.error(f"❌ Action 실행 중 치명적 오류 ({action_id}): {e}")
@@ -113,38 +182,66 @@ class ActionDispatcher:
         """
         Action ID에 따라 JSON 타겟 정보를 actions_module 함수의 인자로 변환(Mapping)하여 호출합니다.
         """
-        
+
+        # IAM 액션은 실제 IAM User가 있을 때만 실행
+        if action_id in IAM_ACTIONS:
+            user_name = target.get("user_name")
+
+            if user_name in INVALID_IAM_USERS:
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"IAM User가 아니거나 user_name이 없습니다: {user_name}",
+                )
+
+            if action_id == "disable_access_key":
+                access_key_id = target.get("id") or target.get("access_key_id")
+
+                if _is_blank(access_key_id):
+                    return build_skipped(
+                        action_id,
+                        incident_id,
+                        "disable_access_key 실행에 필요한 access_key_id가 없습니다.",
+                    )
+
+                if str(access_key_id).startswith(("i-", "vpc-", "sg-", "subnet-")):
+                    return build_skipped(
+                        action_id,
+                        incident_id,
+                        f"access_key_id가 아닌 리소스 ID가 전달되었습니다: {access_key_id}",
+                    )
+
+                if str(access_key_id).upper().startswith("ASIA"):
+                    return build_skipped(
+                        action_id,
+                        incident_id,
+                        ASIA_ACCESS_KEY_SKIP_REASON,
+                    )
+
         # -------------------------------------------------------
         # 1. [IAM] 자격 증명 관련 액션
         # -------------------------------------------------------
         if action_id == "disable_access_key":
-            user_name = _resolve_iam_user_name(target)
-            access_key_id = target.get("id")
-            if not user_name or not access_key_id:
-                return _iam_target_missing_response(action_id, incident_id)
+            # 필요 인자: user_name, access_key_id
             return actions.disable_access_key(
-                user_name=user_name,
-                access_key_id=access_key_id,
+                user_name=target.get("user_name"),  # JSON 필드 매핑
+                access_key_id=target.get("id") or target.get("access_key_id"),    # JSON 필드 매핑
                 incident_id=incident_id,
                 dry_run=self.dry_run
             )
 
         elif action_id == "disable_iam_entity":
-            user_name = _resolve_iam_user_name(target)
-            if not user_name:
-                return _iam_target_missing_response(action_id, incident_id)
+            # 필요 인자: user_name
             return actions.disable_iam_entity(
-                user_name=user_name,
+                user_name=target.get("user_name"),
                 incident_id=incident_id,
                 dry_run=self.dry_run
             )
 
         elif action_id == "detach_admin_policies":
-            user_name = _resolve_iam_user_name(target)
-            if not user_name:
-                return _iam_target_missing_response(action_id, incident_id)
+            # 필요 인자: user_name
             return actions.detach_admin_policies(
-                user_name=user_name,
+                user_name=target.get("user_name"),
                 incident_id=incident_id,
                 dry_run=self.dry_run
             )
@@ -153,82 +250,189 @@ class ActionDispatcher:
         # 2. [EC2] 인스턴스 관련 액션
         # -------------------------------------------------------
         elif action_id == "isolate_instance":
-            # 필요 인자: instance_id
+            instance_id = target.get("id")
+            skipped = _skip_if_blank(action_id, incident_id, instance_id, "instance_id")
+            if skipped:
+                return skipped
+            if not str(instance_id).startswith("i-"):
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"EC2 instance_id 형식이 아닙니다: {instance_id}",
+                )
             return actions.isolate_instance(
-                instance_id=target.get("id"),
+                instance_id=instance_id,
                 incident_id=incident_id,
-                dry_run=self.dry_run
+                dry_run=self.dry_run,
             )
 
         elif action_id == "stop_instance":
+            instance_id = target.get("id")
+            skipped = _skip_if_blank(action_id, incident_id, instance_id, "instance_id")
+            if skipped:
+                return skipped
+            if not str(instance_id).startswith("i-"):
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"EC2 instance_id 형식이 아닙니다: {instance_id}",
+                )
             return actions.stop_instance(
-                instance_id=target.get("id"),
+                instance_id=instance_id,
                 incident_id=incident_id,
-                dry_run=self.dry_run
+                dry_run=self.dry_run,
             )
 
         elif action_id == "create_snapshot":
+            instance_id = target.get("id")
+            skipped = _skip_if_blank(action_id, incident_id, instance_id, "instance_id")
+            if skipped:
+                return skipped
+            if not str(instance_id).startswith("i-"):
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"EC2 instance_id 형식이 아닙니다: {instance_id}",
+                )
             return actions.create_snapshot(
-                instance_id=target.get("id"),
+                instance_id=instance_id,
                 incident_id=incident_id,
-                dry_run=self.dry_run
+                dry_run=self.dry_run,
             )
-            
+
         elif action_id == "backup_instance":
+            instance_id = target.get("id")
+            skipped = _skip_if_blank(action_id, incident_id, instance_id, "instance_id")
+            if skipped:
+                return skipped
+            if not str(instance_id).startswith("i-"):
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"EC2 instance_id 형식이 아닙니다: {instance_id}",
+                )
             return actions.backup_instance(
-                instance_id=target.get("id"),
+                instance_id=instance_id,
                 incident_id=incident_id,
-                dry_run=self.dry_run
+                dry_run=self.dry_run,
             )
 
         # -------------------------------------------------------
         # 3. [Network / WAF] IP 차단
         # -------------------------------------------------------
         elif action_id == "block_ip":
-            # JSON에 ip 필드가 없으면 id 필드를 ip로 간주
             ip_addr = target.get("ip") or target.get("id")
-            
-            # WAF 관련 설정은 환경변수(CONFIG)에서 주입
+            skipped = _skip_if_blank(action_id, incident_id, ip_addr, "source_ip")
+            if skipped:
+                return skipped
+
+            missing_waf = [
+                name
+                for name, val in (
+                    ("WAF_IPSET_ID", CONFIG["WAF_IPSET_ID"]),
+                    ("WAF_IPSET_NAME", CONFIG["WAF_IPSET_NAME"]),
+                    ("WAF_SCOPE", CONFIG["WAF_SCOPE"]),
+                )
+                if _is_blank(val)
+            ]
+            if missing_waf:
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"WAF 환경변수가 설정되지 않았습니다: {', '.join(missing_waf)}",
+                )
+
             return actions.block_ip(
                 source_ip=ip_addr,
                 incident_id=incident_id,
                 ipset_id=CONFIG["WAF_IPSET_ID"],
                 ipset_name=CONFIG["WAF_IPSET_NAME"],
                 scope=CONFIG["WAF_SCOPE"],
-                dry_run=self.dry_run
+                dry_run=self.dry_run,
             )
 
         # -------------------------------------------------------
         # 4. [S3] 버킷 보안
         # -------------------------------------------------------
         elif action_id == "block_s3_public_access":
+            bucket_name = target.get("id")
+            skipped = _skip_if_blank(action_id, incident_id, bucket_name, "bucket_name")
+            if skipped:
+                return skipped
+            skipped = _skip_if_placeholder_s3_bucket(action_id, incident_id, bucket_name)
+            if skipped:
+                return skipped
             return actions.block_s3_public_access(
-                bucket_name=target.get("id"),
+                bucket_name=bucket_name,
                 incident_id=incident_id,
-                dry_run=self.dry_run
+                dry_run=self.dry_run,
             )
 
         elif action_id == "enable_s3_bucket_logging":
-            # 타겟 버킷이 JSON에 없으면 기본값 사용
-            tgt_bucket = target.get("target_bucket", CONFIG["DEFAULT_S3_LOG_BUCKET"])
-            
+            bucket_name = target.get("id")
+            skipped = _skip_if_blank(action_id, incident_id, bucket_name, "bucket_name")
+            if skipped:
+                return skipped
+            skipped = _skip_if_placeholder_s3_bucket(action_id, incident_id, bucket_name)
+            if skipped:
+                return skipped
+
+            explicit_tgt_bucket = target.get("target_bucket")
+            if explicit_tgt_bucket:
+                skipped = _skip_if_placeholder_s3_bucket(
+                    action_id, incident_id, explicit_tgt_bucket
+                )
+                if skipped:
+                    return skipped
+
+            tgt_bucket = explicit_tgt_bucket or CONFIG["DEFAULT_S3_LOG_BUCKET"]
+            skipped = _skip_if_blank(action_id, incident_id, tgt_bucket, "target_bucket")
+            if skipped:
+                return skipped
+
             return actions.enable_s3_bucket_logging(
-                bucket_name=target.get("id"),
+                bucket_name=bucket_name,
                 target_bucket=tgt_bucket,
                 incident_id=incident_id,
-                dry_run=self.dry_run
+                dry_run=self.dry_run,
             )
 
         # -------------------------------------------------------
         # 5. [Network] VPC Flow Log
         # -------------------------------------------------------
         elif action_id == "enable_vpc_flow_logs":
+            vpc_id = target.get("id")
+            skipped = _skip_if_blank(action_id, incident_id, vpc_id, "vpc_id")
+            if skipped:
+                return skipped
+            if not str(vpc_id).startswith("vpc-"):
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"VPC ID 형식이 아닙니다: {vpc_id}",
+                )
+
+            missing_vpc_flow = [
+                name
+                for name, val in (
+                    ("VPC_FLOW_LOG_GROUP", CONFIG["VPC_FLOW_LOG_GROUP"]),
+                    ("VPC_FLOW_ROLE_ARN", CONFIG["VPC_FLOW_ROLE_ARN"]),
+                )
+                if _is_blank(val)
+            ]
+            if missing_vpc_flow:
+                return build_skipped(
+                    action_id,
+                    incident_id,
+                    f"VPC Flow Log 환경변수가 설정되지 않았습니다: {', '.join(missing_vpc_flow)}",
+                )
+
             return actions.enable_vpc_flow_logs(
-                vpc_id=target.get("id"),
+                vpc_id=vpc_id,
                 incident_id=incident_id,
-                log_group_name=CONFIG["VPC_FLOW_LOG_GROUP"], # 인프라 설정값 주입
-                iam_role_arn=CONFIG["VPC_FLOW_ROLE_ARN"],    # 인프라 설정값 주입
-                dry_run=self.dry_run
+                log_group_name=CONFIG["VPC_FLOW_LOG_GROUP"],
+                iam_role_arn=CONFIG["VPC_FLOW_ROLE_ARN"],
+                dry_run=self.dry_run,
             )
 
         # -------------------------------------------------------

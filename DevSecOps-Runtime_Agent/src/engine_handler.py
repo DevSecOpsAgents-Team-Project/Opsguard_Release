@@ -28,6 +28,56 @@ PLAYBOOK_MAP = {
     "EC2_INVESTIGATION_LOGGING": playbook_ec2_investigation_logging,
 }
 
+def _format_action_result_line(result: Dict[str, Any]) -> str:
+    action_id = result.get("action_id", "?")
+    target_id = result.get("target_id", "N/A")
+    status = result.get("status", "UNKNOWN")
+    line = f"• `{action_id}` ({target_id}): {status}"
+    if status == "SKIPPED":
+        reason = result.get("skip_reason")
+        if reason:
+            line += f" — {reason}"
+    elif result.get("error"):
+        line += f" — {result['error']}"
+    return line
+
+
+def _build_execution_slack_detail(execution_results: list) -> tuple:
+    """조치 실행 결과 목록으로 Slack 상세 문구와 성공 여부를 만듭니다."""
+    if not execution_results:
+        return False, "실행할 조치가 없거나 recommended_actions가 비어 있습니다."
+
+    ok_statuses = {"SUCCESS", "SKIPPED"}
+    failed = [r for r in execution_results if r.get("status") not in ok_statuses]
+    succeeded = [r for r in execution_results if r.get("status") == "SUCCESS"]
+    skipped = [r for r in execution_results if r.get("status") == "SKIPPED"]
+
+    if failed:
+        lines = [_format_action_result_line(r) for r in failed]
+        if skipped:
+            lines.append("")
+            lines.append("*건너뛴 조치:*")
+            lines.extend(_format_action_result_line(r) for r in skipped)
+        if succeeded:
+            lines.append("")
+            lines.append("*완료된 조치:*")
+            lines.extend(_format_action_result_line(r) for r in succeeded)
+        return False, "다음 조치가 실패했습니다:\n" + "\n".join(lines)
+
+    if skipped and not succeeded:
+        lines = [_format_action_result_line(r) for r in skipped]
+        return True, (
+            "실행 가능한 IAM User 장기 키 조치가 없어 다음 항목을 건너뛰었습니다:\n"
+            + "\n".join(lines)
+        )
+
+    if skipped and succeeded:
+        lines = [_format_action_result_line(r) for r in succeeded + skipped]
+        return True, "조치 결과:\n" + "\n".join(lines)
+
+    return True, f"승인된 플레이북 조치 {len(execution_results)}건이 정상 처리되었습니다."
+
+
 def _execute_approved_actions(event: Dict[str, Any]) -> Dict[str, Any]:
     """슬랙에서 승인된 L2/L3 액션들을 Dispatcher를 통해 동적으로 실행합니다."""
     incident_id = event.get("incident_id", "UNKNOWN")
@@ -36,22 +86,7 @@ def _execute_approved_actions(event: Dict[str, Any]) -> Dict[str, Any]:
     dispatcher = ActionDispatcher(dry_run=False)
     execution_results = dispatcher.dispatch(event)
 
-    ok_statuses = {"SUCCESS", "SKIPPED"}
-    failed = [r for r in execution_results if r.get("status") not in ok_statuses]
-    if not execution_results:
-        success = False
-        detail = "실행할 조치가 없거나 recommended_actions가 비어 있습니다."
-    elif failed:
-        success = False
-        detail_lines = [
-            f"• `{r.get('action_id', '?')}` ({r.get('target_id', 'N/A')}): {r.get('status', 'UNKNOWN')}"
-            + (f" — {r.get('error')}" if r.get("error") else "")
-            for r in failed
-        ]
-        detail = "다음 조치가 실패했습니다:\n" + "\n".join(detail_lines)
-    else:
-        success = True
-        detail = f"승인된 플레이북 조치 {len(execution_results)}건이 정상 처리되었습니다."
+    success, detail = _build_execution_slack_detail(execution_results)
 
     actions = Actions()
     actions.notify_execution_result_to_slack(incident_id, success, detail)
