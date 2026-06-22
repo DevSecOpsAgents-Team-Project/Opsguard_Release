@@ -1,0 +1,627 @@
+{
+    "incident_id": "mock-eb-745d3794539548f4b5ee38a25d36ef02",
+    "incident_summary": {
+        "source": "guardduty",
+        "title": "Stealth:S3/ServerAccessLoggingDisabled",
+        "severity": "8",
+        "resource": {
+            "type": "AccessKey",
+            "id": "GeneratedFindingAccessKeyId",
+            "region": "ap-northeast-2",
+            "account_id": "836347236184"
+        }
+    },
+    "executed_level1_actions": [
+        "base_mitigation"
+    ],
+    "entity_context": {
+        "iam_user_name": "GeneratedFindingUserName",
+        "access_key_id": "GeneratedFindingAccessKeyId",
+        "remote_ip": "198.51.100.0"
+    },
+    "runtime_result": {
+        "status": "LEVEL1_ONLY",
+        "base_result": {
+            "status": "COMPLETED",
+            "finding_id": "mock-eb-745d3794539548f4b5ee38a25d36ef02",
+            "extracted_resource": "example-bucket1",
+            "extracted_user": "GeneratedFindingUserName"
+        },
+        "key_signals": [
+            "serveraccessloggingdisabled",
+            "api_generatedfindingapiname",
+            "s3",
+            "stealth",
+            "aws_api_call"
+        ],
+        "tags": [
+            "identity",
+            "credential",
+            "accesskey",
+            "iam"
+        ],
+        "incident_id": "mock-eb-745d3794539548f4b5ee38a25d36ef02"
+    },
+    "raw_event": {
+        "version": "0",
+        "id": "mock-eb-745d3794539548f4b5ee38a25d36ef02",
+        "detail-type": "GuardDuty Finding",
+        "source": "aws.guardduty",
+        "account": "836347236184",
+        "time": "2026-03-07T12:18:48.137Z",
+        "region": "ap-northeast-2",
+        "resources": [],
+        "detail": {
+            "dry_run": true,
+            "accountId": "836347236184",
+            "arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/745d3794539548f4b5ee38a25d36ef02",
+            "createdAt": "2026-03-07T12:18:48.137Z",
+            "id": "745d3794539548f4b5ee38a25d36ef02",
+            "region": "ap-northeast-2",
+            "resource": {
+                "accessKeyDetails": {
+                    "accessKeyId": "GeneratedFindingAccessKeyId",
+                    "principalId": "GeneratedFindingPrincipalId",
+                    "userName": "GeneratedFindingUserName",
+                    "userType": "IAMUser"
+                },
+                "s3BucketDetails": [
+                    {
+                        "arn": "arn:aws:s3:::example-bucket1",
+                        "name": "example-bucket1",
+                        "type": "Destination",
+                        "createdAt": "2017-12-18T15:58:11.551Z",
+                        "owner": {
+                            "id": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456781"
+                        },
+                        "tags": [
+                            {
+                                "key": "GeneratedFindingS3Tag1",
+                                "value": "GeneratedFindingS3TagValue1"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag2",
+                                "value": "GeneratedFindingS3TagValue2"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag3",
+                                "value": "GeneratedFindingS3TagValue3"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag4",
+                                "value": "bGeneratedFindingS3TagValue4"
+                            }
+                        ],
+                        "defaultServerSideEncryption": {
+                            "encryptionType": "SSEAlgorithm",
+                            "kmsMasterKeyArn": "arn:aws:kms:us-west-2:123456789012:key/abcd1234-5678-90ab-cdef-1234567890a1"
+                        },
+                        "publicAccess": {
+                            "permissionConfiguration": {
+                                "bucketLevelPermissions": {
+                                    "accessControlList": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "bucketPolicy": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                },
+                                "accountLevelPermissions": {
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                }
+                            },
+                            "effectivePermission": "NOT_PUBLIC"
+                        }
+                    },
+                    {
+                        "arn": "arn:aws:s3:::example-bucket2",
+                        "name": "example-bucket2",
+                        "type": "Destination",
+                        "createdAt": "2017-12-18T15:58:11.551Z",
+                        "owner": {
+                            "id": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456782"
+                        },
+                        "tags": [
+                            {
+                                "key": "GeneratedFindingS3Tag1",
+                                "value": "GeneratedFindingS3TagValue1"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag2",
+                                "value": "GeneratedFindingS3TagValue2"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag3",
+                                "value": "GeneratedFindingS3TagValue3"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag4",
+                                "value": "bGeneratedFindingS3TagValue4"
+                            }
+                        ],
+                        "defaultServerSideEncryption": {
+                            "encryptionType": "SSEAlgorithm",
+                            "kmsMasterKeyArn": "arn:aws:kms:us-west-2:123456789012:key/abcd1234-5678-90ab-cdef-1234567890a2"
+                        },
+                        "publicAccess": {
+                            "permissionConfiguration": {
+                                "bucketLevelPermissions": {
+                                    "accessControlList": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "bucketPolicy": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                },
+                                "accountLevelPermissions": {
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                }
+                            },
+                            "effectivePermission": "NOT_PUBLIC"
+                        }
+                    },
+                    {
+                        "arn": "arn:aws:s3:::example-bucket3",
+                        "name": "example-bucket3",
+                        "type": "Destination",
+                        "createdAt": "2017-12-18T15:58:11.551Z",
+                        "owner": {
+                            "id": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456783"
+                        },
+                        "tags": [
+                            {
+                                "key": "GeneratedFindingS3Tag1",
+                                "value": "GeneratedFindingS3TagValue1"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag2",
+                                "value": "GeneratedFindingS3TagValue2"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag3",
+                                "value": "GeneratedFindingS3TagValue3"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag4",
+                                "value": "bGeneratedFindingS3TagValue4"
+                            }
+                        ],
+                        "defaultServerSideEncryption": {
+                            "encryptionType": "SSEAlgorithm",
+                            "kmsMasterKeyArn": "arn:aws:kms:us-west-2:123456789012:key/abcd1234-5678-90ab-cdef-1234567890a3"
+                        },
+                        "publicAccess": {
+                            "permissionConfiguration": {
+                                "bucketLevelPermissions": {
+                                    "accessControlList": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "bucketPolicy": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                },
+                                "accountLevelPermissions": {
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                }
+                            },
+                            "effectivePermission": "NOT_PUBLIC"
+                        }
+                    },
+                    {
+                        "arn": "arn:aws:s3:::example-bucket4",
+                        "name": "example-bucket4",
+                        "type": "Destination",
+                        "createdAt": "2017-12-18T15:58:11.551Z",
+                        "owner": {
+                            "id": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456784"
+                        },
+                        "tags": [
+                            {
+                                "key": "GeneratedFindingS3Tag1",
+                                "value": "GeneratedFindingS3TagValue1"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag2",
+                                "value": "GeneratedFindingS3TagValue2"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag3",
+                                "value": "GeneratedFindingS3TagValue3"
+                            },
+                            {
+                                "key": "GeneratedFindingS3Tag4",
+                                "value": "bGeneratedFindingS3TagValue4"
+                            }
+                        ],
+                        "defaultServerSideEncryption": {
+                            "encryptionType": "SSEAlgorithm",
+                            "kmsMasterKeyArn": "arn:aws:kms:us-west-2:123456789012:key/abcd1234-5678-90ab-cdef-1234567890a4"
+                        },
+                        "publicAccess": {
+                            "permissionConfiguration": {
+                                "bucketLevelPermissions": {
+                                    "accessControlList": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "bucketPolicy": {
+                                        "allowsPublicReadAccess": false,
+                                        "allowsPublicWriteAccess": false
+                                    },
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                },
+                                "accountLevelPermissions": {
+                                    "blockPublicAccess": {
+                                        "ignorePublicAcls": false,
+                                        "restrictPublicBuckets": false,
+                                        "blockPublicAcls": false,
+                                        "blockPublicPolicy": false
+                                    }
+                                }
+                            },
+                            "effectivePermission": "NOT_PUBLIC"
+                        }
+                    }
+                ],
+                "instanceDetails": {
+                    "availabilityZone": "generated-az-1a",
+                    "iamInstanceProfile": {
+                        "arn": "arn:aws:iam::836347236184:instance-profile/generated",
+                        "id": "GeneratedFindingInstanceProfileId"
+                    },
+                    "imageDescription": "GeneratedFindingInstaceImageDescription",
+                    "imageId": "ami-99999999",
+                    "instanceId": "i-99999999",
+                    "instanceState": "running",
+                    "instanceType": "m3.xlarge",
+                    "outpostArn": "arn:aws:outposts:us-west-2:123456789000:outpost/op-0fbc006e9abbc73c3",
+                    "launchTime": "2016-08-02T02:05:06.000Z",
+                    "networkInterfaces": [
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef00",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName1",
+                            "privateIpAddress": "10.0.0.1",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName1",
+                            "publicIp": "198.51.100.1",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId1",
+                            "vpcId": "vpc-generatedvpcid1"
+                        },
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef01",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName2",
+                            "privateIpAddress": "10.0.0.2",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName2",
+                            "publicIp": "198.51.100.2",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId2",
+                            "vpcId": "vpc-generatedvpcid2"
+                        },
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef02",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName3",
+                            "privateIpAddress": "10.0.0.3",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName3",
+                            "publicIp": "198.51.100.3",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId3",
+                            "vpcId": "vpc-generatedvpcid3"
+                        },
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef03",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName4",
+                            "privateIpAddress": "10.0.0.4",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName1",
+                                    "privateIpAddress": "10.0.0.1"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName2",
+                                    "privateIpAddress": "10.0.0.2"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName3",
+                                    "privateIpAddress": "10.0.0.3"
+                                },
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName4",
+                                    "privateIpAddress": "10.0.0.4"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName4",
+                            "publicIp": "198.51.100.4",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId1",
+                                    "groupName": "GeneratedFindingSecurityGroupName1"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId2",
+                                    "groupName": "GeneratedFindingSecurityGroupName2"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId3",
+                                    "groupName": "GeneratedFindingSecurityGroupName3"
+                                },
+                                {
+                                    "groupId": "GeneratedFindingSecurityId4",
+                                    "groupName": "GeneratedFindingSecurityGroupName4"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId4",
+                            "vpcId": "vpc-generatedvpcid4"
+                        }
+                    ],
+                    "productCodes": [
+                        {
+                            "code": "GeneratedFindingProductCodeId1",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId2",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId3",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId4",
+                            "productType": "marketplace"
+                        },
+                        {
+                            "code": "GeneratedFindingProductCodeId5",
+                            "productType": "marketplace"
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "key": "GeneratedFindingInstaceTag1",
+                            "value": "GeneratedFindingInstaceValue1"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag2",
+                            "value": "GeneratedFindingInstaceTagValue2"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag3",
+                            "value": "GeneratedFindingInstaceTagValue3"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag4",
+                            "value": "GeneratedFindingInstaceTagValue4"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag5",
+                            "value": "GeneratedFindingInstaceTagValue5"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag6",
+                            "value": "GeneratedFindingInstaceTagValue6"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag7",
+                            "value": "GeneratedFindingInstaceTagValue7"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag8",
+                            "value": "GeneratedFindingInstaceTagValue8"
+                        },
+                        {
+                            "key": "GeneratedFindingInstaceTag9",
+                            "value": "GeneratedFindingInstaceTagValue9"
+                        }
+                    ]
+                },
+                "resourceType": "AccessKey"
+            },
+            "schemaVersion": "2.0",
+            "severity": 8,
+            "type": "Stealth:S3/ServerAccessLoggingDisabled",
+            "updatedAt": "2026-03-13T00:38:11.949Z",
+            "description": "Amazon S3 Server Access Logging was disabled for the S3 bucket GeneratedFindingS3Bucket by GeneratedFindingUserName calling PutBucketLogging. This can lead to lack of visibility into actions taken on the affected S3 bucket and its objects if an event occurs.",
+            "partition": "aws",
+            "service": {
+                "action": {
+                    "actionType": "AWS_API_CALL",
+                    "awsApiCallAction": {
+                        "api": "GeneratedFindingAPIName",
+                        "callerType": "Remote IP",
+                        "errorCode": "AccessDenied",
+                        "remoteIpDetails": {
+                            "city": {
+                                "cityName": "GeneratedFindingCityName"
+                            },
+                            "country": {
+                                "countryName": "GeneratedFindingCountryName"
+                            },
+                            "geoLocation": {
+                                "lat": 0,
+                                "lon": 0
+                            },
+                            "ipAddressV4": "198.51.100.0",
+                            "ipAddressV6": "1234:5678:90ab:cdef:1234:5678:90ab:cde0",
+                            "organization": {
+                                "asn": "-1",
+                                "asnOrg": "GeneratedFindingASNOrg",
+                                "isp": "GeneratedFindingISP",
+                                "org": "GeneratedFindingORG"
+                            }
+                        },
+                        "serviceName": "GeneratedFindingAPIServiceName",
+                        "affectedResources": {
+                            "aWS::S3::Bucket": "GeneratedFindingS3Bucket"
+                        }
+                    }
+                },
+                "archived": false,
+                "count": 3,
+                "detectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+                "eventFirstSeen": "2026-03-07T12:18:48.000Z",
+                "eventLastSeen": "2026-03-13T00:38:11.000Z",
+                "resourceRole": "TARGET",
+                "serviceName": "guardduty",
+                "additionalInfo": {
+                    "value": "{\"sample\":true}",
+                    "type": "default"
+                }
+            },
+            "title": "Amazon S3 Server Access Logging was disabled for the S3 bucket GeneratedFindingS3Bucket."
+        },
+        "dry_run": true
+    }
+}

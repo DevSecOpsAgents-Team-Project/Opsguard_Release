@@ -1,0 +1,270 @@
+{
+    "incident_id": "mock-eb-0685653c76b14d03ac70e1fe96e6e349",
+    "incident_summary": {
+        "source": "guardduty",
+        "title": "Execution:Runtime/SuspiciousCommand",
+        "severity": "9",
+        "resource": {
+            "type": "ECSCluster",
+            "id": "i-99999999",
+            "region": "ap-northeast-2",
+            "account_id": "836347236184"
+        }
+    },
+    "executed_level1_actions": [
+        "base_mitigation"
+    ],
+    "entity_context": {
+        "iam_user_name": "Unknown-User",
+        "access_key_id": "",
+        "remote_ip": ""
+    },
+    "runtime_result": {
+        "status": "LEVEL1_ONLY",
+        "base_result": {
+            "status": "COMPLETED",
+            "finding_id": "mock-eb-0685653c76b14d03ac70e1fe96e6e349",
+            "extracted_resource": "i-99999999",
+            "extracted_user": "Unknown-User"
+        },
+        "key_signals": [
+            "suspiciouscommand",
+            "runtime",
+            "execution"
+        ],
+        "tags": [
+            "ecscluster"
+        ],
+        "incident_id": "mock-eb-0685653c76b14d03ac70e1fe96e6e349"
+    },
+    "raw_event": {
+        "version": "0",
+        "id": "mock-eb-0685653c76b14d03ac70e1fe96e6e349",
+        "detail-type": "GuardDuty Finding",
+        "source": "aws.guardduty",
+        "account": "836347236184",
+        "time": "2026-03-07T12:18:47.918Z",
+        "region": "ap-northeast-2",
+        "resources": [],
+        "detail": {
+            "dry_run": true,
+            "accountId": "836347236184",
+            "arn": "arn:aws:guardduty:ap-northeast-2:836347236184:detector/a0cd33c8e0162f14fa22fba0f7c229f7/finding/0685653c76b14d03ac70e1fe96e6e349",
+            "createdAt": "2026-03-07T12:18:47.918Z",
+            "id": "0685653c76b14d03ac70e1fe96e6e349",
+            "region": "ap-northeast-2",
+            "resource": {
+                "instanceDetails": {
+                    "availabilityZone": "generated-az-1a",
+                    "iamInstanceProfile": {
+                        "arn": "arn:aws:iam::012345678999:instance-profile/generated",
+                        "id": "GeneratedFindingInstanceProfileId"
+                    },
+                    "imageDescription": "GeneratedFindingInstanceImageDescription",
+                    "imageId": "ami-99999999",
+                    "instanceId": "i-99999999",
+                    "instanceState": "running",
+                    "instanceType": "m3.xlarge",
+                    "outpostArn": "arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0",
+                    "launchTime": "2016-08-02T02:05:06.000Z",
+                    "networkInterfaces": [
+                        {
+                            "ipv6Addresses": [],
+                            "networkInterfaceId": "eni-abcdef12",
+                            "privateDnsName": "GeneratedFindingPrivateDnsName",
+                            "privateIpAddress": "10.0.0.1",
+                            "privateIpAddresses": [
+                                {
+                                    "privateDnsName": "GeneratedFindingPrivateName",
+                                    "privateIpAddress": "10.0.0.1"
+                                }
+                            ],
+                            "publicDnsName": "GeneratedFindingPublicDNSName",
+                            "publicIp": "198.51.100.0",
+                            "securityGroups": [
+                                {
+                                    "groupId": "GeneratedFindingSecurityId",
+                                    "groupName": "GeneratedFindingSecurityGroupName"
+                                }
+                            ],
+                            "subnetId": "GeneratedFindingSubnetId",
+                            "vpcId": "vpc-generatedvpcid"
+                        }
+                    ],
+                    "productCodes": [
+                        {
+                            "code": "GeneratedFindingProductCodeId",
+                            "productType": "marketplace"
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "key": "GeneratedFindingInstanceTag1",
+                            "value": "GeneratedFindingInstanceValue1"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag2",
+                            "value": "GeneratedFindingInstanceTagValue2"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag3",
+                            "value": "GeneratedFindingInstanceTagValue3"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag4",
+                            "value": "GeneratedFindingInstanceTagValue4"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag5",
+                            "value": "GeneratedFindingInstanceTagValue5"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag6",
+                            "value": "GeneratedFindingInstanceTagValue6"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag7",
+                            "value": "GeneratedFindingInstanceTagValue7"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag8",
+                            "value": "GeneratedFindingInstanceTagValue8"
+                        },
+                        {
+                            "key": "GeneratedFindingInstanceTag9",
+                            "value": "GeneratedFindingInstanceTagValue9"
+                        }
+                    ]
+                },
+                "resourceType": "ECSCluster",
+                "ecsClusterDetails": {
+                    "name": "GeneratedFindingECSClusterName",
+                    "arn": "arn:aws:ecs:us-east-1:123456789012:cluster/sample-cluster",
+                    "status": "ACTIVE",
+                    "activeServicesCount": 1,
+                    "registeredContainerInstancesCount": 1,
+                    "runningTasksCount": 1,
+                    "tags": [
+                        {
+                            "key": "GeneratedFindingECSClusterTag1",
+                            "value": "GeneratedFindingECSClusterTagValue1"
+                        },
+                        {
+                            "key": "GeneratedFindingECSClusterTag2",
+                            "value": "GeneratedFindingECSClusterTagValue2"
+                        },
+                        {
+                            "key": "GeneratedFindingECSClusterTag3",
+                            "value": "GeneratedFindingECSClusterTagValue3"
+                        }
+                    ],
+                    "taskDetails": {
+                        "arn": "arn:aws:ecs:us-east-1:123456789012:task/sample-cluster/12345678-1234-1234-1234-123456789012",
+                        "definitionArn": "arn:aws:ecs:us-east-1:123456789012:task-definition/sample-cluster/76f1f1asdf",
+                        "version": "1",
+                        "taskCreatedAt": "2021-11-11T10:15:55.218Z",
+                        "startedAt": "2021-11-11T10:15:55.218Z",
+                        "startedBy": "GeneratedFindingECSServiceId",
+                        "volumes": [
+                            {
+                                "name": "GeneratedFindingECSTaskVolumeName",
+                                "hostPath": {
+                                    "path": "GeneratedFindingECSTaskHostPath"
+                                }
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "containerRuntime": "GeneratedFindingECSRuntime",
+                                "id": "GeneratedFindingECSContainerId",
+                                "name": "GeneratedFindingECSContainerName",
+                                "image": "GeneratedFindingECSContainerImage",
+                                "imagePrefix": "GeneratedFindingECSContainerImagePrefix",
+                                "volumeMounts": [
+                                    {
+                                        "name": "GeneratedFindingVolumeMountName",
+                                        "mountPath": "GeneratedFindingVolumeMountMountPath"
+                                    }
+                                ],
+                                "securityContext": {
+                                    "privileged": false
+                                }
+                            }
+                        ],
+                        "group": "GeneratedFindingECSContainerGroup",
+                        "launchType": "GeneratedFindingECSLaunchType"
+                    }
+                }
+            },
+            "schemaVersion": "2.0",
+            "severity": 9,
+            "type": "Execution:Runtime/SuspiciousCommand",
+            "updatedAt": "2026-03-13T00:38:11.886Z",
+            "description": "Process GeneratedFindingProcessName in ECSCluster has executed the suspicious command GeneratedCommandLineExample.",
+            "partition": "aws",
+            "service": {
+                "archived": false,
+                "count": 3,
+                "detectorId": "a0cd33c8e0162f14fa22fba0f7c229f7",
+                "eventFirstSeen": "2026-03-07T12:18:47.000Z",
+                "eventLastSeen": "2026-03-13T00:38:11.000Z",
+                "serviceName": "guardduty",
+                "additionalInfo": {
+                    "value": "{\"agentDetails\":{\"agentId\":\"GeneratedFindingAgentId\",\"agentVersion\":\"1\"},\"sample\":true,\"threatListName\":\"GeneratedFindingThreatListName\"}",
+                    "type": "default"
+                },
+                "featureName": "RuntimeMonitoring",
+                "runtimeDetails": {
+                    "process": {
+                        "name": "GeneratedFindingProcessName",
+                        "executablePath": "GeneratedFindingPath",
+                        "executableSha256": "GeneratedFindingHash",
+                        "pwd": "GeneratedFindingPath",
+                        "pid": 1234,
+                        "startTime": "2021-11-15T21:38:14.000Z",
+                        "uuid": "GeneratedFindingUUId",
+                        "parentUuid": "GeneratedFindingUUId",
+                        "user": "ec2-user",
+                        "userId": 1000,
+                        "euid": 1000,
+                        "lineage": [
+                            {
+                                "pid": 1233,
+                                "uuid": "GeneratedFindingUUId1",
+                                "executablePath": "GeneratedFindingPath1",
+                                "euid": 1000,
+                                "parentUuid": "GeneratedFindingParentUUId1"
+                            },
+                            {
+                                "pid": 1234,
+                                "uuid": "GeneratedFindingUUId2",
+                                "executablePath": "GeneratedFindingPath2",
+                                "euid": 1001,
+                                "parentUuid": "GeneratedFindingParentUUId2"
+                            },
+                            {
+                                "pid": 1235,
+                                "uuid": "GeneratedFindingUUId3",
+                                "executablePath": "GeneratedFindingPath3",
+                                "euid": 1002,
+                                "parentUuid": "GeneratedFindingParentUUId3"
+                            },
+                            {
+                                "pid": 1236,
+                                "uuid": "GeneratedFindingUUId4",
+                                "executablePath": "GeneratedFindingPath4",
+                                "euid": 1003,
+                                "parentUuid": "GeneratedFindingParentUUId4"
+                            }
+                        ]
+                    },
+                    "context": {
+                        "commandLineExample": "GeneratedCommandLineExample"
+                    }
+                }
+            },
+            "title": "A resource of type ECSCluster has executed a suspicious command."
+        },
+        "dry_run": true
+    }
+}

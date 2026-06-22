@@ -1,0 +1,134 @@
+{
+  "sample_id": "case37.json",
+  "finding_type": "Impact:IAMUser/AnomalousBehavior",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IAM-10"
+    },
+    {
+      "clause_id": "SEF-06"
+    },
+    {
+      "clause_id": "IAM-14"
+    },
+    {
+      "clause_id": "IAM-09"
+    },
+    {
+      "clause_id": "IAM-13"
+    }
+  ],
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "High severity (8.0) but no L3 triggers → prefer L2."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Impact:IAMUser/AnomalousBehavior AccessKey GeneratedFindingAPIName severity 8 | runtime signals: anomalous_behavior, impact_activity, credential_access, suspicious_api_usage | runtime tags: guardduty, high_severity, potential_compromise, attack_in_progress | security meaning: active compromise or persistence behavior, response procedure and containment may be required, access control review should follow incident handling, credential compromise risk | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: AccessControl, IAM, LOG, SEF | downweight categories: CEK",
+    "where_filter_used": {
+      "primary_query": "event summary: Impact:IAMUser/AnomalousBehavior AccessKey GeneratedFindingAPIName severity 8 | runtime signals: anomalous_behavior, impact_activity, credential_access, suspicious_api_usage | runtime tags: guardduty, high_severity, potential_compromise, attack_in_progress | security meaning: active compromise or persistence behavior, response procedure and containment may be required, access control review should follow incident handling, credential compromise risk | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: AccessControl, IAM, LOG, SEF | downweight categories: CEK",
+      "category_queries": {
+        "AccessControl": "ISMS-P 2.4 Access Control | security meaning: active compromise or persistence behavior, response procedure and containment may be required, access control review should follow incident handling | regulatory language: access control, permission grant, permission revoke, privilege review, shared account restriction, administrator separation | Impact:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName",
+        "IAM": "Identity and Access Management | security meaning: active compromise or persistence behavior, response procedure and containment may be required, access control review should follow incident handling | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | Impact:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName",
+        "LOG": "Security Logging and Monitoring | security meaning: active compromise or persistence behavior, response procedure and containment may be required, access control review should follow incident handling | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | Impact:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName",
+        "SEF": "Security Event and Incident Response | security meaning: active compromise or persistence behavior, response procedure and containment may be required, access control review should follow incident handling | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | Impact:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK"
+      ],
+      "downweight_hints": [
+        "CEK"
+      ],
+      "expected_categories": [
+        "AccessControl",
+        "IAM",
+        "LOG",
+        "SEF"
+      ],
+      "category_weights": {
+        "CEK": -22,
+        "DSP": 8,
+        "IAM": 19,
+        "AccessControl": 19,
+        "IncidentResponse": 9,
+        "Logging": 5,
+        "LOG": 14,
+        "SEF": 11
+      },
+      "security_meanings": [
+        "active compromise or persistence behavior",
+        "response procedure and containment may be required",
+        "access control review should follow incident handling",
+        "credential compromise risk",
+        "access control and privileged account review required",
+        "data protection impact should be assessed"
+      ],
+      "regulatory_phrases": [
+        "least privilege",
+        "privileged access",
+        "credential",
+        "user account",
+        "authentication",
+        "identity",
+        "segregation of privileged access roles",
+        "uniquely identifiable users",
+        "incident response procedure",
+        "event triage and escalation",
+        "access right management review",
+        "audit logs monitoring and response",
+        "user account control"
+      ],
+      "source_summary": "Impact:IAMUser/AnomalousBehavior AccessKey GeneratedFindingAPIName severity 8",
+      "matched_rules": [
+        "iam_anomalous_behavior_impact_persistence",
+        "iam_anomalous_behavior_credential_access"
+      ],
+      "preferred_doc_ids": [
+        "ISMSP-3.1.2",
+        "SEF-06",
+        "LOG-05",
+        "ISMSP-2.4.1",
+        "IAM-10",
+        "ISMSP-2.4.2",
+        "DSP-17",
+        "IAM-05",
+        "IAM-16"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IAM-10",
+        "title": "Management of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 2,
+        "clause_id": "SEF-06",
+        "title": "Event Triage Processes",
+        "category": "SEF"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IAM-14",
+        "title": "Strong Authentication",
+        "category": "IAM"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IAM-09",
+        "title": "Segregation of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 5,
+        "clause_id": "IAM-13",
+        "title": "Uniquely Identifiable Users",
+        "category": "IAM"
+      }
+    ]
+  }
+}

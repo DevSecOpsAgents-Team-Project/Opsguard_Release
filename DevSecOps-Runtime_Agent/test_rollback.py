@@ -16,7 +16,7 @@ import rollback_module
 # =========================================================
 # ⚙️ [설정] 롤백할 Incident ID를 여기에 적으세요!
 # =========================================================
-TARGET_INCIDENT_ID = "TEST-ALL-ACTIONS-001" 
+TARGET_INCIDENT_ID = "gd-test-002" 
 # 👆 DynamoDB 로그 테이블에서 확인한 실제 ID로 바꿔주세요.
 
 def run_rollback():

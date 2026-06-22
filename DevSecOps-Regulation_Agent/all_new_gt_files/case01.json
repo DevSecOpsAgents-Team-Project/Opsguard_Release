@@ -1,0 +1,37 @@
+{
+  "sample_id": "gd-case01-stealth-password-policy",
+  "finding_type": "Stealth:IAMUser/PasswordPolicyChange",
+  "relevant_docs": [
+    {
+      "doc_id": "IAM-14",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-2.4.2",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-2.4.1",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": ["IAM-05", "IAM-13", "IVS-06", "IAM-12"],
+  "expected": {
+    "selected_level": 1
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "IAM-14": 2,
+      "ISMSP-2.4.2": 2,
+      "ISMSP-2.4.1": 1,
+      "IAM-05": 0,
+      "IAM-13": 0,
+      "IVS-06": 0,
+      "IAM-12": 0
+    }
+  }
+}

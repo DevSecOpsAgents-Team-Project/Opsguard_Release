@@ -1,0 +1,65 @@
+{
+  "sample_id": "case03.json",
+  "finding_type": "Impact:S3/MaliciousIPCaller",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IAM-09"
+    },
+    {
+      "clause_id": "IAM-14"
+    },
+    {
+      "clause_id": "IAM-05"
+    },
+    {
+      "clause_id": "IAM-10"
+    },
+    {
+      "clause_id": "DSP-02"
+    }
+  ],
+  "debug_info": {
+    "query_text_used": "maliciousipcaller | disable_iam_entity | Impact:S3/MaliciousIPCaller | api_generatedfindingapiname | s3 | impact | s3bucket | stop_instance | aws_api_call | GeneratedFindingAPIName | storage | S3Bucket | DSP | encryption | isolate_instance | detach_admin_policies | privacy | disable_access_key | data protection",
+    "where_filter_used": null,
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IAM-09",
+        "title": "Segregation of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 2,
+        "clause_id": "IAM-14",
+        "title": "Strong Authentication",
+        "category": "IAM"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IAM-05",
+        "title": "Least Privilege",
+        "category": "IAM"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IAM-10",
+        "title": "Management of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 5,
+        "clause_id": "DSP-02",
+        "title": "Secure Disposal",
+        "category": "DSP"
+      }
+    ]
+  },
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "S3 bucket exposure/policy finding with medium+ severity → containment needed."
+  ]
+}

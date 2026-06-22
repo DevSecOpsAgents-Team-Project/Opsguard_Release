@@ -1,0 +1,49 @@
+{
+  "incident_id": "4207b2877a27443e80d6944fbfffd2a9",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Policy:S3/BucketPublicAccessGranted",
+    "severity": "8",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-southeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "entity_context": {
+    "iam_user_name": "GeneratedFindingUserName",
+    "access_key_id": "GeneratedFindingAccessKeyId",
+    "remote_ip": "198.51.100.0"
+  },
+  "runtime_result": {},
+  "raw_event": {
+    "id": "4207b2877a27443e80d6944fbfffd2a9",
+    "region": "ap-southeast-2",
+    "account": "836347236184",
+    "detail": {
+      "type": "Policy:S3/BucketPublicAccessGranted",
+      "severity": 8,
+      "resource": {
+        "resourceType": "AccessKey",
+        "accessKeyDetails": {
+          "accessKeyId": "GeneratedFindingAccessKeyId",
+          "userName": "GeneratedFindingUserName"
+        }
+      },
+      "service": {
+        "action": {
+          "awsApiCallAction": {
+            "api": "GeneratedFindingAPIName",
+            "remoteIpDetails": {
+              "ipAddressV4": "198.51.100.0"
+            }
+          }
+        }
+      }
+    }
+  }
+}

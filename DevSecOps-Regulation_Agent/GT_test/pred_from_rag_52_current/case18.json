@@ -1,0 +1,98 @@
+{
+  "sample_id": "case18.json",
+  "finding_type": "Behavior:EC2/TrafficVolumeUnusual",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IVS-03"
+    },
+    {
+      "clause_id": "IVS-06"
+    },
+    {
+      "clause_id": "IVS-09"
+    },
+    {
+      "clause_id": "IVS-04"
+    },
+    {
+      "clause_id": "ISMSP-3.1.2"
+    }
+  ],
+  "selected_level": 1,
+  "route_reasons": [
+    "No strong indicators for containment or critical response → observe."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Behavior:EC2/TrafficVolumeUnusual Unusually large amount of network traffic from EC2 instance i-99999999. The EC2 instance i-99999999 is generating unusually large amounts of network traffic to remote host 198.51.100.0. Instance severity 5 | runtime signals: ec2, suspicious_ip, network_connection, trafficvolumeunusual | runtime tags: network, instance, compute, ec2 | regulatory language: network security, lateral movement, tls ssl, ingress restriction, workload monitoring, malware detection | expected categories: IVS | downweight categories: IAM",
+    "where_filter_used": {
+      "primary_query": "event summary: Behavior:EC2/TrafficVolumeUnusual Unusually large amount of network traffic from EC2 instance i-99999999. The EC2 instance i-99999999 is generating unusually large amounts of network traffic to remote host 198.51.100.0. Instance severity 5 | runtime signals: ec2, suspicious_ip, network_connection, trafficvolumeunusual | runtime tags: network, instance, compute, ec2 | regulatory language: network security, lateral movement, tls ssl, ingress restriction, workload monitoring, malware detection | expected categories: IVS | downweight categories: IAM",
+      "category_queries": {
+        "IVS": "Infrastructure and Virtualization Security | regulatory language: network security, lateral movement, tls ssl, ingress restriction, workload monitoring, malware detection | Behavior:EC2/TrafficVolumeUnusual | Instance"
+      },
+      "negative_hints": [
+        "IAM"
+      ],
+      "downweight_hints": [
+        "IAM"
+      ],
+      "expected_categories": [
+        "IVS"
+      ],
+      "category_weights": {
+        "IAM": -2,
+        "IVS": 6
+      },
+      "security_meanings": [],
+      "regulatory_phrases": [
+        "network security",
+        "lateral movement",
+        "tls ssl",
+        "ingress restriction",
+        "workload monitoring",
+        "malware detection",
+        "runtime security",
+        "host isolation",
+        "compromised workload",
+        "command and control"
+      ],
+      "source_summary": "Behavior:EC2/TrafficVolumeUnusual Unusually large amount of network traffic from EC2 instance i-99999999. The EC2 instance i-99999999 is generating unusually large amounts of network traffic to remote host 198.51.100.0. Instance severity 5",
+      "matched_rules": [],
+      "preferred_doc_ids": []
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IVS-03",
+        "title": "Network Security",
+        "category": "IVS"
+      },
+      {
+        "rank": 2,
+        "clause_id": "IVS-06",
+        "title": "Segmentation and Segregation",
+        "category": "IVS"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IVS-09",
+        "title": "Network Defense",
+        "category": "IVS"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IVS-04",
+        "title": "OS Hardening and Base Controls",
+        "category": "IVS"
+      },
+      {
+        "rank": 5,
+        "clause_id": "ISMSP-3.1.2",
+        "title": "침해사고 대응 및 조치",
+        "category": "IncidentResponse"
+      }
+    ]
+  }
+}

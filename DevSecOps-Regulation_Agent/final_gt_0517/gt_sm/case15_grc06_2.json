@@ -1,0 +1,38 @@
+{
+  "sample_id": "gd-grc06-ec2-001-nat",
+  "finding_type": "Execution:Runtime/SuspiciousCommand",
+  "relevant_docs": [
+    {
+      "doc_id": "GRC-06",
+      "relevance": 2
+    },
+    {
+      "doc_id": "SEF-07",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-3.1.2",
+      "relevance": 2
+    }
+  ],
+  "hard_negatives": [
+    "CEK-17",
+    "DSP-10"
+  ],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "GRC-06": 2,
+      "SEF-07": 2,
+      "ISMSP-3.1.2": 2,
+      "CEK-17": 0,
+      "DSP-10": 0
+    }
+  }
+}

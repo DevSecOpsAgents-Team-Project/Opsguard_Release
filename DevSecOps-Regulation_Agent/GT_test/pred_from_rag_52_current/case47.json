@@ -1,0 +1,116 @@
+{
+  "sample_id": "case47.json",
+  "finding_type": "Exfiltration:S3/AnomalousBehavior",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "DSP-10"
+    },
+    {
+      "clause_id": "DSP-16"
+    },
+    {
+      "clause_id": "DSP-17"
+    },
+    {
+      "clause_id": "DSP-02"
+    },
+    {
+      "clause_id": "LOG-05"
+    }
+  ],
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "S3 bucket exposure/policy finding with medium+ severity → containment needed."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Exfiltration:S3/AnomalousBehavior S3Bucket GeneratedFindingAPIName severity 8 | security meaning: sensitive data exposure risk, data deletion or disclosure activity, data protection control failure, investigation and notification workflow may be required | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: DSP, LOG, SEF, GRC | downweight categories: IAM",
+    "where_filter_used": {
+      "primary_query": "event summary: Exfiltration:S3/AnomalousBehavior S3Bucket GeneratedFindingAPIName severity 8 | security meaning: sensitive data exposure risk, data deletion or disclosure activity, data protection control failure, investigation and notification workflow may be required | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: DSP, LOG, SEF, GRC | downweight categories: IAM",
+      "category_queries": {
+        "DSP": "Data Security and Privacy | security meaning: sensitive data exposure risk, data deletion or disclosure activity, data protection control failure | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | Exfiltration:S3/AnomalousBehavior | S3Bucket | GeneratedFindingAPIName",
+        "LOG": "Security Logging and Monitoring | security meaning: sensitive data exposure risk, data deletion or disclosure activity, data protection control failure | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | Exfiltration:S3/AnomalousBehavior | S3Bucket | GeneratedFindingAPIName",
+        "SEF": "Security Event and Incident Response | security meaning: sensitive data exposure risk, data deletion or disclosure activity, data protection control failure | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | Exfiltration:S3/AnomalousBehavior | S3Bucket | GeneratedFindingAPIName",
+        "GRC": "Governance, Risk, and Compliance | security meaning: sensitive data exposure risk, data deletion or disclosure activity, data protection control failure | regulatory language: governance, risk management, compliance assessment, accountability, control ownership, audit program | Exfiltration:S3/AnomalousBehavior | S3Bucket | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "IAM"
+      ],
+      "downweight_hints": [
+        "IAM"
+      ],
+      "expected_categories": [
+        "DSP",
+        "LOG",
+        "SEF",
+        "GRC"
+      ],
+      "category_weights": {
+        "DSP": 12,
+        "GRC": 3,
+        "IAM": -5,
+        "LOG": 7,
+        "SEF": 6
+      },
+      "security_meanings": [
+        "sensitive data exposure risk",
+        "data deletion or disclosure activity",
+        "data protection control failure",
+        "investigation and notification workflow may be required"
+      ],
+      "regulatory_phrases": [
+        "data protection",
+        "sensitive data",
+        "data retention",
+        "data deletion",
+        "data disclosure",
+        "secure disposal",
+        "data classification",
+        "privacy compliance",
+        "sensitive data handling",
+        "data disclosure monitoring",
+        "secure disposal and retention"
+      ],
+      "source_summary": "Exfiltration:S3/AnomalousBehavior S3Bucket GeneratedFindingAPIName severity 8",
+      "matched_rules": [
+        "s3_exfiltration_delete"
+      ],
+      "preferred_doc_ids": []
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "DSP-10",
+        "title": "Sensitive Data Transfer",
+        "category": "DSP"
+      },
+      {
+        "rank": 2,
+        "clause_id": "DSP-16",
+        "title": "Data Retention and Deletion",
+        "category": "DSP"
+      },
+      {
+        "rank": 3,
+        "clause_id": "DSP-17",
+        "title": "Sensitive Data Protection",
+        "category": "DSP"
+      },
+      {
+        "rank": 4,
+        "clause_id": "DSP-02",
+        "title": "Secure Disposal",
+        "category": "DSP"
+      },
+      {
+        "rank": 5,
+        "clause_id": "LOG-05",
+        "title": "Audit Logs Monitoring and Response",
+        "category": "LOG"
+      }
+    ]
+  }
+}

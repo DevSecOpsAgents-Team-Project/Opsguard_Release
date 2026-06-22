@@ -1,0 +1,126 @@
+{
+  "sample_id": "sm_case13_grc05_2.json",
+  "finding_type": "Behavior:EC2/TrafficVolumeUnusual",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IVS-03"
+    },
+    {
+      "clause_id": "SEF-06"
+    },
+    {
+      "clause_id": "IVS-09"
+    },
+    {
+      "clause_id": "IVS-06"
+    },
+    {
+      "clause_id": "SEF-03"
+    }
+  ],
+  "selected_level": 2,
+  "route_reasons": [
+    "High severity (9.0) but no L3 triggers → prefer L2."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Behavior:EC2/TrafficVolumeUnusual Unusually large amount of network traffic from EC2 instance i-99999999. The EC2 instance i-99999999 is generating unusually large amounts of network traffic to remote host 198.51.100.0. Instance severity 9 | runtime signals: behavior, trafficvolumeunusual, network_connection, ec2 | runtime tags: network, ec2, instance, compute | security meaning: unusual network port behavior requires incident procedure review, governance responsibility and triage should be established, unusual traffic volume may indicate program-level security monitoring issue, network defense and incident triage should be coordinated | regulatory language: network security, lateral movement, tls ssl, ingress restriction, workload monitoring, malware detection | expected categories: IVS, GRC, IncidentResponse, SEF | downweight categories: IAM",
+    "where_filter_used": {
+      "primary_query": "event summary: Behavior:EC2/TrafficVolumeUnusual Unusually large amount of network traffic from EC2 instance i-99999999. The EC2 instance i-99999999 is generating unusually large amounts of network traffic to remote host 198.51.100.0. Instance severity 9 | runtime signals: behavior, trafficvolumeunusual, network_connection, ec2 | runtime tags: network, ec2, instance, compute | security meaning: unusual network port behavior requires incident procedure review, governance responsibility and triage should be established, unusual traffic volume may indicate program-level security monitoring issue, network defense and incident triage should be coordinated | regulatory language: network security, lateral movement, tls ssl, ingress restriction, workload monitoring, malware detection | expected categories: IVS, GRC, IncidentResponse, SEF | downweight categories: IAM",
+      "category_queries": {
+        "IVS": "Infrastructure and Virtualization Security | security meaning: unusual network port behavior requires incident procedure review, governance responsibility and triage should be established, unusual traffic volume may indicate program-level security monitoring issue | regulatory language: network security, lateral movement, tls ssl, ingress restriction, workload monitoring, malware detection | Behavior:EC2/TrafficVolumeUnusual | Instance",
+        "GRC": "Governance, Risk, and Compliance | security meaning: unusual network port behavior requires incident procedure review, governance responsibility and triage should be established, unusual traffic volume may indicate program-level security monitoring issue | regulatory language: governance, risk management, compliance assessment, accountability, control ownership, audit program | Behavior:EC2/TrafficVolumeUnusual | Instance",
+        "IncidentResponse": "ISMS-P 3.1 Incident Response | security meaning: unusual network port behavior requires incident procedure review, governance responsibility and triage should be established, unusual traffic volume may indicate program-level security monitoring issue | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | Behavior:EC2/TrafficVolumeUnusual | Instance",
+        "SEF": "Security Event and Incident Response | security meaning: unusual network port behavior requires incident procedure review, governance responsibility and triage should be established, unusual traffic volume may indicate program-level security monitoring issue | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | Behavior:EC2/TrafficVolumeUnusual | Instance"
+      },
+      "negative_hints": [
+        "IAM"
+      ],
+      "downweight_hints": [
+        "IAM"
+      ],
+      "expected_categories": [
+        "IVS",
+        "GRC",
+        "IncidentResponse",
+        "SEF"
+      ],
+      "category_weights": {
+        "GRC": 16,
+        "IAM": -8,
+        "IncidentResponse": 16,
+        "IVS": 17,
+        "LOG": 7,
+        "SEF": 16
+      },
+      "security_meanings": [
+        "unusual network port behavior requires incident procedure review",
+        "governance responsibility and triage should be established",
+        "unusual traffic volume may indicate program-level security monitoring issue",
+        "network defense and incident triage should be coordinated"
+      ],
+      "regulatory_phrases": [
+        "network security",
+        "lateral movement",
+        "tls ssl",
+        "ingress restriction",
+        "workload monitoring",
+        "malware detection",
+        "runtime security",
+        "host isolation",
+        "compromised workload",
+        "command and control",
+        "incident response procedure",
+        "event triage processes",
+        "information security program"
+      ],
+      "source_summary": "Behavior:EC2/TrafficVolumeUnusual Unusually large amount of network traffic from EC2 instance i-99999999. The EC2 instance i-99999999 is generating unusually large amounts of network traffic to remote host 198.51.100.0. Instance severity 9",
+      "matched_rules": [
+        "network_port_unusual_behavior",
+        "traffic_volume_unusual_behavior"
+      ],
+      "preferred_doc_ids": [
+        "ISMSP-3.1.1",
+        "SEF-06",
+        "GRC-06",
+        "IVS-09",
+        "GRC-05",
+        "ISMSP-3.1.2"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IVS-03",
+        "title": "Network Security",
+        "category": "IVS"
+      },
+      {
+        "rank": 2,
+        "clause_id": "SEF-06",
+        "title": "Event Triage Processes",
+        "category": "SEF"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IVS-09",
+        "title": "Network Defense",
+        "category": "IVS"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IVS-06",
+        "title": "Segmentation and Segregation",
+        "category": "IVS"
+      },
+      {
+        "rank": 5,
+        "clause_id": "SEF-03",
+        "title": "Incident Response Plans",
+        "category": "SEF"
+      }
+    ]
+  }
+}

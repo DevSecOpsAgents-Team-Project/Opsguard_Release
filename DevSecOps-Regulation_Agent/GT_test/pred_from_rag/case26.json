@@ -1,0 +1,64 @@
+{
+  "sample_id": "case26.json",
+  "finding_type": "Backdoor:EC2/C&CActivity.B",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IVS-09"
+    },
+    {
+      "clause_id": "IVS-03"
+    },
+    {
+      "clause_id": "IVS-06"
+    },
+    {
+      "clause_id": "ISMSP-3.1.2"
+    },
+    {
+      "clause_id": "IAM-05"
+    }
+  ],
+  "debug_info": {
+    "query_text_used": "IVS | disable_iam_entity | backdoor | suspicious_ip | compute | runtime security | unusual_port | stop_instance | Backdoor:EC2/C&CActivity.B | instance | host | network_connection | isolate_instance | detach_admin_policies | ec2 | disable_access_key | network | Instance | c&cactivity.b | network security",
+    "where_filter_used": null,
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IVS-09",
+        "title": "Network Defense",
+        "category": "IVS"
+      },
+      {
+        "rank": 2,
+        "clause_id": "IVS-03",
+        "title": "Network Security",
+        "category": "IVS"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IVS-06",
+        "title": "Segmentation and Segregation",
+        "category": "IVS"
+      },
+      {
+        "rank": 4,
+        "clause_id": "ISMSP-3.1.2",
+        "title": "침해사고 대응 및 조치",
+        "category": "IncidentResponse"
+      },
+      {
+        "rank": 5,
+        "clause_id": "IAM-05",
+        "title": "Least Privilege",
+        "category": "IAM"
+      }
+    ]
+  },
+  "selected_level": 3,
+  "route_reasons": [
+    "Finding type suggests active compromise/malware."
+  ]
+}

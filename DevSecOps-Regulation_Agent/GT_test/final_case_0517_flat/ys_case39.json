@@ -1,0 +1,68 @@
+{
+  "incident_id": "b87076ae023d4706a7d7a5873ac72285",
+
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "Discovery:IAMUser/AnomalousBehavior",
+    "severity": "2",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-southeast-2",
+      "account_id": "836347236184"
+    }
+  },
+
+  "executed_level1_actions": ["base_mitigation"],
+
+  "entity_context": {
+    "iam_user_name": "GeneratedFindingUserName",
+    "access_key_id": "GeneratedFindingAccessKeyId",
+    "remote_ip": "198.51.100.0"
+  },
+
+  "runtime_result": {
+    "base_result": {
+      "extracted_user": "GeneratedFindingUserName",
+      "extracted_resource": "GeneratedFindingAccessKeyId"
+    },
+    "key_signals": [
+      "anomalous_behavior",
+      "discovery_activity",
+      "suspicious_api_usage"
+    ],
+    "tags": [
+      "guardduty",
+      "discovery",
+      "low_severity",
+      "monitoring_required"
+    ]
+  },
+
+  "raw_event": {
+    "id": "b87076ae023d4706a7d7a5873ac72285",
+    "region": "ap-southeast-2",
+    "account": "836347236184",
+    "detail": {
+      "type": "Discovery:IAMUser/AnomalousBehavior",
+      "severity": 2,
+      "resource": {
+        "resourceType": "AccessKey",
+        "accessKeyDetails": {
+          "accessKeyId": "GeneratedFindingAccessKeyId",
+          "userName": "GeneratedFindingUserName"
+        }
+      },
+      "service": {
+        "action": {
+          "awsApiCallAction": {
+            "api": "GeneratedFindingAPIName",
+            "remoteIpDetails": {
+              "ipAddressV4": "198.51.100.0"
+            }
+          }
+        }
+      }
+    }
+  }
+}

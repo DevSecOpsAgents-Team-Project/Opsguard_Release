@@ -1,0 +1,38 @@
+{
+  "sample_id": "gd-ismsp311-ec2-001-nat",
+  "finding_type": "Behavior:EC2/NetworkPortUnusual",
+  "relevant_docs": [
+    {
+      "doc_id": "ISMSP-3.1.1",
+      "relevance": 2
+    },
+    {
+      "doc_id": "SEF-06",
+      "relevance": 2
+    },
+    {
+      "doc_id": "GRC-06",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": [
+    "CEK-13",
+    "DSP-02"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "ISMSP-3.1.1": 2,
+      "SEF-06": 2,
+      "GRC-06": 1,
+      "CEK-13": 0,
+      "DSP-02": 0
+    }
+  }
+}

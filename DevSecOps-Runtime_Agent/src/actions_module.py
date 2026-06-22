@@ -10,6 +10,11 @@ import os
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+DEFAULT_S3_LOG_BUCKET = os.environ.get(
+    "DEFAULT_S3_LOG_BUCKET",
+    os.environ.get("S3_LOG_BUCKET", "s3_logging_bucket"),
+)
+
 
 # ======================================================
 # 공통 응답 스키마 (Helper Function)
@@ -530,7 +535,7 @@ def notify_to_slack(message: str, incident_id: str = "UNKNOWN", dry_run: bool = 
 
     # Slack 메시지 구성 (Rich Format)
     payload = {
-        "text": f"🚨 *[Agent B] 보안 대응 알림*",
+        "text": f"🚨 *[OpsGuard AI Agent] 보안 사고 감지*",
         "attachments": [
             {
                 "color": "#ff0000",
@@ -538,7 +543,7 @@ def notify_to_slack(message: str, incident_id: str = "UNKNOWN", dry_run: bool = 
                     {"title": "Incident ID", "value": incident_id, "short": True},
                     {"title": "상세 내용", "value": message, "short": False}
                 ],
-                "footer": "Agent B Runtime Security",
+                "footer": "OpsGuard AI Security Agent",
                 "ts": int(datetime.datetime.utcnow().timestamp())
             }
         ]
@@ -558,6 +563,80 @@ def notify_to_slack(message: str, incident_id: str = "UNKNOWN", dry_run: bool = 
     except Exception as e:
         logger.error(f"[ACTIONS] Slack 알림 전송 실패: {e}")
         return build_response("notify_to_slack", incident_id, "FAILED", details={"error": str(e)})
+
+
+def notify_execution_result_to_slack(
+    incident_id: str,
+    success: bool,
+    detail_message: str,
+    dry_run: bool = False,
+):
+    """
+    L2/L3 승인 조치 실행 직후 성공/실패 결과를 Slack Webhook으로 전송합니다.
+    """
+    import requests
+
+    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+
+    if dry_run:
+        logger.info("[DRY-RUN] 조치 결과 Slack 스킵: success=%s %s", success, detail_message)
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "SKIPPED",
+            details={"success": success, "message": detail_message},
+        )
+
+    if not slack_webhook_url:
+        logger.error("[ACTIONS] SLACK_WEBHOOK_URL 환경 변수가 설정되지 않았습니다.")
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "FAILED",
+            details={"error": "Webhook URL missing"},
+        )
+
+    if success:
+        title = "✅ *[OpsGuard AI Agent] 조치 실행 성공*"
+        color = "#36a64f"
+    else:
+        title = "❌ *[OpsGuard AI Agent] 조치 실행 실패*"
+        color = "#ff0000"
+
+    payload = {
+        "text": title,
+        "attachments": [
+            {
+                "color": color,
+                "fields": [
+                    {"title": "Incident ID", "value": incident_id, "short": True},
+                    {"title": "결과", "value": "성공" if success else "실패", "short": True},
+                    {"title": "상세", "value": detail_message, "short": False},
+                ],
+                "footer": "OpsGuard AI Security Agent",
+                "ts": int(datetime.datetime.utcnow().timestamp()),
+            }
+        ],
+    }
+
+    try:
+        response = requests.post(slack_webhook_url, json=payload, timeout=5)
+        response.raise_for_status()
+        logger.info("[ACTIONS] 조치 결과 Slack 전송 성공: %s success=%s", incident_id, success)
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "SUCCESS",
+            details={"success": success, "message": detail_message},
+        )
+    except Exception as e:
+        logger.error("[ACTIONS] 조치 결과 Slack 전송 실패: %s", e)
+        return build_response(
+            "notify_execution_result_to_slack",
+            incident_id,
+            "FAILED",
+            details={"error": str(e)},
+        )
 
 
 # ======================================================
@@ -633,6 +712,18 @@ def tag_resource_with_incident(resource_id: str, incident_id: str, resource_type
         if code in ("Throttling", "RequestLimitExceeded"):
             return build_response("tag_resource_with_incident", incident_id, "RETRY",
                                 details={"error": code})
+
+        if code == "NoSuchEntity" and resource_type in ["IAM", "IAMUser", "AccessKey", "User"]:
+            return build_response(
+                action_name,
+                incident_id,
+                "SKIPPED",
+                details={
+                    "error": str(e),
+                    "reason": "IAM User not found — use EC2 tagging for instance role credential findings",
+                    "resource_id": resource_id,
+                },
+            )
 
         logger.error(f"tag_resource_with_incident 오류: {e}")
         return build_response("tag_resource_with_incident", incident_id, "FAILED",
@@ -771,7 +862,19 @@ def enable_bucket_logging(
 def disable_access_key(user_name: str, access_key_id: str, incident_id: str, dry_run=False):
     """
     특정 IAM User의 Access Key를 Inactive로 비활성화합니다.
+    (ASIA/AROA 임시 키·Instance role credential 은 대상 아님)
     """
+    if access_key_id and str(access_key_id).startswith(("ASIA", "AROA")):
+        return build_response(
+            "disable_access_key",
+            incident_id,
+            "SKIPPED",
+            details={
+                "reason": "Temporary/session access keys cannot be disabled via IAM User API",
+                "access_key_id": access_key_id,
+            },
+        )
+
     iam = boto3.client("iam")
 
     try:
@@ -803,6 +906,18 @@ def disable_access_key(user_name: str, access_key_id: str, incident_id: str, dry
         if code in ("Throttling", "RequestLimitExceeded"):
             return build_response("disable_access_key", incident_id, "RETRY",
                                 details={"error": code})
+
+        if code == "NoSuchEntity":
+            return build_response(
+                "disable_access_key",
+                incident_id,
+                "SKIPPED",
+                details={
+                    "error": str(e),
+                    "reason": "IAM User not found — target may be an instance role or invalid user_name",
+                    "user_name": user_name,
+                },
+            )
 
         logger.error(f"disable_access_key 오류: {e}")
         return build_response("disable_access_key", incident_id, "FAILED",
@@ -857,6 +972,18 @@ def detach_admin_policies(user_name: str, incident_id: str, dry_run=False):
             return build_response("detach_admin_policies", incident_id, "RETRY",
                                 details={"error": code})
 
+        if code == "NoSuchEntity":
+            return build_response(
+                "detach_admin_policies",
+                incident_id,
+                "SKIPPED",
+                details={
+                    "error": str(e),
+                    "reason": "IAM User not found — target may be an instance role",
+                    "user_name": user_name,
+                },
+            )
+
         logger.error(f"detach_admin_policies 오류: {e}")
         return build_response("detach_admin_policies", incident_id, "FAILED",
                             details={"error": str(e)})
@@ -865,6 +992,36 @@ def detach_admin_policies(user_name: str, incident_id: str, dry_run=False):
 # ======================================================
 # NET-1. VPC Flow Logs 활성화 (조사/포렌식)
 # ======================================================
+def _describe_active_vpc_flow_log_ids(
+    ec2,
+    vpc_id: str,
+    log_group_name: str | None = None,
+) -> list[str]:
+    """VPC에 이미 켜져 있는 Flow Log ID 목록 (조회 실패 시 빈 리스트)."""
+    try:
+        resp = ec2.describe_flow_logs(
+            Filters=[{"Name": "resource-id", "Values": [vpc_id]}],
+        )
+        ids: list[str] = []
+        for fl in resp.get("FlowLogs", []):
+            if fl.get("FlowLogStatus") != "ACTIVE":
+                continue
+            if log_group_name and fl.get("LogGroupName") != log_group_name:
+                continue
+            fid = fl.get("FlowLogId")
+            if fid:
+                ids.append(fid)
+        return ids
+    except Exception as exc:
+        logger.warning("[ACTIONS] describe_flow_logs failed vpc=%s: %s", vpc_id, exc)
+        return []
+
+
+def _flow_log_already_exists_message(message: str) -> bool:
+    msg = (message or "").lower()
+    return "flowlogalreadyexists" in msg.replace(" ", "") or "existing flow log" in msg
+
+
 def enable_vpc_flow_logs(
     vpc_id: str,
     incident_id: str,
@@ -902,10 +1059,30 @@ def enable_vpc_flow_logs(
         # 🛑 [중요 수정] 부분 실패(Unsuccessful) 체크 로직 추가
         # API가 에러를 뱉지 않고 'Unsuccessful' 리스트에 에러를 담아주는 경우를 잡아야 함
         if resp.get("Unsuccessful"):
-            # 실패 사유 첫 번째를 가져옴
             error_msg = resp["Unsuccessful"][0]["Error"]["Message"]
+            error_code = resp["Unsuccessful"][0].get("Error", {}).get("Code", "")
+
+            if error_code == "FlowLogAlreadyExists" or _flow_log_already_exists_message(error_msg):
+                existing = _describe_active_vpc_flow_log_ids(ec2, vpc_id, log_group_name)
+                logger.info(
+                    "[ACTIONS] VPC Flow Logs already exist vpc=%s log_group=%s ids=%s",
+                    vpc_id,
+                    log_group_name,
+                    existing,
+                )
+                return build_response(
+                    "enable_vpc_flow_logs",
+                    incident_id,
+                    "SKIPPED",
+                    rollback_data={"vpc_id": vpc_id},
+                    details={
+                        "message": "VPC Flow Logs already enabled (same configuration)",
+                        "log_group_name": log_group_name,
+                        "existing_flow_log_ids": existing,
+                    },
+                )
+
             logger.error(f"VPC Flow Log 생성 실패 (API 응답): {error_msg}")
-            
             return build_response(
                 "enable_vpc_flow_logs", incident_id, "FAILED",
                 details={"error": f"AWS API Error: {error_msg}"}
@@ -942,6 +1119,26 @@ def enable_vpc_flow_logs(
         if code == "AccessDenied":
             return build_response("enable_vpc_flow_logs", incident_id, "FAILED",
                                 details={"error": "AccessDenied"})
+
+        if code == "FlowLogAlreadyExists" or _flow_log_already_exists_message(str(e)):
+            existing = _describe_active_vpc_flow_log_ids(ec2, vpc_id, log_group_name)
+            logger.info(
+                "[ACTIONS] VPC Flow Logs already exist vpc=%s log_group=%s ids=%s",
+                vpc_id,
+                log_group_name,
+                existing,
+            )
+            return build_response(
+                "enable_vpc_flow_logs",
+                incident_id,
+                "SKIPPED",
+                rollback_data={"vpc_id": vpc_id},
+                details={
+                    "message": "VPC Flow Logs already enabled (same configuration)",
+                    "log_group_name": log_group_name,
+                    "existing_flow_log_ids": existing,
+                },
+            )
 
         if code in ("Throttling", "RequestLimitExceeded"):
             return build_response("enable_vpc_flow_logs", incident_id, "RETRY",
@@ -1032,68 +1229,188 @@ def lookup_cloudtrail_events(
                             details={"error": str(e)})
 
 
-def enable_s3_bucket_logging(bucket_name: str, target_bucket: str, incident_id: str, dry_run: bool = False):
-    """
-    S3 버킷의 서버 액세스 로깅을 활성화합니다.
-    (대상 버킷이 없으면 자동으로 생성합니다)
-    """
-    if dry_run:
-        logger.info(f"[DRY-RUN] S3 로깅 활성화 스킵: {bucket_name}")
-        # build_response 함수가 없다면 mock으로 처리하거나 기존 코드 사용
-        return {"status": "SKIPPED", "action": "enable_s3_bucket_logging"}
+def _s3_logging_target_prefix(source_bucket: str) -> str:
+    return f"logs/{source_bucket}/"
+
+
+def _get_s3_bucket_logging_enabled(s3_client, bucket_name: str) -> dict | None:
+    resp = s3_client.get_bucket_logging(Bucket=bucket_name)
+    enabled = resp.get("LoggingEnabled")
+    return enabled if isinstance(enabled, dict) else None
+
+
+def _s3_logging_matches(
+    enabled: dict | None,
+    target_bucket: str,
+    target_prefix: str,
+) -> bool:
+    if not enabled:
+        return False
+    return (
+        enabled.get("TargetBucket") == target_bucket
+        and enabled.get("TargetPrefix") == target_prefix
+    )
+
+
+def _ensure_s3_log_target_bucket(s3_client, target_bucket: str) -> None:
+    """로그 수신 버킷이 없으면 생성. 이미 있으면 그대로 사용."""
+    region = (
+        os.environ.get("AWS_REGION")
+        or os.environ.get("AWS_DEFAULT_REGION")
+        or "ap-northeast-2"
+    )
 
     try:
-        s3_client = boto3.client('s3')
-        
-        # ========================================================
-        # [추가됨] 대상 버킷(Target Bucket) 존재 확인 및 생성 로직
-        # ========================================================
-        try:
-            s3_client.head_bucket(Bucket=target_bucket)
-        except ClientError as e:
-            error_code = e.response['Error']['Code']
-            # 404: 버킷이 없으면 생성
-            if error_code == '404':
-                logger.info(f"[ACTIONS] 대상 버킷({target_bucket})이 없어 생성합니다.")
-                s3_client.create_bucket(
-                    Bucket=target_bucket,
-                    # 서울 리전(ap-northeast-2) 기준 설정. 리전이 다르면 수정 필요.
-                    CreateBucketConfiguration={'LocationConstraint': 'ap-northeast-2'}
-                )
-                
-                # (권장) 로그 버킷의 퍼블릭 액세스 차단 (보안 강화)
-                s3_client.put_public_access_block(
-                    Bucket=target_bucket,
-                    PublicAccessBlockConfiguration={
-                        'BlockPublicAcls': True, 'IgnorePublicAcls': True,
-                        'BlockPublicPolicy': True, 'RestrictPublicBuckets': True
-                    }
-                )
-            else:
-                # 403 등 다른 에러면 상위 catch로 던짐
-                raise e
-        # ========================================================
+        s3_client.head_bucket(Bucket=target_bucket)
+        logger.info("[ACTIONS] S3 로그 수신 버킷 존재 확인: %s", target_bucket)
+        return
+    except ClientError as e:
+        code = e.response.get("Error", {}).get("Code", "")
+        if code in ("403", "301"):
+            logger.info(
+                "[ACTIONS] head_bucket %s returned %s — 기존 버킷으로 진행",
+                target_bucket,
+                code,
+            )
+            return
+        if code not in ("404", "NoSuchBucket", "NotFound"):
+            raise
 
-        # 로그가 저장될 위치 설정 (target_bucket/logs/bucket_name/ 형식)
-        logging_config = {
-            'LoggingEnabled': {
-                'TargetBucket': target_bucket,
-                'TargetPrefix': f"logs/{bucket_name}/"
-            }
-        }
-        
+    logger.info("[ACTIONS] S3 로그 수신 버킷(%s) 생성 region=%s", target_bucket, region)
+    create_args: dict = {"Bucket": target_bucket}
+    if region != "us-east-1":
+        create_args["CreateBucketConfiguration"] = {"LocationConstraint": region}
+
+    try:
+        s3_client.create_bucket(**create_args)
+        s3_client.put_public_access_block(
+            Bucket=target_bucket,
+            PublicAccessBlockConfiguration={
+                "BlockPublicAcls": True,
+                "IgnorePublicAcls": True,
+                "BlockPublicPolicy": True,
+                "RestrictPublicBuckets": True,
+            },
+        )
+    except ClientError as e:
+        code = e.response.get("Error", {}).get("Code", "")
+        if code in ("BucketAlreadyExists", "BucketAlreadyOwnedByYou"):
+            logger.info("[ACTIONS] S3 로그 수신 버킷 already exists: %s", target_bucket)
+            return
+        raise
+
+
+def enable_s3_bucket_logging(
+    bucket_name: str,
+    target_bucket: str | None,
+    incident_id: str,
+    dry_run: bool = False,
+):
+    """
+    S3 버킷 서버 액세스 로깅 활성화.
+    이미 동일 설정이면 SKIPPED. 로그 수신 버킷이 없으면 생성.
+    """
+    target_bucket = (target_bucket or DEFAULT_S3_LOG_BUCKET or "").strip()
+    target_prefix = _s3_logging_target_prefix(bucket_name) if bucket_name else ""
+
+    if not bucket_name:
+        return build_response(
+            "enable_s3_bucket_logging",
+            incident_id,
+            "SKIPPED",
+            details={"reason": "bucket_name이 없습니다."},
+        )
+
+    if not target_bucket:
+        return build_response(
+            "enable_s3_bucket_logging",
+            incident_id,
+            "SKIPPED",
+            details={"reason": "target_bucket / DEFAULT_S3_LOG_BUCKET이 없습니다."},
+        )
+
+    if dry_run:
+        return build_response(
+            "enable_s3_bucket_logging",
+            incident_id,
+            "DRYRUN",
+            rollback_data={"bucket_name": bucket_name},
+            details={
+                "target_bucket": target_bucket,
+                "target_prefix": target_prefix,
+            },
+        )
+
+    try:
+        s3_client = boto3.client("s3")
+
+        current = _get_s3_bucket_logging_enabled(s3_client, bucket_name)
+        if _s3_logging_matches(current, target_bucket, target_prefix):
+            logger.info(
+                "[ACTIONS] S3 로깅 already enabled source=%s target=%s",
+                bucket_name,
+                target_bucket,
+            )
+            return build_response(
+                "enable_s3_bucket_logging",
+                incident_id,
+                "SKIPPED",
+                rollback_data={"bucket_name": bucket_name},
+                details={
+                    "message": "S3 bucket logging already enabled (same configuration)",
+                    "target_bucket": target_bucket,
+                    "target_prefix": target_prefix,
+                },
+            )
+
+        _ensure_s3_log_target_bucket(s3_client, target_bucket)
+
         s3_client.put_bucket_logging(
             Bucket=bucket_name,
-            BucketLoggingStatus=logging_config
+            BucketLoggingStatus={
+                "LoggingEnabled": {
+                    "TargetBucket": target_bucket,
+                    "TargetPrefix": target_prefix,
+                }
+            },
         )
-        
-        logger.info(f"[ACTIONS] S3 로깅 활성화 성공: {bucket_name}")
-        # build_response 함수가 있는 기존 환경에 맞게 반환
-        return build_response("enable_s3_bucket_logging", incident_id, "SUCCESS")
+
+        logger.info(
+            "[ACTIONS] S3 로깅 활성화 성공 source=%s target=%s",
+            bucket_name,
+            target_bucket,
+        )
+        return build_response(
+            "enable_s3_bucket_logging",
+            incident_id,
+            "SUCCESS",
+            rollback_data={"bucket_name": bucket_name},
+            details={
+                "message": "S3 bucket logging enabled",
+                "target_bucket": target_bucket,
+                "target_prefix": target_prefix,
+            },
+        )
+
+    except ClientError as e:
+        code = e.response.get("Error", {}).get("Code", "")
+        message = e.response.get("Error", {}).get("Message", str(e))
+        logger.error("[ACTIONS] S3 로깅 활성화 실패: %s", e)
+        return build_response(
+            "enable_s3_bucket_logging",
+            incident_id,
+            "FAILED",
+            details={"error": message or str(e), "code": code},
+        )
 
     except Exception as e:
-        logger.error(f"[ACTIONS] S3 로깅 활성화 실패: {e}")
-        return build_response("enable_s3_bucket_logging", incident_id, "FAILED", details={"error": str(e)})
+        logger.error("[ACTIONS] S3 로깅 활성화 실패: %s", e)
+        return build_response(
+            "enable_s3_bucket_logging",
+            incident_id,
+            "FAILED",
+            details={"error": str(e)},
+        )
 
 
 # ======================================================
@@ -1156,6 +1473,11 @@ class Actions:
     # --- Notification ---
     def notify_to_slack(self, message: str, incident_id: str):
         return notify_to_slack(message, incident_id, dry_run=self.dry_run)
+
+    def notify_execution_result_to_slack(self, incident_id: str, success: bool, detail_message: str):
+        return notify_execution_result_to_slack(
+            incident_id, success, detail_message, dry_run=self.dry_run
+        )
 
     # --- [New] Decision Support Functions ---
     def get_resource_tags(self, resource_id: str):

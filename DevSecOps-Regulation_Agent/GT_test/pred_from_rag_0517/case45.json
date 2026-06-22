@@ -1,0 +1,119 @@
+{
+  "sample_id": "case45.json",
+  "finding_type": "Policy:S3/BucketBlockPublicAccessDisabled",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "DSP-17"
+    },
+    {
+      "clause_id": "DSP-10"
+    },
+    {
+      "clause_id": "DSP-16"
+    },
+    {
+      "clause_id": "DSP-02"
+    },
+    {
+      "clause_id": "LOG-03"
+    }
+  ],
+  "selected_level": 1,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "No strong indicators for containment or critical response → observe."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Policy:S3/BucketBlockPublicAccessDisabled AccessKey GeneratedFindingAPIName severity 2 | runtime signals: policy_change, public_access_enabled, s3_misconfiguration, low_severity | runtime tags: guardduty, policy, s3, misconfiguration | candidate actions: disable_access_key, detach_admin_policies, disable_iam_entity, isolate_instance | security meaning: public data exposure or disclosure risk, s3 misconfiguration affects data protection controls, monitoring and incident handling should follow policy drift, security monitoring issue | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: DSP, LOG, IncidentResponse, AccessControl | downweight categories: CEK",
+    "where_filter_used": {
+      "primary_query": "event summary: Policy:S3/BucketBlockPublicAccessDisabled AccessKey GeneratedFindingAPIName severity 2 | runtime signals: policy_change, public_access_enabled, s3_misconfiguration, low_severity | runtime tags: guardduty, policy, s3, misconfiguration | candidate actions: disable_access_key, detach_admin_policies, disable_iam_entity, isolate_instance | security meaning: public data exposure or disclosure risk, s3 misconfiguration affects data protection controls, monitoring and incident handling should follow policy drift, security monitoring issue | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: DSP, LOG, IncidentResponse, AccessControl | downweight categories: CEK",
+      "category_queries": {
+        "DSP": "Data Security and Privacy | security meaning: public data exposure or disclosure risk, s3 misconfiguration affects data protection controls, monitoring and incident handling should follow policy drift | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | Policy:S3/BucketBlockPublicAccessDisabled | AccessKey | GeneratedFindingAPIName",
+        "LOG": "Security Logging and Monitoring | security meaning: public data exposure or disclosure risk, s3 misconfiguration affects data protection controls, monitoring and incident handling should follow policy drift | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | Policy:S3/BucketBlockPublicAccessDisabled | AccessKey | GeneratedFindingAPIName",
+        "IncidentResponse": "ISMS-P 3.1 Incident Response | security meaning: public data exposure or disclosure risk, s3 misconfiguration affects data protection controls, monitoring and incident handling should follow policy drift | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | Policy:S3/BucketBlockPublicAccessDisabled | AccessKey | GeneratedFindingAPIName",
+        "AccessControl": "ISMS-P 2.4 Access Control | security meaning: public data exposure or disclosure risk, s3 misconfiguration affects data protection controls, monitoring and incident handling should follow policy drift | regulatory language: access control, permission grant, permission revoke, privilege review, shared account restriction, administrator separation | Policy:S3/BucketBlockPublicAccessDisabled | AccessKey | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK"
+      ],
+      "downweight_hints": [
+        "CEK"
+      ],
+      "expected_categories": [
+        "DSP",
+        "LOG",
+        "IncidentResponse",
+        "AccessControl"
+      ],
+      "category_weights": {
+        "CEK": -14,
+        "DSP": 14,
+        "IAM": 2,
+        "AccessControl": 4,
+        "IncidentResponse": 5,
+        "LOG": 6
+      },
+      "security_meanings": [
+        "public data exposure or disclosure risk",
+        "s3 misconfiguration affects data protection controls",
+        "monitoring and incident handling should follow policy drift",
+        "security monitoring issue",
+        "audit visibility requirement"
+      ],
+      "regulatory_phrases": [
+        "data protection",
+        "sensitive data",
+        "data retention",
+        "data deletion",
+        "data disclosure",
+        "secure disposal",
+        "data classification",
+        "privacy compliance",
+        "disclosure notification",
+        "sensitive data protection",
+        "data retention and deletion",
+        "audit trail for policy changes",
+        "log monitoring"
+      ],
+      "source_summary": "Policy:S3/BucketBlockPublicAccessDisabled AccessKey GeneratedFindingAPIName severity 2",
+      "matched_rules": [
+        "s3_public_access_policy"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "DSP-17",
+        "title": "Sensitive Data Protection",
+        "category": "DSP"
+      },
+      {
+        "rank": 2,
+        "clause_id": "DSP-10",
+        "title": "Sensitive Data Transfer",
+        "category": "DSP"
+      },
+      {
+        "rank": 3,
+        "clause_id": "DSP-16",
+        "title": "Data Retention and Deletion",
+        "category": "DSP"
+      },
+      {
+        "rank": 4,
+        "clause_id": "DSP-02",
+        "title": "Secure Disposal",
+        "category": "DSP"
+      },
+      {
+        "rank": 5,
+        "clause_id": "LOG-03",
+        "title": "Security Monitoring and Alerting",
+        "category": "LOG"
+      }
+    ]
+  }
+}

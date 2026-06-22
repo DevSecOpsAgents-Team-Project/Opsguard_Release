@@ -1,0 +1,65 @@
+{
+  "sample_id": "case02.json",
+  "finding_type": "PrivilegeEscalation:IAMUser/AnomalousBehavior",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IAM-13"
+    },
+    {
+      "clause_id": "IAM-14"
+    },
+    {
+      "clause_id": "IAM-05"
+    },
+    {
+      "clause_id": "IAM-09"
+    },
+    {
+      "clause_id": "IAM-10"
+    }
+  ],
+  "debug_info": {
+    "query_text_used": "disable_iam_entity | accesskey | anomalousbehavior | api_generatedfindingapiname | PrivilegeEscalation:IAMUser/AnomalousBehavior | identity | stop_instance | aws_api_call | GeneratedFindingAPIName | AccessKey | IAM | iam | iamuser | access control | detach_admin_policies | disable_access_key | authentication | isolate_instance | credential | privilegeescalation",
+    "where_filter_used": null,
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IAM-13",
+        "title": "Uniquely Identifiable Users",
+        "category": "IAM"
+      },
+      {
+        "rank": 2,
+        "clause_id": "IAM-14",
+        "title": "Strong Authentication",
+        "category": "IAM"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IAM-05",
+        "title": "Least Privilege",
+        "category": "IAM"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IAM-09",
+        "title": "Segregation of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 5,
+        "clause_id": "IAM-10",
+        "title": "Management of Privileged Access Roles",
+        "category": "IAM"
+      }
+    ]
+  },
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "Privilege-impacting finding type → containment/mitigation needed."
+  ]
+}

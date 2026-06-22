@@ -1,0 +1,260 @@
+{
+  "schema_version": "1.3",
+  "generated_at": "2026-05-17T00:48:49.343985+00:00",
+  "incident_id": "f29afab7bbf94a8bb7f459415431ace9",
+  "scenario": "CredentialCompromise",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "An AWS CloudTrail trail GeneratedFindingCloudTrailName was disabled.",
+    "severity": "9",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-northeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "escalation_assessment": {
+    "escalation_needed": true,
+    "recommended_level": 2,
+    "confidence": 0.93,
+    "decision_questions": [
+      "GeneratedFindingAccessKeyId가 현재 운영 중인 자동화 또는 서비스 계정에 연결되어 있습니까?",
+      "GeneratedFindingUserName에 대해 즉시 비활성화 시 업무 중단 영향이 허용 가능합니까?",
+      "원격 IP 198.51.100.0를 조직의 정상 관리 IP로 확인할 수 있습니까?",
+      "CloudTrail 비활성화가 단일 트레일 GeneratedFindingCloudTrailName에 한정되는지 추가 범위 확인이 되었습니까?"
+    ],
+    "approval_notes": "Level 1은 이미 수행되었습니다. 본 권고는 승인형 Level 2 및 Level 3 후보 조치만 포함합니다. AccessKey 리소스 사건이므로 EC2 격리/중지/스냅샷 조치는 제외했습니다."
+  },
+  "reasoning_bullets": [
+    "GuardDuty finding indicates CloudTrail trail GeneratedFindingCloudTrailName was disabled by IAM user GeneratedFindingUserName using access key GeneratedFindingAccessKeyId under unusual circumstances.",
+    "This is a credential-compromise scenario affecting audit logging integrity, so escalation beyond Level 1 is warranted to contain credential misuse and preserve auditability.",
+    "Level 2 focuses on lower-impact credential restriction and monitoring actions available from candidate actions.",
+    "Level 3 adds stronger identity containment and network blocking using the observed remote IP 198.51.100.0."
+  ],
+  "regulations": [
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-05",
+      "clause_title": "Audit Logs Monitoring and Response",
+      "relevance": 0.95,
+      "excerpt": "Monitor security audit logs to detect activity outside of typical or expected patterns. Establish and follow a defined process to review and take appropriate and timely actions on detected anomalies.",
+      "why_relevant": "CloudTrail disabling is an anomalous audit-log event and supports timely review, triage, and response to the detected activity."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-03",
+      "clause_title": "Security Monitoring and Alerting",
+      "relevance": 0.91,
+      "excerpt": "Identify and monitor security-related events within applications and the underlying infrastructure. Define and implement a system to generate alerts to responsible stakeholders based on such events and corresponding metrics.",
+      "why_relevant": "The finding is a security-relevant infrastructure event requiring monitoring, alerting, stakeholder notification, and incident handling."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-11",
+      "clause_title": "Transaction/Activity Logging",
+      "relevance": 0.62,
+      "excerpt": "Log and monitor key lifecycle management events to enable auditing and reporting on usage of cryptographic keys.",
+      "why_relevant": "Although focused on cryptographic key lifecycle events, it reinforces preserving auditable activity records and evidence for investigation when sensitive control-plane activity is detected."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-09",
+      "clause_title": "Log Protection",
+      "relevance": 0.97,
+      "excerpt": "The information system protects audit records from unauthorized access, modification, and deletion.",
+      "why_relevant": "Disabling CloudTrail directly threatens audit record protection and justifies access restriction, integrity protection, and evidence preservation."
+    },
+    {
+      "framework": "ISMS_P",
+      "clause_id": "ISMSP-4.2.3",
+      "clause_title": "로그 생성 및 보관",
+      "relevance": 0.96,
+      "excerpt": "시스템 접근 및 보안 이벤트에 대한 로그를 생성하고, 일정 기간 동안 안전하게 보관해야 한다.",
+      "why_relevant": "The incident impacts required security-event logging and retention, supporting actions that restore and protect logging and preserve evidence."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "level": 2,
+      "playbook_name": "Credential Containment",
+      "description": "Lower-impact containment for the compromised access key and related monitoring hardening.",
+      "actions": [
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "detach_admin_policies",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "MEDIUM"
+    }
+  ],
+  "selected_playbook": {
+    "level": 2,
+    "playbook_name": "Credential Containment",
+    "description": "Lower-impact containment for the compromised access key and related monitoring hardening.",
+    "actions": [
+      {
+        "action_id": "disable_access_key",
+        "targets": [
+          {
+            "type": "AccessKey",
+            "id": "GeneratedFindingAccessKeyId",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "detach_admin_policies",
+        "targets": [
+          {
+            "type": "IAMUser",
+            "id": "GeneratedFindingUserName",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "enable_vpc_flow_logs",
+        "targets": [
+          {
+            "type": "VPC",
+            "id": "vpc-generatedvpcid1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      }
+    ],
+    "requires_approval": true,
+    "expected_impact": "MEDIUM"
+  },
+  "alternative_playbooks": [
+    {
+      "level": 3,
+      "playbook_name": "Network Isolation",
+      "description": "Higher-impact containment for suspected credential compromise affecting audit logging, including stronger identity disablement and remote IP blocking.",
+      "actions": [
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "detach_admin_policies",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "disable_iam_entity",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_ip",
+          "targets": [
+            {
+              "type": "IP",
+              "id": "198.51.100.0",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "HIGH",
+      "why_not_selected": "Not selected as primary response; router committed to L2. (AccessKey related event → credential misuse risk.)"
+    }
+  ],
+  "insufficient_context": false,
+  "missing_context_requests": [],
+  "status": "ok",
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "High severity (9.0) but no L3 triggers → prefer L2."
+  ],
+  "retrieved_count": 5,
+  "retrieved_clause_ids": [
+    "LOG-05",
+    "LOG-03",
+    "LOG-11",
+    "LOG-09",
+    "ISMSP-4.2.3"
+  ]
+}

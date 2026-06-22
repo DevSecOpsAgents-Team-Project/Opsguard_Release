@@ -1,0 +1,248 @@
+{
+  "schema_version": "1.3",
+  "generated_at": "2026-05-17T00:49:06.547713+00:00",
+  "incident_id": "9b0696fb8ee14e8e8fae9646310e8207",
+  "scenario": "CredentialCompromise",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "The user GeneratedFindingUserType : GeneratedFindingUserName is anomalously invoking APIs commonly used in Discovery tactics.",
+    "severity": "9",
+    "resource": {
+      "type": "AccessKey",
+      "id": "GeneratedFindingAccessKeyId",
+      "region": "ap-northeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "escalation_assessment": {
+    "escalation_needed": true,
+    "recommended_level": 2,
+    "confidence": 0.89,
+    "decision_questions": [
+      "해당 AccessKey(GeneratedFindingAccessKeyId)가 현재 운영 자동화나 서비스 계정에 연결되어 즉시 비활성화 시 업무 중단이 발생하는가?",
+      "원격 IP 198.51.100.0 이 승인된 관리 네트워크 또는 알려진 제3자 연동 구간인가?",
+      "IAM 사용자/주체 GeneratedFindingUserName 또는 GeneratedFindingPrincipalId 에 관리자 권한 또는 광범위한 정책이 연결되어 있는가?"
+    ],
+    "approval_notes": "Level 1은 이미 수행되었습니다. 추가 조치는 승인형으로 진행하며, 우선 Level 2에서 자격 증명 제한과 모니터링 강화를 검토하고 필요 시 Level 3에서 IAM 주체 비활성화 및 원격 IP 차단으로 확대합니다."
+  },
+  "reasoning_bullets": [
+    "GuardDuty finding is a high-severity anomalous Discovery API pattern tied to AccessKey GeneratedFindingAccessKeyId, indicating possible credential misuse beyond Level 1 baseline mitigation.",
+    "The incident resource type is AccessKey, so credential-focused containment is appropriate; EC2 containment actions are excluded even though instance details appear in the finding.",
+    "Provided regulation context supports enhanced monitoring, anomaly review, auditability, and network-level restriction/visibility, which aligns with staged Level 2 and Level 3 response options.",
+    "A lower-impact candidate is disabling the exposed access key and detaching elevated policies from the IAM entity; a higher-impact candidate is disabling the IAM entity and blocking the suspicious remote IP 198.51.100.0.",
+    "VPC IDs are present in the incident input, so enabling VPC Flow Logs can be proposed as an additional containment/visibility action."
+  ],
+  "regulations": [
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-03",
+      "clause_title": "Security Monitoring and Alerting",
+      "relevance": 0.95,
+      "excerpt": "Identify and monitor security-related events within applications and the underlying infrastructure. Define and implement a system to generate alerts to responsible stakeholders based on such events and corresponding metrics.",
+      "why_relevant": "The finding is an anomalous security event involving unusual API activity from an access key, so monitoring, alerting, triage, and stakeholder notification directly support escalation and follow-up response."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "CEK-09",
+      "clause_title": "Encryption and Key Management Audit",
+      "relevance": 0.69,
+      "excerpt": "Audit encryption and key management systems, policies, and processes with a frequency that is proportional to the risk exposure of the system with audit occurring preferably continuously but at least annually and after any security event(s).",
+      "why_relevant": "Although this incident concerns an IAM access key rather than a KMS key, the clause supports post-incident audit and compliance review of key-management-related controls after a security event."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-05",
+      "clause_title": "Audit Logs Monitoring and Response",
+      "relevance": 0.96,
+      "excerpt": "Monitor security audit logs to detect activity outside of typical or expected patterns. Establish and follow a defined process to review and take appropriate and timely actions on detected anomalies.",
+      "why_relevant": "GuardDuty identified activity outside expected patterns, so this clause directly supports reviewing anomalous logs, triaging the event, and taking timely containment actions."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IVS-03",
+      "clause_title": "Network Security",
+      "relevance": 0.83,
+      "excerpt": "Monitor, encrypt and restrict communications between environments to only authenticated and authorized connections, as justified by the business.",
+      "why_relevant": "The finding includes a suspicious remote IP and available VPC identifiers, so network restriction and additional traffic monitoring such as VPC Flow Logs are relevant containment and visibility measures."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-11",
+      "clause_title": "Transaction/Activity Logging",
+      "relevance": 0.72,
+      "excerpt": "Log and monitor key lifecycle management events to enable auditing and reporting on usage of cryptographic keys.",
+      "why_relevant": "This clause supports preserving and reviewing usage evidence after a security event to improve auditability and reporting, which is relevant to investigating suspicious credential-related activity."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "level": 2,
+      "playbook_name": "Credential Containment",
+      "description": "Lower-impact credential containment for suspicious AccessKey activity, focusing on limiting further misuse while improving visibility and preserving operational continuity where possible.",
+      "actions": [
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "detach_admin_policies",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "MEDIUM"
+    }
+  ],
+  "selected_playbook": {
+    "level": 2,
+    "playbook_name": "Credential Containment",
+    "description": "Lower-impact credential containment for suspicious AccessKey activity, focusing on limiting further misuse while improving visibility and preserving operational continuity where possible.",
+    "actions": [
+      {
+        "action_id": "disable_access_key",
+        "targets": [
+          {
+            "type": "AccessKey",
+            "id": "GeneratedFindingAccessKeyId",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "detach_admin_policies",
+        "targets": [
+          {
+            "type": "IAMUser",
+            "id": "GeneratedFindingUserName",
+            "user_name": "GeneratedFindingUserName",
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "enable_vpc_flow_logs",
+        "targets": [
+          {
+            "type": "VPC",
+            "id": "vpc-generatedvpcid1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      }
+    ],
+    "requires_approval": true,
+    "expected_impact": "MEDIUM"
+  },
+  "alternative_playbooks": [
+    {
+      "level": 3,
+      "playbook_name": "Network Isolation",
+      "description": "Higher-impact containment for likely credential compromise, disabling the implicated IAM identity, blocking the suspicious remote IP, and expanding network visibility.",
+      "actions": [
+        {
+          "action_id": "disable_iam_entity",
+          "targets": [
+            {
+              "type": "IAMUser",
+              "id": "GeneratedFindingUserName",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "disable_access_key",
+          "targets": [
+            {
+              "type": "AccessKey",
+              "id": "GeneratedFindingAccessKeyId",
+              "user_name": "GeneratedFindingUserName",
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_ip",
+          "targets": [
+            {
+              "type": "IPAddress",
+              "id": "198.51.100.0",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "HIGH",
+      "why_not_selected": "Not selected as primary response; router committed to L2. (AccessKey related event → credential misuse risk.)"
+    }
+  ],
+  "insufficient_context": false,
+  "missing_context_requests": [],
+  "status": "ok",
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "High severity (9.0) but no L3 triggers → prefer L2."
+  ],
+  "retrieved_count": 5,
+  "retrieved_clause_ids": [
+    "LOG-03",
+    "CEK-09",
+    "LOG-05",
+    "IVS-03",
+    "LOG-11"
+  ]
+}

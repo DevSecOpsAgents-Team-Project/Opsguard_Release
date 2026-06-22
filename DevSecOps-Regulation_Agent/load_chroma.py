@@ -1,3 +1,12 @@
+# AWS Lambda 등 구버전 sqlite3 환경에서 chromadb가 동작하도록 pysqlite3로 대체
+import sys
+
+try:
+    __import__("pysqlite3")
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    pass
+
 import json
 import chromadb
 from chromadb.config import Settings

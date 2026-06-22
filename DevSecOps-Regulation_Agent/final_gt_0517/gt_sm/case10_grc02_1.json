@@ -1,0 +1,38 @@
+{
+  "sample_id": "gd-grc02-recon-001-nat",
+  "finding_type": "Recon:IAMUser/MaliciousIPCaller",
+  "relevant_docs": [
+    {
+      "doc_id": "GRC-02",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-3.1.1",
+      "relevance": 2
+    },
+    {
+      "doc_id": "SEF-06",
+      "relevance": 2
+    }
+  ],
+  "hard_negatives": [
+    "CEK-13",
+    "LOG-09"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "GRC-02": 2,
+      "ISMSP-3.1.1": 2,
+      "SEF-06": 2,
+      "CEK-13": 0,
+      "LOG-09": 0
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "sample_id": "ys_case35.json",
+  "finding_type": "Stealth:S3/ServerAccessLoggingDisabled",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "LOG-11"
+    },
+    {
+      "clause_id": "LOG-05"
+    },
+    {
+      "clause_id": "LOG-09"
+    },
+    {
+      "clause_id": "ISMSP-4.2.3"
+    },
+    {
+      "clause_id": "LOG-03"
+    }
+  ],
+  "selected_level": 1,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "No strong indicators for containment or critical response → observe."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Stealth:S3/ServerAccessLoggingDisabled AccessKey GeneratedFindingAPIName severity 2 | runtime signals: s3 logging disabled, server access logging disabled, audit logging failure, monitoring gap | runtime tags: guardduty, s3, logging_failure, visibility_loss | security meaning: log collection interruption, audit logging disabled, security event visibility gap, monitoring coverage degradation | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: LOG, Logging, SEF, IncidentResponse | downweight categories: CEK, IAM",
+    "where_filter_used": {
+      "primary_query": "event summary: Stealth:S3/ServerAccessLoggingDisabled AccessKey GeneratedFindingAPIName severity 2 | runtime signals: s3 logging disabled, server access logging disabled, audit logging failure, monitoring gap | runtime tags: guardduty, s3, logging_failure, visibility_loss | security meaning: log collection interruption, audit logging disabled, security event visibility gap, monitoring coverage degradation | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: LOG, Logging, SEF, IncidentResponse | downweight categories: CEK, IAM",
+      "category_queries": {
+        "LOG": "Security Logging and Monitoring | security meaning: log collection interruption, audit logging disabled, security event visibility gap | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | Stealth:S3/ServerAccessLoggingDisabled | AccessKey | GeneratedFindingAPIName",
+        "Logging": "ISMS-P 4.2 Logging | security meaning: log collection interruption, audit logging disabled, security event visibility gap | regulatory language: log retention, log integrity, evidence preservation, tampering or deletion protection, audit trail, enable log file validation | Stealth:S3/ServerAccessLoggingDisabled | AccessKey | GeneratedFindingAPIName",
+        "SEF": "Security Event and Incident Response | security meaning: log collection interruption, audit logging disabled, security event visibility gap | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | Stealth:S3/ServerAccessLoggingDisabled | AccessKey | GeneratedFindingAPIName",
+        "IncidentResponse": "ISMS-P 3.1 Incident Response | security meaning: log collection interruption, audit logging disabled, security event visibility gap | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | Stealth:S3/ServerAccessLoggingDisabled | AccessKey | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK",
+        "IAM"
+      ],
+      "downweight_hints": [
+        "CEK",
+        "IAM"
+      ],
+      "expected_categories": [
+        "LOG",
+        "Logging",
+        "SEF",
+        "IncidentResponse"
+      ],
+      "category_weights": {
+        "CEK": -6,
+        "DSP": 2,
+        "IAM": -7,
+        "IncidentResponse": 5,
+        "Logging": 9,
+        "LOG": 10,
+        "SEF": 7
+      },
+      "security_meanings": [
+        "log collection interruption",
+        "audit logging disabled",
+        "security event visibility gap",
+        "monitoring coverage degradation",
+        "security monitoring issue",
+        "audit visibility requirement"
+      ],
+      "regulatory_phrases": [
+        "data protection",
+        "sensitive data",
+        "data retention",
+        "data deletion",
+        "data disclosure",
+        "secure disposal",
+        "data classification",
+        "privacy compliance",
+        "log monitoring",
+        "event analysis",
+        "audit trail protection",
+        "incident triage readiness"
+      ],
+      "source_summary": "Stealth:S3/ServerAccessLoggingDisabled AccessKey GeneratedFindingAPIName severity 2",
+      "matched_rules": [
+        "logging_disabled"
+      ],
+      "preferred_doc_ids": [
+        "ISMSP-4.2.3",
+        "LOG-09",
+        "LOG-11",
+        "GRC-07"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "LOG-11",
+        "title": "Transaction/Activity Logging",
+        "category": "LOG"
+      },
+      {
+        "rank": 2,
+        "clause_id": "LOG-05",
+        "title": "Audit Logs Monitoring and Response",
+        "category": "LOG"
+      },
+      {
+        "rank": 3,
+        "clause_id": "LOG-09",
+        "title": "Log Protection",
+        "category": "LOG"
+      },
+      {
+        "rank": 4,
+        "clause_id": "ISMSP-4.2.3",
+        "title": "로그 생성 및 보관",
+        "category": "Logging"
+      },
+      {
+        "rank": 5,
+        "clause_id": "LOG-03",
+        "title": "Security Monitoring and Alerting",
+        "category": "LOG"
+      }
+    ]
+  }
+}

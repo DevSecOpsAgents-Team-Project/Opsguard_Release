@@ -102,3 +102,7 @@ desktop.ini
 
 __pycache__/
 *.pyc
+DevSecOps-Regulation_Agent/test_*.py
+DevSecOps-Regulation_Agent/**/chroma_db/
+DevSecOps-Regulation_Agent/**/chroma_store/
+DevSecOps-Regulation_Agent/**/*.sqlite3

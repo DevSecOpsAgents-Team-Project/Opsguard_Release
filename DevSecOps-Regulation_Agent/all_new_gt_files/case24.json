@@ -1,0 +1,59 @@
+{
+  "sample_id": "gd-case24-unauthorizedaccess-console-login-worldwide",
+  "finding_type": "UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B",
+  "relevant_docs": [
+    {
+      "doc_id": "IAM-14",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-2.4.2",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-4.2.4",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-3.1.2",
+      "relevance": 2
+    },
+    {
+      "doc_id": "LOG-05",
+      "relevance": 1
+    },
+    {
+      "doc_id": "LOG-03",
+      "relevance": 1
+    },
+    {
+      "doc_id": "IAM-05",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": ["LOG-11", "LOG-09", "IAM-09", "IAM-10", "LOG-13", "IAM-12"],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "IAM-14": 2,
+      "ISMSP-2.4.2": 2,
+      "ISMSP-4.2.4": 2,
+      "ISMSP-3.1.2": 2,
+      "LOG-05": 1,
+      "LOG-03": 1,
+      "IAM-05": 1,
+      "LOG-11": 0,
+      "LOG-09": 0,
+      "IAM-09": 0,
+      "IAM-10": 0,
+      "LOG-13": 0,
+      "IAM-12": 0
+    }
+  }
+}

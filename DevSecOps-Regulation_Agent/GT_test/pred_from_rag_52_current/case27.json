@@ -1,0 +1,116 @@
+{
+  "sample_id": "case27.json",
+  "finding_type": "Trojan:EC2/DropPoint",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "SEF-06"
+    },
+    {
+      "clause_id": "SEF-03"
+    },
+    {
+      "clause_id": "SEF-05"
+    },
+    {
+      "clause_id": "IVS-03"
+    },
+    {
+      "clause_id": "IVS-06"
+    }
+  ],
+  "selected_level": 3,
+  "route_reasons": [
+    "Finding type suggests active compromise/malware."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Trojan:EC2/DropPoint The EC2 instance i-99999999 is communicating with a Drop Point. The EC2 instance i-99999999 is communicating with a remote host 198.51.100.0 that is known to hold credentials and other stolen data captured by malware. Instance severity 9 | runtime signals: droppoint, ec2, unusual_port, trojan | runtime tags: network, instance, ec2, compute | security meaning: compromised workload behavior, containment and host isolation required, runtime security incident, security monitoring escalation needed | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: SEF, IVS, LOG | downweight categories: IAM, IncidentResponse",
+    "where_filter_used": {
+      "primary_query": "event summary: Trojan:EC2/DropPoint The EC2 instance i-99999999 is communicating with a Drop Point. The EC2 instance i-99999999 is communicating with a remote host 198.51.100.0 that is known to hold credentials and other stolen data captured by malware. Instance severity 9 | runtime signals: droppoint, ec2, unusual_port, trojan | runtime tags: network, instance, ec2, compute | security meaning: compromised workload behavior, containment and host isolation required, runtime security incident, security monitoring escalation needed | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: SEF, IVS, LOG | downweight categories: IAM, IncidentResponse",
+      "category_queries": {
+        "SEF": "Security Event and Incident Response | security meaning: compromised workload behavior, containment and host isolation required, runtime security incident | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | Trojan:EC2/DropPoint | Instance",
+        "IVS": "Infrastructure and Virtualization Security | security meaning: compromised workload behavior, containment and host isolation required, runtime security incident | regulatory language: network security, lateral movement, tls ssl, ingress restriction, workload monitoring, malware detection | Trojan:EC2/DropPoint | Instance",
+        "LOG": "Security Logging and Monitoring | security meaning: compromised workload behavior, containment and host isolation required, runtime security incident | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | Trojan:EC2/DropPoint | Instance"
+      },
+      "negative_hints": [
+        "IAM",
+        "IncidentResponse"
+      ],
+      "downweight_hints": [
+        "IAM",
+        "IncidentResponse"
+      ],
+      "expected_categories": [
+        "SEF",
+        "IVS",
+        "LOG"
+      ],
+      "category_weights": {
+        "IAM": -4,
+        "IncidentResponse": -2,
+        "IVS": 13,
+        "LOG": 8,
+        "SEF": 16
+      },
+      "security_meanings": [
+        "compromised workload behavior",
+        "containment and host isolation required",
+        "runtime security incident",
+        "security monitoring escalation needed"
+      ],
+      "regulatory_phrases": [
+        "least privilege",
+        "privileged access",
+        "credential",
+        "user account",
+        "authentication",
+        "identity",
+        "segregation of privileged access roles",
+        "uniquely identifiable users",
+        "network isolation",
+        "runtime security monitoring",
+        "incident containment",
+        "malware detection and triage"
+      ],
+      "source_summary": "Trojan:EC2/DropPoint The EC2 instance i-99999999 is communicating with a Drop Point. The EC2 instance i-99999999 is communicating with a remote host 198.51.100.0 that is known to hold credentials and other stolen data captured by malware. Instance severity 9",
+      "matched_rules": [
+        "malware_c2"
+      ],
+      "preferred_doc_ids": []
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "SEF-06",
+        "title": "Event Triage Processes",
+        "category": "SEF"
+      },
+      {
+        "rank": 2,
+        "clause_id": "SEF-03",
+        "title": "Incident Response Plans",
+        "category": "SEF"
+      },
+      {
+        "rank": 3,
+        "clause_id": "SEF-05",
+        "title": "Incident Response Metrics",
+        "category": "SEF"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IVS-03",
+        "title": "Network Security",
+        "category": "IVS"
+      },
+      {
+        "rank": 5,
+        "clause_id": "IVS-06",
+        "title": "Segmentation and Segregation",
+        "category": "IVS"
+      }
+    ]
+  }
+}

@@ -13,34 +13,89 @@ ChromaDB는 ./chroma_store/ 디렉토리에 파일로 저장되며,
 """
 
 import os
-from typing import List, Dict, Any
+import shutil
+from pathlib import Path
+from typing import List, Dict, Any, Optional
+
+import sys
+
+try:
+    __import__("pysqlite3")
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    pass
+
 from openai import OpenAI
 import chromadb
 
-# .env 파일에서 환경변수 로드
-# .env 파일을 사용하여 API Key를 안전하게 관리합니다
+# .env 파일에서 환경변수 로드 (로컬 개발용; Lambda에서는 import 시점에 키 없어도 되게 둠)
 from dotenv import load_dotenv
-load_dotenv()  # .env 파일에서 환경변수 로드
 
+load_dotenv()
 
 # ============================================================================
-# 환경 설정
+# 환경 설정 (Lambda: import 시점에 API 키 검증 금지)
 # ============================================================================
 
-# .env 파일에서 OpenAI API Key 불러오기
-# .env 파일을 생성하고 다음 내용을 추가하세요:
-#   OPENAI_API_KEY=sk-your-actual-api-key-here
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+_openai_client: Optional[OpenAI] = None
 
-if not OPENAI_API_KEY:
-    print("❌ 오류: OPENAI_API_KEY가 설정되지 않았습니다.")
-    print("   .env 파일을 생성하고 다음 내용을 추가해주세요:")
-    print("   OPENAI_API_KEY=sk-your-actual-api-key-here")
-    print("\n   .env.example 파일을 참고하세요.")
-    raise ValueError("OPENAI_API_KEY를 .env 파일에 설정해주세요.")
 
-# OpenAI 클라이언트 초기화
-client = OpenAI(api_key=OPENAI_API_KEY)
+def _get_openai_client() -> OpenAI:
+    """임베딩/검색 호출 시에만 키 검증."""
+    global _openai_client
+    if _openai_client is not None:
+        return _openai_client
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError(
+            "OPENAI_API_KEY가 설정되지 않았습니다. Lambda 환경변수 또는 Secrets에 키를 넣으세요."
+        )
+    _openai_client = OpenAI(api_key=key)
+    return _openai_client
+
+
+def _project_root() -> Path:
+    return Path(__file__).resolve().parent
+
+
+def _prepare_writable_chroma_dir() -> str:
+    """
+    Lambda: /var/task 는 읽기 전용 → 번들 chroma_store 를 /tmp 로 복사 후 사용.
+    로컬: CHROMA_PERSIST_DIR 우선, 없으면 ./chroma_store (프로젝트 루트 기준).
+    """
+    override = os.environ.get("CHROMA_PERSIST_DIR")
+    if override:
+        p = Path(override).expanduser().resolve()
+        p.mkdir(parents=True, exist_ok=True)
+        return str(p)
+
+    bundled = _project_root() / "chroma_store"
+
+    if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        work = Path("/tmp") / "chroma_store_work"
+        if not work.exists():
+            work.parent.mkdir(parents=True, exist_ok=True)
+            if bundled.is_dir() and any(bundled.iterdir()):
+                shutil.copytree(bundled, work)
+            else:
+                work.mkdir(parents=True, exist_ok=True)
+        return str(work)
+
+    bundled.mkdir(parents=True, exist_ok=True)
+    return str(bundled)
+
+
+def load_chromadb() -> chromadb.Collection:
+    """
+    Lambda / 로컬 공통: 영속 Chroma 컬렉션 로드.
+    컬렉션이 없으면 REGULATION_DOCUMENTS 로 setup_chromadb 수행 (OpenAI 키 필요).
+    """
+    persist = _prepare_writable_chroma_dir()
+    client = chromadb.PersistentClient(path=persist)
+    try:
+        return client.get_collection("isms_p_test")
+    except Exception:
+        return setup_chromadb(REGULATION_DOCUMENTS, persist_path=persist)
 
 
 # ============================================================================
@@ -58,6 +113,7 @@ def get_embeddings(texts: List[str]) -> List[List[float]]:
         임베딩 벡터 리스트 (각 텍스트에 대한 벡터)
     """
     try:
+        client = _get_openai_client()
         # OpenAI API를 호출하여 임베딩 생성
         # model: text-embedding-3-large 사용
         response = client.embeddings.create(
@@ -145,7 +201,10 @@ TEST_QUERIES = [
 # ChromaDB 초기화 및 데이터 저장
 # ============================================================================
 
-def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
+def setup_chromadb(
+    documents: List[Dict[str, Any]],
+    persist_path: Optional[str] = None,
+) -> chromadb.Collection:
     """
     ChromaDB를 초기화하고 문서를 저장합니다.
     파일 형태로 저장하여 Git으로 공유할 수 있습니다.
@@ -156,18 +215,17 @@ def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
     Returns:
         ChromaDB Collection 객체
     """
+    persist = persist_path or _prepare_writable_chroma_dir()
+    Path(persist).mkdir(parents=True, exist_ok=True)
+
     # ChromaDB 클라이언트 초기화 (파일 저장 모드)
-    # PersistentClient를 사용하면 자동으로 파일로 저장됩니다
-    # 이 디렉토리는 Git에 포함되어 팀원과 공유할 수 있습니다
-    chroma_client = chromadb.PersistentClient(
-        path="./chroma_store"
-    )
+    chroma_client = chromadb.PersistentClient(path=persist)
     
     # 기존 collection이 있는지 확인
     try:
         collection = chroma_client.get_collection("isms_p_test")
         print("📦 기존 ChromaDB 데이터를 불러왔습니다.")
-        print(f"   저장 위치: ./chroma_store\n")
+        print(f"   저장 위치: {persist}\n")
         return collection
     except:
         # collection이 없으면 새로 생성
@@ -209,7 +267,7 @@ def setup_chromadb(documents: List[Dict[str, Any]]) -> chromadb.Collection:
     # PersistentClient는 자동으로 파일로 저장되므로 별도의 persist() 호출 불필요
     
     print(f"✅ ChromaDB에 {len(documents)}개 문서 저장 완료")
-    print(f"   저장 위치: ./chroma_store")
+    print(f"   저장 위치: {persist}")
     print(f"   이 디렉토리를 Git에 커밋하면 팀원과 공유할 수 있습니다.\n")
     
     return collection

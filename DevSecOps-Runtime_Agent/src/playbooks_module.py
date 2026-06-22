@@ -4,6 +4,7 @@ import logging
 import traceback
 from .actions_module import Actions, build_response
 from . import db_logger_module
+from .guardduty_context import is_instance_role_credential_finding
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -27,6 +28,57 @@ def find_key_recursive(data, target_key):
             result = find_key_recursive(item, target_key)
             if result: return result
     return None
+
+    # =========================================================
+# 🛠️ [Helper] GuardDuty 이벤트에서 자동으로 키워드 추출
+# =========================================================
+def extract_signals_and_tags_dynamically(detail: dict) -> tuple[list, list]:
+    key_signals = set()
+    tags = set()
+
+    # 1. Finding Type에서 추출 (예: "PrivilegeEscalation:IAMUser/AnomalousBehavior")
+    finding_type = detail.get("type") or detail.get("Type") or ""
+    if finding_type:
+        # ':' 와 '/' 로 문자열을 쪼개서 각각의 단어를 추출
+        parts = finding_type.replace(":", "/").split("/")
+        for part in parts:
+            if part.strip():
+                # 카멜케이스 단어를 그대로 소문자로 변환해 시그널로 추가
+                key_signals.add(part.strip().lower()) 
+
+    # 2. Resource Type에서 태그 추출 (예: "AccessKey", "Instance")
+    resource_type = find_key_recursive(detail, "resourceType")
+    if resource_type:
+        tags.add(str(resource_type).lower())
+
+    # 기본 카테고리 태그 자동 분류
+    finding_type_lower = finding_type.lower()
+    if "iam" in finding_type_lower or "accesskey" in str(resource_type).lower():
+        tags.update(["iam", "identity", "credential"])
+    elif "s3" in finding_type_lower or "bucket" in str(resource_type).lower():
+        tags.update(["s3", "storage"])
+    elif "ec2" in finding_type_lower or "instance" in str(resource_type).lower():
+        tags.update(["ec2", "compute", "network"])
+
+    # 3. Service/Action 에서 공격 상세 정보 추출
+    action_type = find_key_recursive(detail, "actionType")
+    if action_type:
+        key_signals.add(str(action_type).lower()) # 예: 'aws_api_call'
+
+    api_name = find_key_recursive(detail, "api")
+    if api_name:
+        key_signals.add(f"api_{str(api_name).lower()}") # 예: 'api_deleteaccountpasswordpolicy'
+
+    network_action = find_key_recursive(detail, "networkConnectionAction")
+    if network_action:
+        key_signals.update(["network_connection", "suspicious_ip"])
+        
+    port = find_key_recursive(detail, "localPortDetails")
+    if port:
+        key_signals.add("unusual_port")
+
+    # set을 list로 변환하여 반환
+    return list(key_signals), list(tags)
 
 # ==========================================
 # 🚨 시나리오 1: EC2 인스턴스 격리 플레이북
@@ -178,6 +230,22 @@ def playbook_iam_abuse_response(event: dict, actions=None):
             logger.warning(f"IAM User Name을 찾을 수 없어 대응을 건너뜁니다. ID: {incident_id}")
             return {"status": "SKIPPED", "reason": "User Name Not Found", "incident_id": incident_id}
 
+        finding_type = details.get("type") or details.get("Type") or ""
+        if is_instance_role_credential_finding(details, finding_type):
+            instance_id = find_key_recursive(details, "instanceId")
+            logger.warning(
+                "Instance role credential finding — IAM User 차단 스킵 (instance=%s, role=%s)",
+                instance_id,
+                user_name,
+            )
+            return {
+                "status": "SKIPPED",
+                "reason": "Instance role credential; use EC2 isolation playbook",
+                "incident_id": incident_id,
+                "role_name": user_name,
+                "instance_id": instance_id,
+            }
+
         iam_block_result = actions.disable_iam_entity(user_name, incident_id)
         db_logger_module.log_action(incident_id, iam_block_result, "IAM_PERMISSION_ABUSE")
 
@@ -319,9 +387,9 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
             resource_id = instance_id
             resource_type = "EC2"
 
-    # [D] IAM 리소스 보정 (중요!)
-    # IAM 관련 사고인데 resource_id를 못 찾았다면, 사용자 이름이 곧 대상 리소스임
-    if "IAM" in finding_type or "Backdoor" in finding_type: # Backdoor:IAMUser 등
+    # [D] IAM 리소스 보정 (Instance role credential 은 EC2 대상 유지)
+    instance_role_cred = is_instance_role_credential_finding(detail, finding_type)
+    if not instance_role_cred and ("IAM" in finding_type or "Backdoor" in finding_type):
         if not resource_id and user_name != "Unknown-User":
             resource_id = user_name
             resource_type = "IAM"
@@ -329,22 +397,32 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
     # 값 보정 (여전히 없으면)
     resource_id = resource_id if resource_id else "UNKNOWN-RES"
 
+    role_label = f"{user_name} (instance role)" if instance_role_cred and user_name != "Unknown-User" else user_name
+
     print(f"\n🔍 [SOC-REPORT]")
     print(f" - 사고 유형: {finding_type}")
     print(f" - 위험도: {severity}")
-    print(f" - 대상 사용자: {user_name}")
+    print(f" - 대상 사용자: {role_label}")
     print(f" - 대상 리소스: {resource_id} (타입: {resource_type})")
+    if instance_role_cred:
+        print(f" - 참고: InstanceCredentialExfiltration — IAM User API 대신 EC2 대응")
 
     # --- 대응 단계 (Actions) ---
 
     # [Step 1] Slack 알림
-    slack_msg = f"🚨 *GuardDuty 위협 감지*\n- 유형: `{finding_type}`\n- 대상: `{resource_id}`\n- 사용자: `{user_name}`"
+    slack_msg = (
+        f"🚨 *GuardDuty 위협 감지*\n"
+        f"- 유형: `{finding_type}`\n"
+        f"- 심각도(Severity): `{severity}`\n"
+        f"- 대상: `{resource_id}`\n"
+        f"- 사용자/역할: `{role_label}`"
+    )
     actions.notify_to_slack(slack_msg, finding_id)
 
     # [Step 2] 사고 유형별 맞춤 대응
 
-    # CASE A: IAM 권한 남용 (타입이 IAM이거나, 사용자가 식별된 경우)
-    if resource_type == "IAM" or "IAM" in finding_type:
+    # CASE A: IAM User 권한 남용 (Instance role credential 은 제외)
+    if not instance_role_cred and (resource_type == "IAM" or "IAM" in finding_type):
         if user_name != "Unknown-User":
             print(f"⚙️ [IAM-ACTION] 사용자 '{user_name}' 격리 로직 실행")
             
@@ -373,8 +451,10 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
         else:
              print(f"⚠️ [S3-SKIP] 버킷 이름을 식별할 수 없어 대응 중단.")
 
-    # CASE C: EC2 런타임 위협
-    elif resource_type == "EC2" or (resource_id.startswith("i-") and resource_id != "i-99999999"):
+    # CASE C: EC2 런타임 / Instance role credential 유출
+    elif instance_role_cred or resource_type == "EC2" or (
+        resource_id.startswith("i-") and resource_id != "i-99999999"
+    ):
         print(f"⚙️ [EC2-ACTION] 인스턴스 '{resource_id}' 증거 보존 및 태깅")
         
         # 1. 태깅
@@ -388,9 +468,17 @@ def playbook_integrated_base_mitigation(event: dict, actions=None):
     else:
         print(f"ℹ️ [SKIP] 정의되지 않은 리소스 타입이거나 테스트 샘플입니다. (Type: {resource_type})")
 
+    # =================================================================
+    # ★ 추가된 부분: GuardDuty 데이터에서 자동으로 힌트(키워드) 추출
+    # =================================================================
+    signals, generated_tags = extract_signals_and_tags_dynamically(detail)
+    # =================================================================
+
     return {
         "status": "COMPLETED",
         "finding_id": finding_id,
         "extracted_resource": resource_id,
-        "extracted_user": user_name
+        "extracted_user": user_name,
+        "key_signals": signals,         # 자동 추출된 시그널
+        "tags": generated_tags          # 자동 추출된 태그
     }

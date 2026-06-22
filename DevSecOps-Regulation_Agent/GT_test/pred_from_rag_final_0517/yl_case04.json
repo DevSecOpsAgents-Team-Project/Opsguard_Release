@@ -1,0 +1,124 @@
+{
+  "sample_id": "yl_case04.json",
+  "finding_type": "PrivilegeEscalation:IAMUser/AnomalousBehavior",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IAM-10"
+    },
+    {
+      "clause_id": "IAM-05"
+    },
+    {
+      "clause_id": "ISMSP-2.4.1"
+    },
+    {
+      "clause_id": "IAM-14"
+    },
+    {
+      "clause_id": "IAM-09"
+    }
+  ],
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "Privilege-impacting finding type → containment/mitigation needed."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: PrivilegeEscalation:IAMUser/AnomalousBehavior The user GeneratedFindingUserType : GeneratedFindingUserName is anomalously invoking APIs commonly used in PrivilegeEscalation tactics. APIs commonly used in PrivilegeEscalation tactics were invoked by user GeneratedFindingUserType : GeneratedFindingUserName under unusual circumstances. Such activity is not typically seen from this user. AccessKey GeneratedFindingAPIName severity 8 | runtime signals: iamuser, api_generatedfindingapiname, anomalousbehavior, aws_api_call | runtime tags: identity, credential, accesskey, iam | security meaning: privileged access misuse, authorization control weakness, least privilege failure, governance and approval breakdown | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | expected categories: IAM, AccessControl, GRC, LOG | downweight categories: CEK",
+    "where_filter_used": {
+      "primary_query": "event summary: PrivilegeEscalation:IAMUser/AnomalousBehavior The user GeneratedFindingUserType : GeneratedFindingUserName is anomalously invoking APIs commonly used in PrivilegeEscalation tactics. APIs commonly used in PrivilegeEscalation tactics were invoked by user GeneratedFindingUserType : GeneratedFindingUserName under unusual circumstances. Such activity is not typically seen from this user. AccessKey GeneratedFindingAPIName severity 8 | runtime signals: iamuser, api_generatedfindingapiname, anomalousbehavior, aws_api_call | runtime tags: identity, credential, accesskey, iam | security meaning: privileged access misuse, authorization control weakness, least privilege failure, governance and approval breakdown | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | expected categories: IAM, AccessControl, GRC, LOG | downweight categories: CEK",
+      "category_queries": {
+        "IAM": "Identity and Access Management | security meaning: privileged access misuse, authorization control weakness, least privilege failure | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | PrivilegeEscalation:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName",
+        "AccessControl": "ISMS-P 2.4 Access Control | security meaning: privileged access misuse, authorization control weakness, least privilege failure | regulatory language: access control, permission grant, permission revoke, privilege review, shared account restriction, administrator separation | PrivilegeEscalation:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName",
+        "GRC": "Governance, Risk, and Compliance | security meaning: privileged access misuse, authorization control weakness, least privilege failure | regulatory language: governance, risk management, compliance assessment, accountability, control ownership, audit program | PrivilegeEscalation:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName",
+        "LOG": "Security Logging and Monitoring | security meaning: privileged access misuse, authorization control weakness, least privilege failure | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | PrivilegeEscalation:IAMUser/AnomalousBehavior | AccessKey | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK"
+      ],
+      "downweight_hints": [
+        "CEK"
+      ],
+      "expected_categories": [
+        "IAM",
+        "AccessControl",
+        "GRC",
+        "LOG"
+      ],
+      "category_weights": {
+        "CEK": -6,
+        "GRC": 7,
+        "IAM": 15,
+        "AccessControl": 14,
+        "IncidentResponse": 2,
+        "LOG": 3,
+        "SEF": 3
+      },
+      "security_meanings": [
+        "privileged access misuse",
+        "authorization control weakness",
+        "least privilege failure",
+        "governance and approval breakdown"
+      ],
+      "regulatory_phrases": [
+        "incident handling",
+        "containment",
+        "network isolation",
+        "response procedure",
+        "assign responsibility",
+        "execute playbook",
+        "breach response",
+        "intrusion response",
+        "initial response",
+        "least privilege",
+        "privileged access review",
+        "role segregation"
+      ],
+      "source_summary": "PrivilegeEscalation:IAMUser/AnomalousBehavior The user GeneratedFindingUserType : GeneratedFindingUserName is anomalously invoking APIs commonly used in PrivilegeEscalation tactics. APIs commonly used in PrivilegeEscalation tactics were invoked by user GeneratedFindingUserType : GeneratedFindingUserName under unusual circumstances. Such activity is not typically seen from this user. AccessKey GeneratedFindingAPIName severity 8",
+      "matched_rules": [
+        "privilege_escalation"
+      ],
+      "preferred_doc_ids": [
+        "ISMSP-2.4.1",
+        "IAM-05",
+        "GRC-06",
+        "IAM-10"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IAM-10",
+        "title": "Management of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 2,
+        "clause_id": "IAM-05",
+        "title": "Least Privilege",
+        "category": "IAM"
+      },
+      {
+        "rank": 3,
+        "clause_id": "ISMSP-2.4.1",
+        "title": "접근권한 부여 및 관리",
+        "category": "AccessControl"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IAM-14",
+        "title": "Strong Authentication",
+        "category": "IAM"
+      },
+      {
+        "rank": 5,
+        "clause_id": "IAM-09",
+        "title": "Segregation of Privileged Access Roles",
+        "category": "IAM"
+      }
+    ]
+  }
+}

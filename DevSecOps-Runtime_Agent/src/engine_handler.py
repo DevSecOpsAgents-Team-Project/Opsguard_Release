@@ -2,6 +2,7 @@
 import json
 import logging
 from typing import Any, Dict
+from .dispatcher_module import ActionDispatcher
 
 # playbook 함수 직접 import (필수)
 from .playbooks_module import (
@@ -26,6 +27,42 @@ PLAYBOOK_MAP = {
     "IAM_PERMISSION_ABUSE": playbook_iam_abuse_response, # 새로운 IAM 플레이북 매핑
     "EC2_INVESTIGATION_LOGGING": playbook_ec2_investigation_logging,
 }
+
+def _execute_approved_actions(event: Dict[str, Any]) -> Dict[str, Any]:
+    """슬랙에서 승인된 L2/L3 액션들을 Dispatcher를 통해 동적으로 실행합니다."""
+    incident_id = event.get("incident_id", "UNKNOWN")
+    logger.info(f"🚀 [조치 실행] 슬랙 승인에 의한 L2/L3 조치 시작 (ID: {incident_id})")
+
+    dispatcher = ActionDispatcher(dry_run=False)
+    execution_results = dispatcher.dispatch(event)
+
+    ok_statuses = {"SUCCESS", "SKIPPED"}
+    failed = [r for r in execution_results if r.get("status") not in ok_statuses]
+    if not execution_results:
+        success = False
+        detail = "실행할 조치가 없거나 recommended_actions가 비어 있습니다."
+    elif failed:
+        success = False
+        detail_lines = [
+            f"• `{r.get('action_id', '?')}` ({r.get('target_id', 'N/A')}): {r.get('status', 'UNKNOWN')}"
+            + (f" — {r.get('error')}" if r.get("error") else "")
+            for r in failed
+        ]
+        detail = "다음 조치가 실패했습니다:\n" + "\n".join(detail_lines)
+    else:
+        success = True
+        detail = f"승인된 플레이북 조치 {len(execution_results)}건이 정상 처리되었습니다."
+
+    actions = Actions()
+    actions.notify_execution_result_to_slack(incident_id, success, detail)
+
+    return {
+        "status": "ACTION_EXECUTED" if success else "ACTION_PARTIAL_OR_FAILED",
+        "incident_id": incident_id,
+        "execution_success": success,
+        "detail": detail,
+        "results": execution_results,
+    }
 
 
 def _detect_scenario(event: Dict[str, Any]) -> str:
@@ -71,18 +108,58 @@ def lambda_handler(event: Any, context: Any = None) -> Dict[str, Any]:
         actions = Actions()
 
         # ==================================================================
-        # 🆕 [추가] Base Mitigation: 무조건 먼저 실행
+        # 🟢 [분기 1] 슬랙 버튼 승인을 통해 들어온 '조치 실행' 요청인지 확인
         # ==================================================================
+        if "recommended_actions" in event:
+            try:
+                return _execute_approved_actions(event)
+            except Exception as e:
+                incident_id = event.get("incident_id", "UNKNOWN")
+                logger.exception("슬랙 승인 조치 실행 중 오류: %s", e)
+                actions = Actions()
+                actions.notify_execution_result_to_slack(
+                    incident_id, False, f"조치 실행 중 예외 발생: {e}"
+                )
+                return {
+                    "status": "error",
+                    "incident_id": incident_id,
+                    "execution_success": False,
+                    "detail": f"조치 실행 중 예외 발생: {e}",
+                    "reason": str(e),
+                }
+
+        # ==================================================================
+        # 🔵 [분기 2] GuardDuty에서 처음 들어온 이벤트 처리 (Level 1)
+        # ==================================================================
+        incident_id = event.get("id", "UNKNOWN")
         base_result = None
+        key_signals = [] # 분리할 변수 미리 선언
+        tags = []        # 분리할 변수 미리 선언
+
         try:
             logger.info(f"🛡️ [Base Mitigation] 공통 대응 시작 (ID: {incident_id})")
             base_result = playbook_integrated_base_mitigation(event, actions=actions)
+
+            # --- 💡 핵심 수정 부분: base_result에서 데이터 분리하기 ---
+            if isinstance(base_result, dict):
+                # .pop()을 사용하면 base_result 안에서는 해당 키가 삭제되고 값만 빠져나옵니다.
+                key_signals = base_result.pop("key_signals", [])
+                tags = base_result.pop("tags", [])
+            # ----------------------------------------------------
+
             logger.info("✅ [Base Mitigation] 공통 대응 완료")
         except Exception as e:
             logger.error(f"❌ [Base Mitigation] 실패 (계속 진행함): {e}")
             base_result = {"status": "error", "error": str(e)}
-        # ==================================================================
-
+            
+        # 🎯 현재 모드: 처음 들어온 GuardDuty 로그는 여기서 Level 1만 실행하고 MCP로 넘김
+        return {
+            "status": "LEVEL1_ONLY",
+            "base_result": base_result,
+            "key_signals": key_signals,   # 팀원이 요청한 대로 1 Depth에 배치!
+            "tags": tags,                 # 팀원이 요청한 대로 1 Depth에 배치!
+            "incident_id": incident_id
+        }
         
         scenario_key = _detect_scenario(event)
 

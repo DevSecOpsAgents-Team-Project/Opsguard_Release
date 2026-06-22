@@ -1,0 +1,2 @@
+dataset,case_count,excluded_cases,recall@2,recall@5,MRR,nDCG@2,HN_Error@2,level_correct
+sm_filtered,14,sm_case08_4.2.4_1.json|sm_case10_grc02_1.json|sm_case13_grc05_2.json,0.6429,0.8571,0.5714,0.4124,0.0,0.6429

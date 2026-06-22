@@ -1,0 +1,47 @@
+{
+  "sample_id": "gd-case03-impact-s3-malicious-ip",
+  "finding_type": "Impact:S3/MaliciousIPCaller",
+  "relevant_docs": [
+    {
+      "doc_id": "DSP-17",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IAM-16",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IAM-05",
+      "relevance": 2
+    },
+    {
+      "doc_id": "DSP-10",
+      "relevance": 1
+    },
+    {
+      "doc_id": "IAM-14",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": ["IAM-09", "DSP-02", "IAM-13", "IAM-12"],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "DSP-17": 2,
+      "IAM-16": 2,
+      "IAM-05": 2,
+      "DSP-10": 1,
+      "IAM-14": 1,
+      "IAM-09": 0,
+      "DSP-02": 0,
+      "IAM-13": 0,
+      "IAM-12": 0
+    }
+  }
+}

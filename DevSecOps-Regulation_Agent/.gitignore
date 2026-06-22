@@ -1,51 +1,8 @@
-# 환경변수 파일 (민감한 정보 포함)
-.env
-
-
-chroma_db/
-*.sqlite3
-*.bin
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# 가상환경
 venv/
-env/
-ENV/
-.venv
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
+__pycache__/
+*.pyc
 .DS_Store
-Thumbs.db
-
-# ChromaDB 데이터
-chroma_store/
-*.db
-
+chroma_db/
+chroma_db_backup/
+*.zip
+.conda/

@@ -1,0 +1,58 @@
+{
+  "sample_id": "gd-case43-instance-credential-exfiltration-inside-aws",
+  "finding_type": "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS",
+  "relevant_docs": [
+    {
+      "doc_id": "IAM-14",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-3.1.2",
+      "relevance": 2
+    },
+    {
+      "doc_id": "ISMSP-2.4.2",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IAM-05",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IAM-16",
+      "relevance": 1
+    },
+    {
+      "doc_id": "IVS-04",
+      "relevance": 1
+    },
+    {
+      "doc_id": "IVS-09",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": ["IAM-13", "IAM-09", "IAM-10", "IAM-12", "IVS-06"],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "IAM-14": 2,
+      "ISMSP-3.1.2": 2,
+      "ISMSP-2.4.2": 2,
+      "IAM-05": 2,
+      "IAM-16": 1,
+      "IVS-04": 1,
+      "IVS-09": 1,
+      "IAM-13": 0,
+      "IAM-09": 0,
+      "IAM-10": 0,
+      "IAM-12": 0,
+      "IVS-06": 0
+    }
+  }
+}

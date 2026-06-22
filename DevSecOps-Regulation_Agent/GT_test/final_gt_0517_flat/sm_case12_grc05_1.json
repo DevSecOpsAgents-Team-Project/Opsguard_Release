@@ -1,0 +1,38 @@
+{
+  "sample_id": "gd-grc05-ec2-002-nat",
+  "finding_type": "Behavior:EC2/TrafficVolumeUnusual",
+  "relevant_docs": [
+    {
+      "doc_id": "GRC-05",
+      "relevance": 2
+    },
+    {
+      "doc_id": "SEF-06",
+      "relevance": 2
+    },
+    {
+      "doc_id": "IVS-09",
+      "relevance": 2
+    }
+  ],
+  "hard_negatives": [
+    "CEK-13",
+    "DSP-02"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "GRC-05": 2,
+      "SEF-06": 2,
+      "IVS-09": 2,
+      "CEK-13": 0,
+      "DSP-02": 0
+    }
+  }
+}

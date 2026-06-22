@@ -1,0 +1,103 @@
+{
+  "sample_id": "case01.json",
+  "finding_type": "Stealth:IAMUser/PasswordPolicyChange",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "IAM-10"
+    },
+    {
+      "clause_id": "IAM-09"
+    },
+    {
+      "clause_id": "IAM-14"
+    },
+    {
+      "clause_id": "IAM-13"
+    },
+    {
+      "clause_id": "IAM-05"
+    }
+  ],
+  "selected_level": 1,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "No strong indicators for containment or critical response → observe."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Stealth:IAMUser/PasswordPolicyChange The account password policy was weakened by calling GeneratedFindingAPIName. Account password policy was weakened by GeneratedFindingUserName calling GeneratedFindingAPIName. A password policy enforces the complexity of passwords created in the AWS account. A weaker password policy permits the creation of passwords that are easy to remember and potentially easier to guess, thereby creating a security risk. AccessKey GeneratedFindingAPIName severity 2 | runtime signals: passwordpolicychange, iamuser, aws_api_call, api_generatedfindingapiname | runtime tags: credential, identity, iam, accesskey | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: IAM, AccessControl, GRC | downweight categories: CEK",
+    "where_filter_used": {
+      "primary_query": "event summary: Stealth:IAMUser/PasswordPolicyChange The account password policy was weakened by calling GeneratedFindingAPIName. Account password policy was weakened by GeneratedFindingUserName calling GeneratedFindingAPIName. A password policy enforces the complexity of passwords created in the AWS account. A weaker password policy permits the creation of passwords that are easy to remember and potentially easier to guess, thereby creating a security risk. AccessKey GeneratedFindingAPIName severity 2 | runtime signals: passwordpolicychange, iamuser, aws_api_call, api_generatedfindingapiname | runtime tags: credential, identity, iam, accesskey | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | expected categories: IAM, AccessControl, GRC | downweight categories: CEK",
+      "category_queries": {
+        "IAM": "Identity and Access Management | regulatory language: least privilege, privileged access, credential, user account, authentication, identity | Stealth:IAMUser/PasswordPolicyChange | AccessKey | GeneratedFindingAPIName",
+        "AccessControl": "ISMS-P 2.4 Access Control | regulatory language: access control, permission grant, permission revoke, privilege review, shared account restriction, administrator separation | Stealth:IAMUser/PasswordPolicyChange | AccessKey | GeneratedFindingAPIName",
+        "GRC": "Governance, Risk, and Compliance | regulatory language: governance, risk management, compliance assessment, accountability, control ownership, audit program | Stealth:IAMUser/PasswordPolicyChange | AccessKey | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK"
+      ],
+      "downweight_hints": [
+        "CEK"
+      ],
+      "expected_categories": [
+        "IAM",
+        "AccessControl",
+        "GRC"
+      ],
+      "category_weights": {
+        "CEK": -6,
+        "GRC": 3,
+        "IAM": 6,
+        "AccessControl": 4
+      },
+      "security_meanings": [],
+      "regulatory_phrases": [
+        "least privilege",
+        "privileged access",
+        "credential",
+        "user account",
+        "authentication",
+        "identity",
+        "segregation of privileged access roles",
+        "uniquely identifiable users"
+      ],
+      "source_summary": "Stealth:IAMUser/PasswordPolicyChange The account password policy was weakened by calling GeneratedFindingAPIName. Account password policy was weakened by GeneratedFindingUserName calling GeneratedFindingAPIName. A password policy enforces the complexity of passwords created in the AWS account. A weaker password policy permits the creation of passwords that are easy to remember and potentially easier to guess, thereby creating a security risk. AccessKey GeneratedFindingAPIName severity 2",
+      "matched_rules": [],
+      "preferred_doc_ids": []
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "IAM-10",
+        "title": "Management of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 2,
+        "clause_id": "IAM-09",
+        "title": "Segregation of Privileged Access Roles",
+        "category": "IAM"
+      },
+      {
+        "rank": 3,
+        "clause_id": "IAM-14",
+        "title": "Strong Authentication",
+        "category": "IAM"
+      },
+      {
+        "rank": 4,
+        "clause_id": "IAM-13",
+        "title": "Uniquely Identifiable Users",
+        "category": "IAM"
+      },
+      {
+        "rank": 5,
+        "clause_id": "IAM-05",
+        "title": "Least Privilege",
+        "category": "IAM"
+      }
+    ]
+  }
+}

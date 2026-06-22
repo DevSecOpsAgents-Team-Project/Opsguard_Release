@@ -1,0 +1,34 @@
+{
+  "sample_id": "gd-s3-anonymous-access-granted-001",
+  "query": "Policy:S3/BucketAnonymousAccessGranted | s3 bucket anonymous public access granted | unauthenticated access enabled | no credential required | resource:AccessKey | resource:S3Bucket | iam user | access key | api:GeneratedFindingAPIName | remote ip | affected resource S3Bucket | effective permission PUBLIC | anonymous access | AllowsPublicReadAccess | severity:8 | candidate_actions: 익명 접근 허용된 4개 버킷 ACL 및 버킷 정책 즉시 차단 | candidate_actions: 인증 없이 노출된 객체 목록 확인 및 민감 데이터 포함 여부 점검 | candidate_actions: 익명 접근 허용 API 호출 계정 자격증명 침해 여부 조사",
+  "finding_type": "Policy:S3/BucketAnonymousAccessGranted",
+  "relevant_docs": [
+    {"doc_id": "DSP-18", "relevance": 2},
+    {"doc_id": "ISMSP-2.4.2", "relevance": 2},
+    {"doc_id": "DSP-17", "relevance": 2},
+    {"doc_id": "ISMSP-3.1.2", "relevance": 1}
+  ],
+  "hard_negatives": [
+    "DSP-02",
+    "CEK-06",
+    "IVS-04"
+  ],
+  "expected": {
+    "selected_level": 3
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 6
+  },
+  "grading": {
+    "relevance": {
+      "DSP-18": 2,
+      "ISMSP-2.4.2": 2,
+      "DSP-17": 2,
+      "ISMSP-3.1.2": 1,
+      "DSP-02": 0,
+      "CEK-06": 0,
+      "IVS-04": 0
+    }
+  }
+}

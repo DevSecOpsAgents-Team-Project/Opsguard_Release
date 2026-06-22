@@ -1,0 +1,38 @@
+{
+  "sample_id": "gd-ismsp424-iam-002-nat",
+  "finding_type": "Recon:IAMUser/MaliciousIPCaller",
+  "relevant_docs": [
+    {
+      "doc_id": "ISMSP-4.2.4",
+      "relevance": 2
+    },
+    {
+      "doc_id": "LOG-03",
+      "relevance": 2
+    },
+    {
+      "doc_id": "GRC-02",
+      "relevance": 1
+    }
+  ],
+  "hard_negatives": [
+    "CEK-13",
+    "DSP-16"
+  ],
+  "expected": {
+    "selected_level": 2
+  },
+  "meta": {
+    "label_basis": "control_id",
+    "top_k": 5
+  },
+  "grading": {
+    "relevance": {
+      "ISMSP-4.2.4": 2,
+      "LOG-03": 2,
+      "GRC-02": 1,
+      "CEK-13": 0,
+      "DSP-16": 0
+    }
+  }
+}

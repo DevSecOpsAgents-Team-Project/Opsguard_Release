@@ -1,0 +1,43 @@
+{
+    "sample_id": "gd-iam-maliciousip-001-nat",
+    "query_type": "nat",
+    "queries": {
+        "nat": "악성 IP 기반 IAM API 호출 발생 시 비인가 접근 차단과 권한 검증을 통한 접근 통제 대응",
+        "kwd": "unauthorized access | malicious ip | iam api call | remote ip | access control | permission validation"
+    },
+    "finding_type": "UnauthorizedAccess:IAMUser/MaliciousIPCaller",
+    "relevant_docs": [
+        {
+            "doc_id": "IAM-16",
+            "relevance": 2
+        },
+        {
+            "doc_id": "IAM-05",
+            "relevance": 2
+        },
+        {
+            "doc_id": "ISMSP-2.4.1",
+            "relevance": 2
+        }
+    ],
+    "hard_negatives": [
+        "CEK-06",
+        "LOG-05"
+    ],
+    "expected": {
+        "selected_level": 2
+    },
+    "meta": {
+        "label_basis": "control_id",
+        "top_k": 6
+    },
+    "grading": {
+        "relevance": {
+            "IAM-16": 2,
+            "IAM-05": 2,
+            "ISMSP-2.4.1": 2,
+            "CEK-06": 0,
+            "LOG-05": 0
+        }
+    }
+}

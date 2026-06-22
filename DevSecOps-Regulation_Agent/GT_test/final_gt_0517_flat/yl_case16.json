@@ -1,0 +1,43 @@
+{
+    "sample_id": "gd-ec2-torclient-001-nat",
+    "query_type": "nat",
+    "queries": {
+        "nat": "EC2 인스턴스에서 Tor 네트워크 통신 탐지 시 비인가 네트워크 차단과 접근 통제 강화를 통한 보안 대응",
+        "kwd": "tor client | ec2 instance | anonymous network | unauthorized access | network control | threat response"
+    },
+    "finding_type": "UnauthorizedAccess:EC2/TorClient",
+    "relevant_docs": [
+        {
+            "doc_id": "IVS-03",
+            "relevance": 2
+        },
+        {
+            "doc_id": "IVS-09",
+            "relevance": 2
+        },
+        {
+            "doc_id": "IAM-16",
+            "relevance": 2
+        }
+    ],
+    "hard_negatives": [
+        "CEK-06",
+        "DSP-02"
+    ],
+    "expected": {
+        "selected_level": 3
+    },
+    "meta": {
+        "label_basis": "control_id",
+        "top_k": 6
+    },
+    "grading": {
+        "relevance": {
+            "IVS-03": 2,
+            "IVS-09": 2,
+            "IAM-16": 2,
+            "CEK-06": 0,
+            "DSP-02": 0
+        }
+    }
+}

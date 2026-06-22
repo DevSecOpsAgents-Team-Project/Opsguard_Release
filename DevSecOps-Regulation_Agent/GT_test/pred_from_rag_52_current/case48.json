@@ -1,0 +1,134 @@
+{
+  "sample_id": "case48.json",
+  "finding_type": "Discovery:S3/MaliciousIPCaller",
+  "source": "guardduty_rag",
+  "regulations": [
+    {
+      "clause_id": "LOG-03"
+    },
+    {
+      "clause_id": "LOG-05"
+    },
+    {
+      "clause_id": "SEF-06"
+    },
+    {
+      "clause_id": "ISMSP-3.1.2"
+    },
+    {
+      "clause_id": "SEF-03"
+    }
+  ],
+  "selected_level": 2,
+  "route_reasons": [
+    "AccessKey related event → credential misuse risk.",
+    "S3 bucket exposure/policy finding with medium+ severity → containment needed."
+  ],
+  "debug_info": {
+    "query_text_used": "event summary: Discovery:S3/MaliciousIPCaller S3Bucket GeneratedFindingAPIName severity 8 | security meaning: suspicious remote access activity, incident triage required, security event investigation, credential misuse should be assessed | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: LOG, IncidentResponse, SEF, DSP | downweight categories: CEK",
+    "where_filter_used": {
+      "primary_query": "event summary: Discovery:S3/MaliciousIPCaller S3Bucket GeneratedFindingAPIName severity 8 | security meaning: suspicious remote access activity, incident triage required, security event investigation, credential misuse should be assessed | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | expected categories: LOG, IncidentResponse, SEF, DSP | downweight categories: CEK",
+      "category_queries": {
+        "LOG": "Security Logging and Monitoring | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: logging, monitoring, security-related events, audit logging, event analysis, alerting | Discovery:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName",
+        "IncidentResponse": "ISMS-P 3.1 Incident Response | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: incident handling, containment, network isolation, response procedure, assign responsibility, execute playbook | Discovery:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName",
+        "SEF": "Security Event and Incident Response | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: incident response, event triage, breach notification, response plan, incident metrics, playbook execution | Discovery:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName",
+        "DSP": "Data Security and Privacy | security meaning: suspicious remote access activity, incident triage required, security event investigation | regulatory language: data protection, sensitive data, data retention, data deletion, data disclosure, secure disposal | Discovery:S3/MaliciousIPCaller | S3Bucket | GeneratedFindingAPIName"
+      },
+      "negative_hints": [
+        "CEK"
+      ],
+      "downweight_hints": [
+        "CEK"
+      ],
+      "expected_categories": [
+        "LOG",
+        "IncidentResponse",
+        "SEF",
+        "DSP"
+      ],
+      "category_weights": {
+        "CEK": -8,
+        "DSP": 13,
+        "IAM": 2,
+        "AccessControl": 2,
+        "IncidentResponse": 14,
+        "IVS": 9,
+        "LOG": 15,
+        "SEF": 14
+      },
+      "security_meanings": [
+        "suspicious remote access activity",
+        "incident triage required",
+        "security event investigation",
+        "credential misuse should be assessed",
+        "s3 access from malicious infrastructure",
+        "network-based attack and data exposure risk",
+        "response procedure and network defense should be activated"
+      ],
+      "regulatory_phrases": [
+        "data protection",
+        "sensitive data",
+        "data retention",
+        "data deletion",
+        "data disclosure",
+        "secure disposal",
+        "data classification",
+        "privacy compliance",
+        "event triage",
+        "alerting and monitoring",
+        "incident response procedure",
+        "credential review",
+        "sensitive data protection"
+      ],
+      "source_summary": "Discovery:S3/MaliciousIPCaller S3Bucket GeneratedFindingAPIName severity 8",
+      "matched_rules": [
+        "malicious_ip_caller",
+        "s3_malicious_ip_access"
+      ],
+      "preferred_doc_ids": [
+        "SEF-06",
+        "LOG-03",
+        "LOG-05",
+        "ISMSP-3.1.2",
+        "DSP-17",
+        "DSP-10",
+        "IVS-09",
+        "LOG-13"
+      ]
+    },
+    "retrieval_top_k": 10,
+    "rerank_output_top_k": 5,
+    "regulations_ranked_detail": [
+      {
+        "rank": 1,
+        "clause_id": "LOG-03",
+        "title": "Security Monitoring and Alerting",
+        "category": "LOG"
+      },
+      {
+        "rank": 2,
+        "clause_id": "LOG-05",
+        "title": "Audit Logs Monitoring and Response",
+        "category": "LOG"
+      },
+      {
+        "rank": 3,
+        "clause_id": "SEF-06",
+        "title": "Event Triage Processes",
+        "category": "SEF"
+      },
+      {
+        "rank": 4,
+        "clause_id": "ISMSP-3.1.2",
+        "title": "침해사고 대응 및 조치",
+        "category": "IncidentResponse"
+      },
+      {
+        "rank": 5,
+        "clause_id": "SEF-03",
+        "title": "Incident Response Plans",
+        "category": "SEF"
+      }
+    ]
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "schema_version": "1.3",
+  "generated_at": "2026-05-17T00:47:54.735033+00:00",
+  "incident_id": "af9a7ae0f48e44bb8caddb208d35aa62",
+  "scenario": "SuspiciousActivity",
+  "incident_summary": {
+    "source": "guardduty",
+    "title": "An EC2 instance is communicating on an unusual server port.",
+    "severity": "9",
+    "resource": {
+      "type": "Instance",
+      "id": "i-99999999",
+      "region": "ap-northeast-2",
+      "account_id": "836347236184"
+    }
+  },
+  "executed_level1_actions": [
+    "base_mitigation"
+  ],
+  "escalation_assessment": {
+    "escalation_needed": true,
+    "recommended_level": 2,
+    "confidence": 0.92,
+    "decision_questions": [
+      "해당 EC2 인스턴스 i-99999999 가 운영상 즉시 격리 또는 중지가 가능한 워크로드입니까?",
+      "원격 IP 198.51.100.0 와의 통신이 승인된 비즈니스 트래픽인지 확인되었습니까?",
+      "VPC Flow Logs를 vpc-generatedvpcid1 에 활성화해도 운영 및 비용 영향이 수용 가능합니까?"
+    ],
+    "approval_notes": "Level 1 조치는 이미 수행되었습니다. 본 권고는 승인형 Level 2 및 Level 3 후보 플레이북만 포함하며, EC2 인스턴스 i-99999999 및 원격 IP 198.51.100.0 에 대한 추가 네트워크 통제와 모니터링 강화를 제안합니다."
+  },
+  "reasoning_bullets": [
+    "GuardDuty finding type Behavior:EC2/NetworkPortUnusual indicates outbound communication from EC2 instance i-99999999 to remote IP 198.51.100.0 on an unusual server port scenario.",
+    "Provided CSA CCM context emphasizes restricting unauthorized network communications, segmentation, and enhanced monitoring after anomalous events.",
+    "Because the affected resource type is EC2 Instance, EC2 containment actions are permissible for the higher-impact candidate playbook.",
+    "A lower-impact candidate should prioritize monitoring and network-level blocking, while a higher-impact candidate should add direct instance containment."
+  ],
+  "regulations": [
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IVS-03",
+      "clause_title": "Network Security",
+      "relevance": 0.96,
+      "excerpt": "Monitor, encrypt and restrict communications between environments to only authenticated and authorized connections, as justified by the business.",
+      "why_relevant": "The finding shows unusual outbound network communication from EC2 instance i-99999999, so restricting unauthorized connections and increasing network monitoring directly applies."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "IVS-06",
+      "clause_title": "Segmentation and Segregation",
+      "relevance": 0.9,
+      "excerpt": "Design, develop, deploy and configure applications and infrastructures such that CSP and CSC (tenant) user access and intra-tenant access is appropriately segmented and segregated, monitored and restricted from other tenants.",
+      "why_relevant": "The incident may require stronger segmentation and traffic restriction around the affected EC2 instance to limit spread or unauthorized communication paths."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-03",
+      "clause_title": "Security Monitoring and Alerting",
+      "relevance": 0.88,
+      "excerpt": "Identify and monitor security-related events within applications and the underlying infrastructure. Define and implement a system to generate alerts to responsible stakeholders based on such events and corresponding metrics.",
+      "why_relevant": "The unusual port communication should trigger enhanced monitoring and alerting for the affected infrastructure following the detected security event."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "CEK-09",
+      "clause_title": "Encryption and Key Management Audit",
+      "relevance": 0.35,
+      "excerpt": "Audit encryption and key management systems, policies, and processes with a frequency that is proportional to the risk exposure of the system with audit occurring preferably continuously but at least annually and after any security event(s).",
+      "why_relevant": "This clause is less directly tied to the network anomaly, but it supports post-incident compliance assessment after a security event."
+    },
+    {
+      "framework": "CSA CCM",
+      "clause_id": "LOG-05",
+      "clause_title": "Audit Logs Monitoring and Response",
+      "relevance": 0.91,
+      "excerpt": "Monitor security audit logs to detect activity outside of typical or expected patterns. Establish and follow a defined process to review and take appropriate and timely actions on detected anomalies.",
+      "why_relevant": "The GuardDuty finding represents activity outside expected patterns, so timely review, triage, and logging-focused response are directly relevant."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "level": 2,
+      "playbook_name": "Network Isolation and Mitigation",
+      "description": "Lower-impact response focused on blocking the suspicious remote IP and increasing network visibility for the affected EC2 environment.",
+      "actions": [
+        {
+          "action_id": "block_ip",
+          "targets": [
+            {
+              "type": "IpAddress",
+              "id": null,
+              "user_name": null,
+              "ip": "198.51.100.0",
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "MEDIUM"
+    }
+  ],
+  "selected_playbook": {
+    "level": 2,
+    "playbook_name": "Network Isolation and Mitigation",
+    "description": "Lower-impact response focused on blocking the suspicious remote IP and increasing network visibility for the affected EC2 environment.",
+    "actions": [
+      {
+        "action_id": "block_ip",
+        "targets": [
+          {
+            "type": "IpAddress",
+            "id": null,
+            "user_name": null,
+            "ip": "198.51.100.0",
+            "target_bucket": null
+          }
+        ]
+      },
+      {
+        "action_id": "enable_vpc_flow_logs",
+        "targets": [
+          {
+            "type": "VPC",
+            "id": "vpc-generatedvpcid1",
+            "user_name": null,
+            "ip": null,
+            "target_bucket": null
+          }
+        ]
+      }
+    ],
+    "requires_approval": true,
+    "expected_impact": "MEDIUM"
+  },
+  "alternative_playbooks": [
+    {
+      "level": 3,
+      "playbook_name": "Network Isolation",
+      "description": "Higher-impact containment response for EC2 instance i-99999999 combining direct instance isolation with network blocking and forensic preservation candidates.",
+      "actions": [
+        {
+          "action_id": "isolate_instance",
+          "targets": [
+            {
+              "type": "Instance",
+              "id": "i-99999999",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "block_ip",
+          "targets": [
+            {
+              "type": "IpAddress",
+              "id": null,
+              "user_name": null,
+              "ip": "198.51.100.0",
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "create_snapshot",
+          "targets": [
+            {
+              "type": "Instance",
+              "id": "i-99999999",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "stop_instance",
+          "targets": [
+            {
+              "type": "Instance",
+              "id": "i-99999999",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        },
+        {
+          "action_id": "enable_vpc_flow_logs",
+          "targets": [
+            {
+              "type": "VPC",
+              "id": "vpc-generatedvpcid1",
+              "user_name": null,
+              "ip": null,
+              "target_bucket": null
+            }
+          ]
+        }
+      ],
+      "requires_approval": true,
+      "expected_impact": "HIGH",
+      "why_not_selected": "Not selected as primary response; router committed to L2. (High severity (9.0) but no L3 triggers → prefer L2.)"
+    }
+  ],
+  "insufficient_context": false,
+  "missing_context_requests": [],
+  "status": "ok",
+  "selected_level": 2,
+  "route_reasons": [
+    "High severity (9.0) but no L3 triggers → prefer L2."
+  ],
+  "retrieved_count": 5,
+  "retrieved_clause_ids": [
+    "IVS-03",
+    "IVS-06",
+    "LOG-03",
+    "CEK-09",
+    "LOG-05"
+  ]
+}

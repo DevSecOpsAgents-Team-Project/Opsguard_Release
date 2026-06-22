@@ -133,7 +133,7 @@ class Step4LLMAnalyzer:
         self,
         step1_true_items: List[Dict[str, Any]],
         step2_rag_results: List[Dict[str, Any]],
-        model: str = "gpt-4o",
+        model: Optional[str] = None,
         temperature: float = 0.3
     ) -> Dict[str, Any]:
         """
@@ -142,7 +142,7 @@ class Step4LLMAnalyzer:
         Args:
             step1_true_items: Step 1에서 True로 판정된 체크리스트 항목 리스트
             step2_rag_results: Step 2에서 검색된 RAG 규정 결과 리스트
-            model: 사용할 LLM 모델 (기본값: "gpt-4o")
+            model: 사용할 LLM 모델 (없으면 OPENAI_MODEL, 없을 때만 "gpt-5.4")
             temperature: LLM temperature (기본값: 0.3)
         
         Returns:
@@ -167,11 +167,12 @@ class Step4LLMAnalyzer:
         """
         # 프롬프트 생성
         prompt = self.build_prompt(step1_true_items, step2_rag_results)
+        resolved_model = model or os.getenv("OPENAI_MODEL", "gpt-5.4")
         
         # LLM 호출
         try:
             response = self.client.chat.completions.create(
-                model=model,
+                model=resolved_model,
                 messages=[
                     {
                         "role": "system",
@@ -259,7 +260,7 @@ class Step4LLMAnalyzer:
 def analyze_with_step4(
     step1_true_items: List[Dict[str, Any]],
     step2_rag_results: List[Dict[str, Any]],
-    model: str = "gpt-4o"
+    model: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     편의 함수: Step 4 LLM 분석을 수행합니다.
@@ -309,4 +310,3 @@ if __name__ == "__main__":
         print(json.dumps(result, ensure_ascii=False, indent=2))
     except Exception as e:
         print(f"오류 발생: {e}")
-
