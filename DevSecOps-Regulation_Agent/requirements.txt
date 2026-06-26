@@ -4,4 +4,4 @@ httpx==0.27.0
 python-dotenv==1.2.1
 pydantic==2.12.5
 numpy==1.26.4
-#pysqlite3-binary
+pysqlite3-binary

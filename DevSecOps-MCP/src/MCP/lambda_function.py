@@ -289,6 +289,9 @@ def build_regulation_input(event, runtime_result):
     remote_ip = _safe_get(detail, ["service", "action", "networkConnectionAction", "remoteIpDetails", "ipAddressV4"], "")
     if not remote_ip:
         remote_ip = _safe_get(detail, ["service", "action", "awsApiCallAction", "remoteIpDetails", "ipAddressV4"], "")
+    if not remote_ip:
+        remote_ip = _safe_get(detail, ["service", "action", "dnsRequestAction", "remoteIpDetails", "ipAddressV4"], "")
+    instance_id = _safe_get(detail, ["resource", "instanceDetails", "instanceId"], "")
     incident_id = event.get("id", "UNKNOWN")
 
     regulation_input = {
@@ -299,7 +302,7 @@ def build_regulation_input(event, runtime_result):
             "severity": str(severity),
             "resource": {
                 "type": resource_type or "Unknown",
-                "id": access_key_id or extracted_or_default(base_result.get("extracted_resource"), "UNKNOWN-RES"),
+                "id": access_key_id or instance_id or extracted_or_default(base_result.get("extracted_resource"), "UNKNOWN-RES"),
                 "region": event.get("region", detail.get("region", "")),
                 "account_id": event.get("account", detail.get("accountId", "")),
             },
@@ -312,6 +315,10 @@ def build_regulation_input(event, runtime_result):
         },
         "runtime_result": runtime_result,
         "raw_event": event,
+        "response_targets": {
+            "source_ip": remote_ip,
+            "instance_id": instance_id,
+        },
     }
 
     return regulation_input

@@ -6,3 +6,6 @@ chroma_db/
 chroma_db_backup/
 *.zip
 .conda/
+chroma_store/
+*.sqlite3
+.env

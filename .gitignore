@@ -58,6 +58,8 @@ htmlcov/
 
 # AWS
 .aws/
+.aws-sam/
+samconfig.toml
 *.pem
 *.key
 credentials.json
@@ -106,3 +108,14 @@ DevSecOps-Regulation_Agent/test_*.py
 DevSecOps-Regulation_Agent/**/chroma_db/
 DevSecOps-Regulation_Agent/**/chroma_store/
 DevSecOps-Regulation_Agent/**/*.sqlite3
+# Regulation eval / test datasets (not needed for deploy)
+DevSecOps-Regulation_Agent/GT_test/
+DevSecOps-Regulation_Agent/cases/
+DevSecOps-Regulation_Agent/cases_0517/
+DevSecOps-Regulation_Agent/final_case_0517/
+DevSecOps-Regulation_Agent/final_gt_0517/
+DevSecOps-Regulation_Agent/gt_0517/
+DevSecOps-Regulation_Agent/all_GuardDutyJSON/
+DevSecOps-Regulation_Agent/all_new_gt_files/
+DevSecOps-Regulation_Agent/outputs/
+response.json

@@ -155,12 +155,9 @@ def unblock_ip(waf_set_id: str, ip_address: str, **kwargs):
             "error": "Missing 'waf_set_name' in rollback data"
         }
 
-    # 2. 리전 설정 (필수!)
-    waf = boto3.client("wafv2", region_name="ap-northeast-2")
-
     try:
         # 3. 현재 IP Set 상태 가져오기 (LockToken 확보용)
-        resp = waf.get_ip_set(
+        resp = waf_client.get_ip_set(
             Name=waf_set_name,
             Scope=scope,
             Id=waf_set_id
@@ -184,7 +181,7 @@ def unblock_ip(waf_set_id: str, ip_address: str, **kwargs):
             }
 
         # 5. 업데이트 반영
-        waf.update_ip_set(
+        waf_client.update_ip_set(
             Name=waf_set_name,
             Scope=scope,
             Id=waf_set_id,

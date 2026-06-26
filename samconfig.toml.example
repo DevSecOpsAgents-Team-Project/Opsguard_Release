@@ -1,0 +1,29 @@
+# Copy this file before first deploy:
+# Copy-Item samconfig.toml.example to samconfig.toml
+# Then edit SlackChannel in samconfig.toml (your real Slack channel ID).
+
+version = 0.1
+
+[default.global.parameters]
+stack_name = "opsguard"
+region = "ap-northeast-2"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.validate.parameters]
+lint = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM"
+confirm_changeset = true
+resolve_s3 = true
+resolve_image_repos = true
+parameter_overrides = [
+  "ResourceNameSuffix=-dev",
+  "DeployMode=greenfield",
+  "SlackChannel=C0123456789",
+  "EnableGuardDutyTrigger=true",
+  "RegulationImageTag=latest"
+]

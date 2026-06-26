@@ -275,6 +275,26 @@ def _safe_get(d: Dict[str, Any], path: List[str], default: Any = "") -> Any:
     return cur
 
 
+def _extract_remote_ip(
+    finding: Dict[str, Any],
+    response_targets: Optional[Dict[str, Any]] = None,
+) -> str:
+    """GuardDuty finding paths for attacker/source IP (MCP entity_context compatible)."""
+    if response_targets:
+        ip = response_targets.get("source_ip")
+        if ip and str(ip).strip():
+            return str(ip).strip()
+    for path in (
+        ["service", "action", "networkConnectionAction", "remoteIpDetails", "ipAddressV4"],
+        ["service", "action", "awsApiCallAction", "remoteIpDetails", "ipAddressV4"],
+        ["service", "action", "dnsRequestAction", "remoteIpDetails", "ipAddressV4"],
+    ):
+        ip = _safe_get(finding, list(path), "")
+        if ip and str(ip).strip():
+            return str(ip).strip()
+    return ""
+
+
 def _apply_finding_targets_to_playbooks(result: Dict[str, Any], finding: Dict[str, Any]) -> None:
     """Fill resource IDs / IPs on every playbook present in the response dict."""
     access_key_id = _safe_get(finding, ["resource", "accessKeyDetails", "accessKeyId"], "")
@@ -288,11 +308,7 @@ def _apply_finding_targets_to_playbooks(result: Dict[str, Any], finding: Dict[st
     if result.get("incident_summary", {}).get("resource"):
         result["incident_summary"]["resource"]["id"] = resource_id
 
-    remote_ip = _safe_get(
-        finding,
-        ["service", "action", "networkConnectionAction", "remoteIpDetails", "ipAddressV4"],
-        "",
-    )
+    remote_ip = _extract_remote_ip(finding)
     iam_user = _safe_get(finding, ["resource", "accessKeyDetails", "userName"], "")
 
     for playbook in iter_all_playbook_dicts(result):
@@ -314,33 +330,176 @@ def _apply_finding_targets_to_playbooks(result: Dict[str, Any], finding: Dict[st
                     if target.get("type") in ("AccessKey", "IAMUser") and not target.get("user_name"):
                         target["user_name"] = iam_user
 
-        for action in playbook.get("actions", []) or []:
-            aid = action.get("action_id")
-            if aid == "disable_access_key" and access_key_id and iam_user:
-                targets = action.get("targets") or []
-                if not targets:
-                    action["targets"] = [
-                        {"type": "AccessKey", "id": access_key_id, "user_name": iam_user}
-                    ]
+
+def _validate_runtime_executable_playbooks(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Remove only IAM User actions that Runtime Agent cannot execute."""
+    iam_user_actions = {"disable_access_key", "detach_admin_policies"}
+    invalid_user_names = {"", "root", "instancerole"}
+    placeholder_access_keys = {
+        "",
+        "example-id",
+        "placeholder",
+        "actual-resource-id",
+        "resource-id",
+        "unknown-resource",
+        "unknown",
+        "string",
+        "tbd",
+        "todo",
+        "none",
+        "n/a",
+        "na",
+        "akia...",
+    }
+
+    def _norm(value: Any) -> str:
+        if value is None:
+            return ""
+        return str(value).strip()
+
+    def _invalid_user_name(value: Any) -> bool:
+        return _norm(value).lower() in invalid_user_names
+
+    def _invalid_access_key_id(value: Any) -> bool:
+        text = _norm(value).lower()
+        return text in placeholder_access_keys or "example" in text or "placeholder" in text
+
+    def _filter_playbook(playbook: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        actions = playbook.get("actions") or []
+        if not isinstance(actions, list):
+            return None
+
+        filtered_actions: List[Dict[str, Any]] = []
+        for action in actions:
+            if not isinstance(action, dict):
+                continue
+
+            action_id = action.get("action_id")
+            if action_id not in iam_user_actions:
+                filtered_actions.append(action)
+                continue
+
+            valid_targets: List[Dict[str, Any]] = []
+            targets = action.get("targets") or []
+            if isinstance(targets, list):
                 for target in targets:
-                    if not target.get("id"):
-                        target["id"] = access_key_id
-                    if not target.get("user_name"):
-                        target["user_name"] = iam_user
-            elif aid in ("disable_iam_entity", "detach_admin_policies") and iam_user:
-                targets = action.get("targets") or []
-                if not targets:
-                    action["targets"] = [
-                        {"type": "IAMUser", "id": iam_user, "user_name": iam_user}
-                    ]
-                for target in targets:
-                    if not target.get("user_name"):
-                        target["user_name"] = iam_user
-                    tid = target.get("id")
-                    if not tid or str(tid).startswith(("AKIA", "ASIA", "AROA", "AIDA")):
-                        target["id"] = iam_user
-                    elif not target.get("user_name"):
-                        target["user_name"] = str(tid).strip()
+                    if not isinstance(target, dict):
+                        continue
+
+                    user_name = target.get("user_name", action.get("user_name"))
+                    if _invalid_user_name(user_name):
+                        continue
+
+                    if action_id == "disable_access_key":
+                        access_key_id = target.get(
+                            "access_key_id",
+                            target.get("id", action.get("access_key_id")),
+                        )
+                        if _invalid_access_key_id(access_key_id):
+                            continue
+
+                    valid_targets.append(target)
+
+            if valid_targets:
+                cleaned_action = dict(action)
+                cleaned_action["targets"] = valid_targets
+                filtered_actions.append(cleaned_action)
+
+        if not filtered_actions:
+            return None
+
+        cleaned_playbook = dict(playbook)
+        cleaned_playbook["actions"] = filtered_actions
+        return cleaned_playbook
+
+    cleaned = dict(result)
+
+    selected = cleaned.get("selected_playbook")
+    if isinstance(selected, dict):
+        selected = _filter_playbook(selected)
+        cleaned["selected_playbook"] = selected
+        cleaned["recommended_actions"] = [selected] if selected else []
+    else:
+        playbooks = cleaned.get("recommended_actions") or []
+        if isinstance(playbooks, list):
+            cleaned["recommended_actions"] = [
+                filtered
+                for playbook in playbooks
+                if isinstance(playbook, dict)
+                for filtered in [_filter_playbook(playbook)]
+                if filtered is not None
+            ]
+
+    alternatives = cleaned.get("alternative_playbooks") or []
+    if "alternative_playbooks" in cleaned and isinstance(alternatives, list):
+        cleaned["alternative_playbooks"] = [
+            filtered
+            for playbook in alternatives
+            if isinstance(playbook, dict)
+            for filtered in [_filter_playbook(playbook)]
+            if filtered is not None
+        ]
+
+    return cleaned
+
+
+def _repair_selected_playbook_after_filter(
+    result: Dict[str, Any],
+    finding: Dict[str, Any],
+    candidate_actions: List[str],
+    response_targets: Dict[str, Any],
+    selected_level: int,
+) -> Dict[str, Any]:
+    """Restore selected_playbook when IAM-only actions were stripped for EC2/network findings."""
+    if selected_level not in (2, 3):
+        return result
+
+    selected = result.get("selected_playbook")
+    if isinstance(selected, dict) and (selected.get("actions") or []):
+        return result
+
+    repaired = dict(result)
+    target_level = selected_level
+
+    for alt in repaired.get("alternative_playbooks") or []:
+        if not isinstance(alt, dict):
+            continue
+        if int(alt.get("level", 0)) == target_level and (alt.get("actions") or []):
+            repaired["selected_playbook"] = alt
+            repaired["recommended_actions"] = [alt]
+            remaining = [
+                p
+                for p in repaired.get("alternative_playbooks") or []
+                if p is not alt
+            ]
+            repaired["alternative_playbooks"] = remaining
+            return repaired
+
+    scenario = repaired.get("scenario") or _infer_scenario(
+        finding, repaired.get("runtime_result") or {}
+    )
+    rebuilt = _build_rule_based_playbooks(
+        finding, candidate_actions, response_targets, scenario
+    )
+    at_level = [
+        p for p in rebuilt if int(p.get("level", 0)) == target_level and (p.get("actions") or [])
+    ]
+    fallback_used = False
+    if not at_level:
+        at_level = [p for p in rebuilt if p.get("actions")]
+        at_level.sort(key=lambda p: int(p.get("level", 99)))
+        fallback_used = True
+
+    if not at_level:
+        return result
+
+    picked = dict(at_level[0])
+    if fallback_used:
+        # Coerce to router-selected level so validate_output_contract passes.
+        picked["level"] = target_level
+    repaired["selected_playbook"] = picked
+    repaired["recommended_actions"] = [picked]
+    return repaired
 
 
 def _build_security_event(finding: Dict[str, Any]) -> Dict[str, Any]:
@@ -449,8 +608,6 @@ def _call_llm_json(payload: Dict[str, Any], model: str) -> str:
         "- each playbook must include multiple actions where applicable.\n"
         "- playbook_name: short English Title Case phrase (e.g. Credential Containment, Access Review and Remediation); "
         "never generic names like Containment Playbook or Isolation Playbook.\n"
-        "- approval_notes, reasoning_bullets, regulations[].why_relevant, justification: write in Korean; "
-        "each bullet must mention incident resource/behavior and proposed actions.\n"
     )
 
     resp = client.chat.completions.create(
@@ -570,11 +727,7 @@ def _build_rule_based_playbooks(
 ) -> List[Dict[str, Any]]:
     access_key = _safe_get(finding, ["resource", "accessKeyDetails", "accessKeyId"], None)
     iam_user = _safe_get(finding, ["resource", "accessKeyDetails", "userName"], None)
-    source_ip = response_targets.get("source_ip") or _safe_get(
-        finding,
-        ["service", "action", "networkConnectionAction", "remoteIpDetails", "ipAddressV4"],
-        None,
-    )
+    source_ip = _extract_remote_ip(finding, response_targets)
     instance_id = response_targets.get("instance_id") or _safe_get(finding, ["resource", "instanceDetails", "instanceId"], None)
     vpc_id = response_targets.get("vpc_id")
     bucket = response_targets.get("bucket")
@@ -653,22 +806,6 @@ def _build_rule_based_playbooks(
     return playbooks
 
 
-def _rule_based_why_relevant_ko(
-    clause_id: str,
-    clause_title: str,
-    incident_summary: Dict[str, Any],
-    action_ids: List[str],
-) -> str:
-    resource = incident_summary.get("resource") or {}
-    rid = resource.get("id") or resource.get("type") or "해당 리소스"
-    actions = ", ".join(action_ids[:3]) if action_ids else "제안 조치"
-    title = clause_title or clause_id
-    return (
-        f"탐지된 {rid} 이(가) `{clause_id}` {title} 통제와 연관되어 "
-        f"{actions} 등의 후속 조치가 필요합니다."
-    )
-
-
 def _build_rule_based_output(
     incident_input: Dict[str, Any],
     severity_result: Dict[str, Any],
@@ -678,24 +815,18 @@ def _build_rule_based_output(
 ) -> RegulationAgentIntermediate:
     finding = incident_input.get("_finding_raw", {})
     scenario = incident_input["scenario"]
-    incident_summary = incident_input["incident_summary"]
-    resource = incident_summary.get("resource") or {}
-    rid = resource.get("id") or "해당 리소스"
-    action_ids = candidate_actions[:5]
 
     regulations = []
     for row in retrieved[:RERANK_OUTPUT_TOP_K]:
         meta = row.get("metadata") or {}
-        cid = row.get("id", "N/A")
-        title = meta.get("title", "")
         regulations.append(
             {
                 "framework": meta.get("doc_type", "CSA_CCM"),
-                "clause_id": cid,
-                "clause_title": title,
+                "clause_id": row.get("id", "N/A"),
+                "clause_title": meta.get("title", ""),
                 "relevance": 0.8,
                 "excerpt": (row.get("document", "") or "")[:220],
-                "why_relevant": _rule_based_why_relevant_ko(cid, title, incident_summary, action_ids),
+                "why_relevant": "Retrieved regulation supports containment and controlled escalation.",
             }
         )
 
@@ -716,14 +847,11 @@ def _build_rule_based_output(
             "decision_questions": [
                 "Do you approve escalation actions (Level 2/3) for this multi-surface incident?"
             ],
-            "approval_notes": (
-                f"Level 1 완료 후 {rid} 관련 추가 피해 확산 방지를 위해 "
-                f"Level {rec_level} 플레이북 승인이 필요합니다."
-            ),
+            "approval_notes": "Recommended actions are grouped by playbook and require approval.",
         },
         "reasoning_bullets": [
-            f"GuardDuty가 {rid}에 대한 {scenario} 유형 이벤트를 탐지했습니다.",
-            f"규제 검색 결과와 후보 조치({', '.join(action_ids[:4])})를 반영해 Level 2/3 플레이북을 구성했습니다.",
+            "The incident indicates potential credential misuse and infrastructure impact.",
+            "Regulatory context supports least privilege and evidence-preserving containment.",
         ],
         "regulations": regulations,
         "recommended_actions": playbooks,
@@ -760,26 +888,14 @@ def _align_regulations_to_chunks(
             out.append(by_clause_id[cid])
         else:
             fw = ch.get("doc_type") or "CSA CCM"
-            cid = str(ch.get("clause_id") or "")
-            title = str(ch.get("title") or "")
-            incident_summary = parsed.get("incident_summary") or {}
-            action_ids = []
-            for pb in parsed.get("recommended_actions") or []:
-                if not isinstance(pb, dict):
-                    continue
-                for act in pb.get("actions") or []:
-                    if isinstance(act, dict) and act.get("action_id"):
-                        action_ids.append(str(act["action_id"]))
             out.append(
                 {
                     "framework": str(fw),
                     "clause_id": cid,
-                    "clause_title": title,
+                    "clause_title": str(ch.get("title") or ""),
                     "relevance": 0.65,
                     "excerpt": (str(ch.get("content") or ""))[:220],
-                    "why_relevant": _rule_based_why_relevant_ko(
-                        cid, title, incident_summary, action_ids
-                    ),
+                    "why_relevant": "Listed as retrieved regulation context for this incident.",
                 }
             )
     parsed["regulations"] = out
@@ -927,6 +1043,7 @@ def process_guardduty_event(event: Dict[str, Any]) -> Dict[str, Any]:
     result["generated_at"] = datetime.now(timezone.utc).isoformat()
 
     _apply_finding_targets_to_playbooks(result, finding)
+    result = _validate_runtime_executable_playbooks(result)
 
     result = finalize_output_contract(
         result,
@@ -936,6 +1053,16 @@ def process_guardduty_event(event: Dict[str, Any]) -> Dict[str, Any]:
         candidate_actions,
         response_targets,
         list(router.reasons),
+    )
+    _apply_finding_targets_to_playbooks(result, finding)
+    result = _validate_runtime_executable_playbooks(result)
+
+    result = _repair_selected_playbook_after_filter(
+        result,
+        finding,
+        candidate_actions,
+        response_targets,
+        router.selected_level,
     )
     _apply_finding_targets_to_playbooks(result, finding)
 

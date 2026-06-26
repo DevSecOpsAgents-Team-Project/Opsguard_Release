@@ -1,0 +1,23 @@
+# Regulation Agent image build context exclusions.
+# The Dockerfile COPYs only specific files/dirs (requirements.txt, *.py,
+# src/, chroma_db/), so excluding the large eval/test datasets below cannot
+# break the build, it only shrinks the Docker build context.
+
+.git/
+**/__pycache__/
+**/*.pyc
+venv/
+.conda/
+.env
+
+# Evaluation / ground-truth / sample datasets (not COPYed by Dockerfile)
+GT_test/
+cases/
+cases_0517/
+final_case_0517/
+final_gt_0517/
+all_GuardDutyJSON/
+all_new_gt_files/
+*.csv
+chroma_db_backup/
+chroma_store/

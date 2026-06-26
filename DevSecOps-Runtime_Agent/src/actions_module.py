@@ -201,7 +201,12 @@ def isolate_instance(instance_id: str, incident_id: str, dry_run=False):
 def block_ip(source_ip: str, incident_id: str,
             ipset_id="ipset-mock-12345", ipset_name=None, scope="REGIONAL", dry_run=False):
 
-    waf = boto3.client("wafv2", region_name="ap-northeast-2")
+    waf_region = (
+        os.environ.get("AWS_REGION")
+        or os.environ.get("AWS_DEFAULT_REGION")
+        or "ap-northeast-2"
+    )
+    waf = boto3.client("wafv2", region_name=waf_region)
 
     try:
         resp = waf.get_ip_set(

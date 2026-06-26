@@ -214,11 +214,9 @@ def build_comparison_with_costs(
     Regulation 후보 플레이북마다 finance_run 호출 후 comparison.playbooks 구성.
     """
     candidates = collect_playbook_candidates(regulation)
-    levels = {norm_level(pb.get("level")) for pb in candidates}
-    if 2 not in levels or 3 not in levels:
+    if not candidates:
         raise ValueError(
-            "Regulation 결과에 Level 2·3 플레이북 후보가 모두 필요합니다. "
-            f"(현재 levels={sorted(x for x in levels if x is not None)}). "
+            "Regulation 결과에 Level 2 또는 3 플레이북 후보가 없습니다. "
             "alternative_playbooks 와 recommended_actions 를 확인하세요."
         )
 

@@ -175,19 +175,42 @@ def finalize_output_contract(
                 if p not in others:
                     others.append(p)
         else:
-            ak = str((finding.get("resource") or {}).get("accessKeyDetails", {}).get("accessKeyId") or "")
-            tid = ak or str(finding.get("id", "unknown"))
-            # minimal stub — should be rare (keeps schema valid)
-            selected = {
-                "level": selected_level,
-                "playbook_name": "Targeted Containment",
-                "description": "Repaired playbook shell; validate actions with operations.",
-                "actions": [
+            from .service import _build_rule_based_playbooks, _extract_remote_ip, _safe_get
+
+            remote_ip = _extract_remote_ip(finding, response_targets)
+            instance_id = _safe_get(finding, ["resource", "instanceDetails", "instanceId"], "")
+            stub_actions: List[Dict[str, Any]] = []
+            if "block_ip" in candidate_actions and remote_ip:
+                stub_actions.append(
+                    {
+                        "action_id": "block_ip",
+                        "targets": [{"type": "IPAddress", "ip": remote_ip}],
+                    }
+                )
+            if instance_id:
+                for action_id in ("isolate_instance", "stop_instance", "create_snapshot"):
+                    if action_id in candidate_actions:
+                        stub_actions.append(
+                            {
+                                "action_id": action_id,
+                                "targets": [{"type": "EC2Instance", "id": instance_id}],
+                            }
+                        )
+                        break
+            if not stub_actions:
+                ak = str((finding.get("resource") or {}).get("accessKeyDetails", {}).get("accessKeyId") or "")
+                tid = ak or str(finding.get("id", "unknown"))
+                stub_actions = [
                     {
                         "action_id": "disable_access_key",
                         "targets": [{"type": "AccessKey", "id": tid, "user_name": None}],
                     }
-                ],
+                ]
+            selected = {
+                "level": selected_level,
+                "playbook_name": "Targeted Containment",
+                "description": "Repaired playbook shell; validate actions with operations.",
+                "actions": stub_actions,
                 "requires_approval": True,
                 "expected_impact": "MEDIUM",
             }

@@ -1,0 +1,17 @@
+# SAM build 제외 (배포 ZIP/이미지에 불필요)
+.git/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+DevSecOps-Finance_Agent/package/
+DevSecOps-Finance_Agent/finance-agent.zip
+DevSecOps-Regulation_Agent/test_*.py
+DevSecOps-Regulation_Agent/cases/
+DevSecOps-Regulation_Agent/cases_0517/
+DevSecOps-Regulation_Agent/**/*.json
+!DevSecOps-Regulation_Agent/requirements.txt
+DevSecOps-MCP/src/MCP-Slack-Response/test_*.py
+DevSecOps-MCP/src/MCP-Slack-Response/show_modified_logs.py
+DevSecOps-Runtime_Agent/test_*.py
+DevSecOps-Runtime_Agent/docs/
+DevSecOps-Runtime_Agent/cloudformation/

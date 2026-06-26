@@ -23,8 +23,6 @@ Rules:
 - each action requires approval.
 - decision_questions must have at least one question.
 - schema_version must be "1.2" (intermediate contract; the runtime merges router + selected_playbook fields).
-- Write ALL human-readable explanation fields in Korean: approval_notes, reasoning_bullets, each regulations[].why_relevant, and justification when present.
-- Each why_relevant MUST tie the specific incident resource/behavior to the cited clause and to concrete playbook actions (e.g. disable_access_key), not generic phrases.
 - NEVER include EC2 actions (isolate_instance, create_snapshot, stop_instance) unless the incident resource type is EC2/Instance.
 - NEVER invent resource IDs that are not present in the incident input.
 - NEVER invent VPC IDs. Only include enable_vpc_flow_logs if vpc_id is present in the incident input.

@@ -36,6 +36,22 @@ def lambda_handler(event, context):
         if event.get('isBase64Encoded', False):
             body = base64.b64decode(body).decode('utf-8')
 
+        # Slack URL 등록 시 challenge 응답 (Event Subscriptions / Interactivity 공통)
+        if body:
+            try:
+                json_body = json.loads(body)
+                if isinstance(json_body, dict):
+                    if json_body.get('type') == 'url_verification':
+                        return {
+                            "statusCode": 200,
+                            "headers": {"Content-Type": "application/json"},
+                            "body": json.dumps({"challenge": json_body.get("challenge", "")}),
+                        }
+                    if json_body.get('type') == 'event_callback':
+                        return {"statusCode": 200, "body": "ok"}
+            except json.JSONDecodeError:
+                pass
+
         parsed_body = urllib.parse.parse_qs(body)
         if 'payload' not in parsed_body:
             return {"statusCode": 400, "body": "Invalid payload"}
