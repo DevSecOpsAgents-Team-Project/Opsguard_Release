@@ -78,8 +78,7 @@ cd ..
 
 `chroma.sqlite3`는 Git에 포함되지 않습니다. **GitHub Release**에서 받으세요.
 
-- Release 페이지: [chroma-db-v1](https://github.com/DevSecOpsAgents-Team-Project/DevSecOps-Project-Repo/releases/tag/chroma-db-v1)
-- 직접 다운로드: [chroma_db.zip](https://github.com/DevSecOpsAgents-Team-Project/DevSecOps-Project-Repo/releases/download/chroma-db-v1/chroma_db.zip)
+- Release 페이지: [chroma-db-v1](https://github.com/DevSecOpsAgents-Team-Project/Opsguard_Release/releases/tag/v1)
 
 프로젝트 **루트**에서:
 
